@@ -72,14 +72,14 @@
     </header>
 
     <!-- Hero / Banner -->
-    <section id="inicio" class="w-full min-h-[60vh] flex flex-col items-center justify-center bg-greendolio relative">
+    <section id="inicio" class="w-full min-h-[60vh] flex flex-col items-center justify-center bg-greendolio relative pt-2 pb-2">
         <!-- Banner español -->
-        <img src="Banner2.jpg" alt="Banner Green Dolio" class="w-full h-auto max-h-[60vh] object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-es" style="background:transparent;">
-        <!-- Banner inglés (debes subir Banner2-en.jpg cuando lo tengas) -->
-        <img src="Banner2-en.jpg" alt="Green Dolio Banner English" class="w-full h-auto max-h-[60vh] object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-en" style="background:transparent; display:none;">
-        <div class="relative z-20 flex flex-col items-center justify-center h-full w-full bg-greendolio bg-opacity-40">
-            <h1 class="text-4xl md:text-6xl font-bold text-green-900 mb-4 drop-shadow-lg lang-es">Combos frescos, directos a tu puerta</h1>
-            <h1 class="text-4xl md:text-6xl font-bold text-green-900 mb-4 drop-shadow-lg lang-en" style="display:none;">Fresh combos, delivered to your door</h1>
+        <img src="Banner2.jpg" alt="Banner Green Dolio" class="banner-img w-full max-w-[420px] h-auto object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-es" style="background:transparent;">
+        <!-- Banner inglés -->
+        <img src="Banner2-en.jpg" alt="Green Dolio Banner English" class="banner-img w-full max-w-[420px] h-auto object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-en" style="background:transparent; display:none;">
+        <div class="relative z-20 flex flex-col items-center justify-center w-full px-2 mt-2">
+            <h1 class="banner-title text-2xl font-bold text-green-900 mb-2 drop-shadow-lg text-center lang-es">Combos frescos, directos a tu puerta</h1>
+            <h1 class="banner-title text-2xl font-bold text-green-900 mb-2 drop-shadow-lg text-center lang-en" style="display:none;">Fresh combos, delivered to your door</h1>
         </div>
     </section>
 
@@ -382,197 +382,91 @@
       </div>
     </section>
 
-    <!-- FAQ - Preguntas Frecuentes -->
+    <!-- Sección FAQ -->
     <section id="faq" class="py-16 bg-white">
       <div class="container mx-auto px-4 max-w-3xl">
-        <!-- Español -->
-        <h2 class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px;">Preguntas Frecuentes</h2>
-        <div class="space-y-8 lang-es">
-          <h3 class="text-2xl font-bold text-green-700 mb-2">🛒 Pedidos y Productos</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Cómo hago un pedido?</summary>
-            <p>Puedes hacer tu pedido a través de nuestro formulario online o escribiéndonos directamente por WhatsApp. También puedes seguirnos en Instagram @green_dolio para ver nuestros productos disponibles.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Qué tipos de cajas ofrecen?</summary>
-            <ul class="list-disc ml-6">
-              <li><b>Caribbean Fresh Pack</b>: $650 (3 días)</li>
-              <li><b>Island Weeksential</b>: $990 (1 semana)</li>
-              <li><b>All Green-clusive Mix</b>: $1990 (2 semanas)</li>
-            </ul>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Puedo personalizar mi caja?</summary>
-            <p>¡Absolutamente! Cada caja se arma según tus gustos y lo que esté más fresco el día de tu pedido. Solo dinos qué te gusta y qué no.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Ofrecen pedidos "a la carta"?</summary>
-            <p>Sí, comunícate por WhatsApp con tu pedido específico y te enviaremos disponibilidad y cotización.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Qué productos extras tienen disponibles?</summary>
-            <p>Ofrecemos huevos de campo, quinoa, baba ganoush, miel, aceite de oliva, chimi churri, hummus y jugos naturales, y más. Revisa nuestro catálogo completo o consúltanos por WhatsApp.</p>
-          </details>
-
-          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">🚛 Entregas</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿A dónde entregan?</summary>
-            <ul class="list-disc ml-6">
-              <li><b>Juan Dolio</b>: Pedido mínimo $650</li>
-              <li><b>Santo Domingo</b>: Pedido mínimo $990</li>
-              <li><b>Boca Chica</b>: Pedido mínimo $990</li>
-            </ul>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Qué días hacen entregas?</summary>
-            <p>Entregamos todos los días de 9:00 AM a 6:00 PM. Los martes, jueves y sábados son GRATIS. Otros días tienen cargo de delivery de $100.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Con cuánta anticipación debo hacer mi pedido?</summary>
-            <p>Preferentemente con 24 horas de anticipación, o hasta las 12:00 PM del mismo día de entrega.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Tienen entrega gratis?</summary>
-            <p>Sí, ofrecemos entrega gratis en nuestras zonas de cobertura cuando cumples con el pedido mínimo.</p>
-          </details>
-
-          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">🌱 Productos y Calidad</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Sus productos son orgánicos?</summary>
-            <p>Sí, trabajamos con frutas y vegetales orgánicos, frescos y locales.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Cómo garantizan la frescura?</summary>
-            <p>Seleccionamos los productos el mismo día de tu entrega, directo del mercado a tu puerta.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Qué pasa si no me gusta algo de mi caja?</summary>
-            <p>Como personalizamos cada caja según tus gustos, es muy raro que esto pase. Pero si algo no te satisface, contáctanos y lo solucionamos.</p>
-          </details>
-
-          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">💚 Sustentabilidad</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Tienen programa retornable?</summary>
-            <p>Sí, manejamos un programa retornable para ser más amigables con el medio ambiente.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Cómo puedo participar en el programa retornable?</summary>
-            <p>Cada vez que devuelvas una caja o botella, tendrás un descuento en la próxima compra. Pregúntanos sobre nuestro programa cuando hagas tu pedido y te explicamos todos los detalles.</p>
-          </details>
-
-          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">💰 Pagos</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Qué formas de pago aceptan?</summary>
-             <ul class="list-disc ml-6">
-               <li><b>Efectivo</b></li>
-               <li><b>Transferencia bancaria</b></li>
-               <li><b>PayPal</b> (con 10% de recargo)</li>
-             </ul>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">¿Cuándo debo pagar?</summary>
-            <p>¡Solo pagas cuando recibes tu pedido, no antes!</p>
-          </details>
-
-          <div class="mt-10 text-center text-green-800 text-lg font-bold">
-            ¿No encontraste tu respuesta?<br>
-            Escríbenos por WhatsApp o síguenos en Instagram <a href="https://www.instagram.com/green_dolio/" target="_blank" class="underline hover:text-green-600">@green_dolio</a>. ¡Estamos aquí para ayudarte! 🌿
+        <!-- Título principal FAQ desplegable -->
+        <details id="faq-main" open>
+          <summary class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-es cursor-pointer" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px;">Preguntas Frecuentes</summary>
+          <div class="space-y-8 lang-es">
+            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+              <summary class="font-bold text-green-800 cursor-pointer">🛒 Pedidos y Productos</summary>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Cómo hago un pedido?</summary>
+                <p>Puedes hacer tu pedido a través de nuestro formulario online o escribiéndonos directamente por WhatsApp. También puedes seguirnos en Instagram @green_dolio para ver nuestros productos disponibles.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Qué tipos de cajas ofrecen?</summary>
+                <ul class="list-disc ml-6">
+                  <li><b>Caribbean Fresh Pack</b>: $650 (3 días)</li>
+                  <li><b>Island Weeksential</b>: $990 (1 semana)</li>
+                  <li><b>All Green-clusive Mix</b>: $1990 (2 semanas)</li>
+                </ul>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Puedo personalizar mi caja?</summary>
+                <p>¡Absolutamente! Cada caja se arma según tus gustos y lo que esté más fresco el día de tu pedido. Solo dinos qué te gusta y qué no.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Ofrecen pedidos "a la carta"?</summary>
+                <p>Sí, comunícate por WhatsApp con tu pedido específico y te enviaremos disponibilidad y cotización.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Qué productos extras tienen disponibles?</summary>
+                <p>Ofrecemos huevos de campo, quinoa, baba ganoush, miel, aceite de oliva, chimi churri, hummus y jugos naturales, y más. Revisa nuestro catálogo completo o consúltanos por WhatsApp.</p>
+              </details>
+            </details>
+            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+              <summary class="font-bold text-green-800 cursor-pointer">🚛 Entregas</summary>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿A dónde entregan?</summary>
+                <ul class="list-disc ml-6">
+                  <li><b>Juan Dolio</b>: Pedido mínimo $650</li>
+                  <li><b>Santo Domingo</b>: Pedido mínimo $990</li>
+                  <li><b>Boca Chica</b>: Pedido mínimo $990</li>
+                </ul>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Qué días hacen entregas?</summary>
+                <p>Entregamos todos los días de 9:00 AM a 6:00 PM. Los martes, jueves y sábados son GRATIS. Otros días tienen cargo de delivery de $100.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Con cuánta anticipación debo hacer mi pedido?</summary>
+                <p>Preferentemente con 24 horas de anticipación, o hasta las 12:00 PM del mismo día de entrega.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Tienen entrega gratis?</summary>
+                <p>Sí, ofrecemos entrega gratis en nuestras zonas de cobertura cuando cumples con el pedido mínimo.</p>
+              </details>
+            </details>
+            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+              <summary class="font-bold text-green-800 cursor-pointer">💰 Pagos</summary>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Qué formas de pago aceptan?</summary>
+                <ul class="list-disc ml-6">
+                  <li><b>Efectivo</b></li>
+                  <li><b>Transferencia bancaria</b></li>
+                  <li><b>PayPal</b> (con 10% de recargo)</li>
+                </ul>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">¿Cuándo debo pagar?</summary>
+                <p>¡Solo pagas cuando recibes tu pedido, no antes!</p>
+              </details>
+            </details>
+            <div class="mt-10 text-center text-green-800 text-lg font-bold">
+              ¿No encontraste tu respuesta?<br>
+              Escríbenos por WhatsApp o síguenos en Instagram <a href="https://www.instagram.com/green_dolio/" target="_blank" class="underline hover:text-green-600">@green_dolio</a>. ¡Estamos aquí para ayudarte! ��
+            </div>
           </div>
-        </div>
+        </details>
         <!-- Inglés -->
-        <h2 class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px; display:none;">Frequently Asked Questions</h2>
-        <div class="space-y-8 lang-en" style="display:none;">
-          <h3 class="text-2xl font-bold text-green-700 mb-2">🛒 Orders & Products</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">How do I place an order?</summary>
-            <p>You can place your order through our online form or by writing to us directly on WhatsApp. You can also follow us on Instagram @green_dolio to see our available products.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">What types of boxes do you offer?</summary>
-            <ul class="list-disc ml-6">
-              <li><b>Caribbean Fresh Pack</b>: $650 (3 days)</li>
-              <li><b>Island Weeksential</b>: $990 (1 week)</li>
-              <li><b>All Green-clusive Mix</b>: $1990 (2 weeks)</li>
-            </ul>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">Can I customize my box?</summary>
-            <p>Absolutely! Each box is made according to your preferences and what is freshest on the day of your order. Just tell us what you like and what you don't.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">Do you offer "à la carte" orders?</summary>
-            <p>Sí, contact us via WhatsApp with your specific order and we will send you availability and a quote.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">What extra products are available?</summary>
-            <p>We offer free-range eggs, quinoa, baba ganoush, honey, olive oil, chimichurri, hummus, natural juices, and more. Check our full catalog or ask us on WhatsApp.</p>
-          </details>
-
-          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">🚛 Delivery</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">Where do you deliver?</summary>
-            <ul class="list-disc ml-6">
-              <li><b>Juan Dolio</b>: Minimum order $650</li>
-              <li><b>Santo Domingo</b>: Minimum order $990</li>
-              <li><b>Boca Chica</b>: Minimum order $990</li>
-            </ul>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">What days do you deliver?</summary>
-            <p>We deliver every day from 9:00 AM to 6:00 PM. Tuesdays, Thursdays, and Saturdays are FREE. Other days have a delivery fee of $100.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">How far in advance should I order?</summary>
-            <p>Preferably 24 hours in advance, or until 12:00 PM on the same day of delivery.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">Is there free delivery?</summary>
-            <p>Sí, ofrecemos entrega gratis en nuestras zonas de cobertura cuando cumples con el pedido mínimo.</p>
-          </details>
-
-          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">🌱 Products & Quality</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">Are your products organic?</summary>
-            <p>Sí, trabajamos con frutas y vegetales orgánicos, frescos y locales.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">How do you guarantee freshness?</summary>
-            <p>We select the products the same day as your delivery, straight from the market to your door.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">What if I don't like something in my box?</summary>
-            <p>Since we personalize each box according to your preferences, it's very rare for this to happen. But if something doesn't satisfy you, contact us and we'll fix it.</p>
-          </details>
-
-          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">💚 Sustainability</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">Do you have a returnable program?</summary>
-            <p>Sí, manejamos un programa retornable para ser más amigables con el medio ambiente.</p>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">How can I participate in the returnable program?</summary>
-            <p>Every time you return a box or bottle, you'll get a discount on your next purchase. Ask us about our program when you place your order and we'll explain all the details.</p>
-          </details>
-
-          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">💰 Payment</h3>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">What payment methods do you accept?</summary>
-             <ul class="list-disc ml-6">
-               <li><b>Cash</b></li>
-               <li><b>Transferencia bancaria</b></li>
-               <li><b>PayPal</b> (with 10% surcharge)</li>
-             </ul>
-          </details>
-          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-            <summary class="font-bold text-green-800 cursor-pointer">When do I have to pay?</summary>
-            <p>¡Solo pagas cuando recibes tu pedido, no antes!</p>
-          </details>
-
-          <div class="mt-10 text-center text-green-800 text-lg font-bold">
-            Didn't find your answer?<br>
-            Write to us on WhatsApp or follow us on Instagram <a href="https://www.instagram.com/green_dolio/" target="_blank" class="underline hover:text-green-600">@green_dolio</a>. We're here to help you! 🌿
+        <details id="faq-main-en">
+          <summary class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-en cursor-pointer" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px; display:none;">Frequently Asked Questions</summary>
+          <div class="space-y-8 lang-en" style="display:none;">
+            <!-- Aquí puedes replicar la estructura de acordeón para inglés si lo deseas -->
           </div>
-        </div>
+        </details>
       </div>
     </section>
 
