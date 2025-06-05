@@ -34,42 +34,41 @@
 <body class="bg-greendolio">
     <!-- Header sticky -->
     <header class="sticky-nav bg-white shadow-md w-full top-0 z-50">
-        <div class="container mx-auto flex items-center justify-between py-3 px-4">
-            <div class="flex items-center gap-3">
-                <img src="LogoGD.jpg" alt="Green Dolio Logo" class="h-12 w-12 rounded-full">
+        <div class="container mx-auto flex items-center justify-between py-2 px-2">
+            <div class="flex items-center gap-2">
+                <img src="LogoGD.jpg" alt="Green Dolio Logo" class="h-10 w-10 rounded-full">
             </div>
-            <div class="flex items-center gap-2 relative">
-                <button id="menu-toggle" class="text-green-900 text-base flex items-center gap-1 px-2 py-1 rounded-md border border-green-200 bg-white shadow-sm focus:outline-none">
+            <div class="flex items-center gap-1">
+                <button id="menu-toggle" class="text-green-900 text-base flex items-center gap-1 px-2 py-1 rounded-md border border-green-200 bg-white shadow-sm focus:outline-none" style="font-size:1.1em;">
                     <i class="fas fa-bars text-lg"></i>
-                    <span style="font-weight:600;">Menú</span>
                 </button>
-                <!-- Menú dropdown -->
-                <nav id="mobile-menu" class="absolute right-0 mt-2 w-56 bg-white bg-opacity-90 backdrop-blur-md shadow-2xl rounded-xl border border-green-100 flex-col items-stretch py-2 px-0 z-50 hidden transition-all duration-200">
-                    <a href="#inicio" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Inicio</a>
-                    <a href="#inicio" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Home</a>
-                    <a href="#como" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">¿Cómo funciona?</a>
-                    <a href="#como" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">How it works?</a>
-                    <a href="#cajas" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Cajas</a>
-                    <a href="#cajas" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Boxes</a>
-                    <a href="#extras" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Beneficios</a>
-                    <a href="#extras" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Add-ons</a>
-                    <a href="#nosotros" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Nosotros</a>
-                    <a href="#nosotros" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">About us</a>
-                    <a href="#contacto" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Contacto</a>
-                    <a href="#contacto" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Contact</a>
-                    <a href="#faq" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Preguntas</a>
-                    <a href="#faq" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">FAQ</a>
-                </nav>
-                <div id="language-selector" class="flex gap-2 ml-2">
-                    <button id="btn-es" onclick="setLanguage('es')" class="px-3 py-1 rounded-full font-bold border-2 border-green-700 bg-gradient-to-r from-green-400 to-yellow-300 text-green-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110">
-                        <span style="font-size:1.2em;">🇪🇸</span> ES
+                <div id="language-selector" class="flex gap-1 ml-1">
+                    <button id="btn-es" onclick="setLanguage('es')" class="px-2 py-1 rounded-full font-bold border-2 border-green-700 bg-gradient-to-r from-green-400 to-yellow-300 text-green-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110" style="font-size:0.95em;">
+                        <span style="font-size:1.1em;">🇪🇸</span>
                     </button>
-                    <button id="btn-en" onclick="setLanguage('en')" class="px-3 py-1 rounded-full font-bold border-2 border-blue-700 bg-gradient-to-r from-blue-400 to-red-400 text-blue-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110">
-                        <span style="font-size:1.2em;">🇬🇧</span> EN
+                    <button id="btn-en" onclick="setLanguage('en')" class="px-2 py-1 rounded-full font-bold border-2 border-blue-700 bg-gradient-to-r from-blue-400 to-red-400 text-blue-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110" style="font-size:0.95em;">
+                        <span style="font-size:1.1em;">🇬🇧</span>
                     </button>
                 </div>
             </div>
         </div>
+        <!-- Menú dropdown -->
+        <nav id="mobile-menu" class="absolute right-2 mt-2 w-11/12 max-w-xs bg-white bg-opacity-90 backdrop-blur-md shadow-2xl rounded-xl border border-green-100 flex-col items-stretch py-2 px-0 z-50 hidden transition-all duration-200">
+            <a href="#inicio" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Inicio</a>
+            <a href="#inicio" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Home</a>
+            <a href="#como" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">¿Cómo funciona?</a>
+            <a href="#como" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">How it works?</a>
+            <a href="#cajas" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Cajas</a>
+            <a href="#cajas" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Boxes</a>
+            <a href="#extras" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Beneficios</a>
+            <a href="#extras" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Add-ons</a>
+            <a href="#nosotros" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Nosotros</a>
+            <a href="#nosotros" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">About us</a>
+            <a href="#contacto" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Contacto</a>
+            <a href="#contacto" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Contact</a>
+            <a href="#faq" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Preguntas</a>
+            <a href="#faq" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">FAQ</a>
+        </nav>
     </header>
 
     <!-- Hero / Banner -->

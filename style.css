@@ -156,6 +156,52 @@ footer {
     margin: 0 0.5em;
     font-size: 1em;
   }
+  header .container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.7rem;
+  }
+  header .container .flex.items-center.gap-3 {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+  header .container img {
+    height: 44px !important;
+    width: 44px !important;
+    margin: 0 !important;
+  }
+  header .container .flex.items-center.gap-2 {
+    flex: none;
+    gap: 0.5rem !important;
+  }
+  #menu-toggle {
+    padding: 0.3em 0.7em !important;
+    font-size: 1em !important;
+    border-radius: 8px !important;
+  }
+  #language-selector {
+    gap: 0.2rem !important;
+  }
+  #language-selector button {
+    font-size: 0.95em !important;
+    padding: 0.3em 0.7em !important;
+  }
+  #mobile-menu {
+    right: 0 !important;
+    left: 0 !important;
+    margin-top: 0.5em !important;
+    width: 96vw !important;
+    min-width: 0 !important;
+    max-width: 98vw !important;
+    border-radius: 1.2em !important;
+    padding: 0.5em 0 !important;
+  }
+  #mobile-menu a {
+    font-size: 1.15em !important;
+    padding: 1em 1.2em !important;
+    text-align: left !important;
+  }
 }
 
 /* Testimonios */
@@ -425,9 +471,46 @@ html {
   100% { filter: brightness(1) drop-shadow(0 0 0 #f9a825); }
 }
 @media (max-width: 700px) {
+  header nav#mobile-menu {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
+    z-index: 1001;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+    font-size: 1.5em;
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    border-radius: 0;
+  }
+  header nav#mobile-menu:not(.hidden) {
+    transform: translateX(0);
+  }
+  header nav.md\:flex {
+    display: none !important;
+  }
   .zocalo-iniciar {
-    font-size: 1.2em;
-    padding: 1em 0.5em;
+    font-size: 1.1em;
+    padding: 0.7em 0.2em;
+    min-height: 48px;
+    letter-spacing: 1px;
+    border-radius: 0.7em 0.7em 0 0;
+    justify-content: center;
+    text-align: center;
+  }
+  .menu-link {
+    font-size: 1.3em !important;
+    padding: 0.7em 0 !important;
+    width: 100% !important;
+    text-align: center !important;
+    border-bottom: 1px solid #e0f2e9 !important;
   }
 }
 
