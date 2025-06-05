@@ -74,11 +74,11 @@
     </header>
 
     <!-- Hero / Banner -->
-    <section id="inicio" class="w-full h-screen flex flex-col items-center justify-center bg-greendolio relative">
+    <section id="inicio" class="w-full min-h-[60vh] flex flex-col items-center justify-center bg-greendolio relative">
         <!-- Banner español -->
-        <img src="Banner2.jpg" alt="Banner Green Dolio" class="max-h-full max-w-full object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-es" style="background:transparent;">
+        <img src="Banner2.jpg" alt="Banner Green Dolio" class="w-full h-auto max-h-[60vh] object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-es" style="background:transparent;">
         <!-- Banner inglés (debes subir Banner2-en.jpg cuando lo tengas) -->
-        <img src="Banner2-en.jpg" alt="Green Dolio Banner English" class="h-auto w-auto max-h-[80vh] max-w-full object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-en" style="background:transparent; display:none; padding-top:2vh; padding-bottom:2vh;">
+        <img src="Banner2-en.jpg" alt="Green Dolio Banner English" class="w-full h-auto max-h-[60vh] object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-en" style="background:transparent; display:none;">
         <div class="relative z-20 flex flex-col items-center justify-center h-full w-full bg-greendolio bg-opacity-40">
             <h1 class="text-4xl md:text-6xl font-bold text-green-900 mb-4 drop-shadow-lg lang-es">Combos frescos, directos a tu puerta</h1>
             <h1 class="text-4xl md:text-6xl font-bold text-green-900 mb-4 drop-shadow-lg lang-en" style="display:none;">Fresh combos, delivered to your door</h1>
@@ -99,9 +99,9 @@
           </span>
         </div>
         <div class="flex flex-col items-center w-full" style="margin-top: 40px;">
-          <div class="flex flex-row justify-center items-center w-full gap-8 mb-8">
+          <div class="flex flex-col md:flex-row justify-center items-center w-full gap-4 md:gap-8 mb-4 md:mb-8">
             <!-- Paso 1 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
               <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">1</div>
               <img src="0.png" alt="Inicia el pedido" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
               <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Inicia el pedido</span>
@@ -118,7 +118,7 @@
               </svg>
             </div>
             <!-- Paso 2 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
               <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">2</div>
               <img src="1.png" alt="Elige tu caja" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
               <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Elige tu caja</span>
@@ -129,9 +129,9 @@
               <div class="text-green-900 text-lg font-bold text-center mt-2 lang-en" style="letter-spacing:1px; display:none;">MIX, FRUITY or VEGGIE</div>
             </div>
           </div>
-          <div class="flex flex-row justify-center items-center w-full gap-8 mb-10">
+          <div class="flex flex-col md:flex-row justify-center items-center w-full gap-4 md:gap-8 mb-4 md:mb-10">
             <!-- Paso 3 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
               <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">3</div>
               <img src="2.png" alt="Personaliza" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
               <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Personaliza</span>
@@ -148,7 +148,7 @@
               </svg>
             </div>
             <!-- Paso 4 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
               <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">4</div>
               <img src="3.png" alt="Confirmación" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
               <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Confirmación</span>
@@ -165,7 +165,7 @@
               </svg>
             </div>
             <!-- Paso 5 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
               <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">5</div>
               <img src="4.png" alt="Entrega" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
               <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Entrega</span>

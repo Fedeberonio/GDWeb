@@ -443,10 +443,14 @@ html {
   box-shadow: 0 8px 32px rgba(37,211,102,0.28), 0 2px 8px rgba(60,80,40,0.18);
 }
 @media (max-width: 700px) {
-  .btn-wsp-flotante {
-    right: 3vw;
-    width: 56px;
-    height: 56px;
-    font-size: 2em;
+  .btn-wsp-flotante, .btn-ig-flotante {
+    right: 3vw !important;
+    left: 3vw !important;
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1.5em !important;
+    top: auto !important;
+    bottom: 80px !important;
+    transform: none !important;
   }
 }
