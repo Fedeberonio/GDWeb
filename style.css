@@ -315,7 +315,7 @@ footer {
     height: 40px;
     font-size: 1.5em;
   }
-}
+} 
 
 /* Parallax para el banner principal */
 .parallax-banner {
@@ -443,14 +443,46 @@ html {
   box-shadow: 0 8px 32px rgba(37,211,102,0.28), 0 2px 8px rgba(60,80,40,0.18);
 }
 @media (max-width: 700px) {
+  header nav#mobile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 80vw;
+    max-width: 320px;
+    height: 100vh;
+    background: #fff;
+    box-shadow: 0 2px 24px rgba(60,80,40,0.18);
+    z-index: 1001;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+    font-size: 1.2em;
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    border-radius: 0 1.5rem 1.5rem 0;
+  }
+  header nav#mobile-menu:not(.hidden) {
+    transform: translateX(0);
+  }
+  .zocalo-iniciar {
+    font-size: 1em;
+    padding: 0.7em 0.2em;
+    min-height: 48px;
+    letter-spacing: 1px;
+    border-radius: 0.7em 0.7em 0 0;
+  }
   .btn-wsp-flotante, .btn-ig-flotante {
-    right: 3vw !important;
-    left: 3vw !important;
-    width: 48px !important;
-    height: 48px !important;
-    font-size: 1.5em !important;
-    top: auto !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1.3em !important;
     bottom: 80px !important;
-    transform: none !important;
+    top: auto !important;
+    left: 4vw !important;
+    right: auto !important;
+    z-index: 1100;
+  }
+  .btn-wsp-flotante {
+    left: auto !important;
+    right: 4vw !important;
   }
 }

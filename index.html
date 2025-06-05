@@ -41,24 +41,24 @@
                     <span class="text-2xl font-bold text-green-800">Green Dolio</span>
                 </div>
             </div>
-            <button id="menu-toggle" class="md:hidden text-green-900 text-2xl">
+            <button id="menu-toggle" class="md:hidden text-green-900 text-2xl focus:outline-none">
                 <i class="fas fa-bars"></i>
             </button>
-            <nav id="mobile-menu" class="hidden md:flex flex-col md:flex-row gap-4 md:gap-8 text-green-900 font-semibold">
-                <a href="#inicio" class="hover:text-green-600 lang-es">Inicio</a>
-                <a href="#inicio" class="hover:text-green-600 lang-en" style="display:none;">Home</a>
-                <a href="#como" class="hover:text-green-600 lang-es">¿Cómo funciona?</a>
-                <a href="#como" class="hover:text-green-600 lang-en" style="display:none;">How it works?</a>
-                <a href="#cajas" class="hover:text-green-600 lang-es">Cajas</a>
-                <a href="#cajas" class="hover:text-green-600 lang-en" style="display:none;">Boxes</a>
-                <a href="#extras" class="hover:text-green-600 lang-es">Beneficios</a>
-                <a href="#extras" class="hover:text-green-600 lang-en" style="display:none;">Add-ons</a>
-                <a href="#nosotros" class="hover:text-green-600 lang-es">Nosotros</a>
-                <a href="#nosotros" class="hover:text-green-600 lang-en" style="display:none;">About us</a>
-                <a href="#contacto" class="hover:text-green-600 lang-es">Contacto</a>
-                <a href="#contacto" class="hover:text-green-600 lang-en" style="display:none;">Contact</a>
-                <a href="#faq" class="hover:text-green-600 lang-es">Preguntas</a>
-                <a href="#faq" class="hover:text-green-600 lang-en" style="display:none;">FAQ</a>
+            <nav id="mobile-menu" class="fixed top-0 left-0 w-4/5 max-w-xs h-full bg-white shadow-2xl z-50 flex flex-col gap-6 text-green-900 font-semibold p-8 transform -translate-x-full transition-transform duration-300 md:static md:transform-none md:flex-row md:gap-8 md:p-0 md:bg-transparent md:shadow-none md:w-auto md:h-auto md:relative hidden md:flex">
+                <a href="#inicio" class="hover:text-green-600 lang-es menu-link">Inicio</a>
+                <a href="#inicio" class="hover:text-green-600 lang-en menu-link" style="display:none;">Home</a>
+                <a href="#como" class="hover:text-green-600 lang-es menu-link">¿Cómo funciona?</a>
+                <a href="#como" class="hover:text-green-600 lang-en menu-link" style="display:none;">How it works?</a>
+                <a href="#cajas" class="hover:text-green-600 lang-es menu-link">Cajas</a>
+                <a href="#cajas" class="hover:text-green-600 lang-en menu-link" style="display:none;">Boxes</a>
+                <a href="#extras" class="hover:text-green-600 lang-es menu-link">Beneficios</a>
+                <a href="#extras" class="hover:text-green-600 lang-en menu-link" style="display:none;">Add-ons</a>
+                <a href="#nosotros" class="hover:text-green-600 lang-es menu-link">Nosotros</a>
+                <a href="#nosotros" class="hover:text-green-600 lang-en menu-link" style="display:none;">About us</a>
+                <a href="#contacto" class="hover:text-green-600 lang-es menu-link">Contacto</a>
+                <a href="#contacto" class="hover:text-green-600 lang-en menu-link" style="display:none;">Contact</a>
+                <a href="#faq" class="hover:text-green-600 lang-es menu-link">Preguntas</a>
+                <a href="#faq" class="hover:text-green-600 lang-en menu-link" style="display:none;">FAQ</a>
             </nav>
             <div class="flex gap-3 items-center">
                 <a href="https://wa.me/18493757338" class="text-green-600 text-2xl"><i class="fab fa-whatsapp"></i></a>
@@ -179,19 +179,11 @@
           </div>
         </div>
         <!-- Zócalo inferior '¡Iniciar! | Ver el catálogo de productos completo' -->
-        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center gap-4 bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-2xl py-5 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-es">
-          <span class="arrow-anim arrow-izq hidden sm:inline-block neon-arrow" style="font-size:2em; margin-right:0.5em;">&gt;&gt;&gt;&gt;&gt;&gt;</span>
-          <span class="hidden sm:inline-block">🍓🍊🍌</span>
-          <span>¡Iniciar! <span class="mx-2">|</span> Ver el catálogo de productos completo</span>
-          <span class="hidden sm:inline-block">🍍🥑</span>
-          <span class="arrow-anim arrow-der hidden sm:inline-block neon-arrow" style="font-size:2em; margin-left:0.5em;">&lt;&lt;&lt;&lt;&lt;&lt;</span>
+        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-lg py-3 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-es">
+          <span>¡Iniciar! <span class="mx-1">|</span> Ver el catálogo completo</span>
         </a>
-        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center gap-4 bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-2xl py-5 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-en" style="display:none;">
-          <span class="arrow-anim arrow-izq hidden sm:inline-block neon-arrow" style="font-size:2em; margin-right:0.5em;">&gt;&gt;&gt;&gt;&gt;&gt;</span>
-          <span class="hidden sm:inline-block">🍓🍊🍌</span>
-          <span>Start! <span class="mx-2">|</span> See the full product catalog</span>
-          <span class="hidden sm:inline-block">🍍🥑</span>
-          <span class="arrow-anim arrow-der hidden sm:inline-block neon-arrow" style="font-size:2em; margin-left:0.5em;">&lt;&lt;&lt;&lt;&lt;&lt;</span>
+        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-lg py-3 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-en" style="display:none;">
+          <span>Start! <span class="mx-1">|</span> See full catalog</span>
         </a>
         <style>
         @keyframes arrowIn {
@@ -645,11 +637,11 @@
     </script>
 
     <!-- Botón flotante de WhatsApp -->
-    <a href="https://wa.me/18493757338" target="_blank" class="btn-wsp-flotante fixed z-50 top-1/2 right-6 -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center w-16 h-16 text-4xl transition-all duration-200">
+    <a href="https://wa.me/18493757338" target="_blank" class="btn-wsp-flotante fixed z-50 right-4 bottom-24 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center w-12 h-12 text-3xl transition-all duration-200">
       <i class="fab fa-whatsapp"></i>
     </a>
     <!-- Botón flotante de Instagram -->
-    <a href="https://www.instagram.com/green_dolio/" target="_blank" class="btn-ig-flotante fixed z-50 top-1/2 left-6 -translate-y-1/2 bg-gradient-to-r from-pink-400 via-pink-500 to-yellow-400 hover:from-pink-500 hover:to-yellow-500 text-white rounded-full shadow-2xl flex items-center justify-center w-16 h-16 text-4xl transition-all duration-200">
+    <a href="https://www.instagram.com/green_dolio/" target="_blank" class="btn-ig-flotante fixed z-50 left-4 bottom-24 bg-gradient-to-r from-pink-400 via-pink-500 to-yellow-400 hover:from-pink-500 hover:to-yellow-500 text-white rounded-full shadow-2xl flex items-center justify-center w-12 h-12 text-3xl transition-all duration-200">
       <i class="fab fa-instagram"></i>
     </a>
 
@@ -666,6 +658,38 @@
       document.getElementById('menu-toggle').addEventListener('click', function() {
         document.getElementById('mobile-menu').classList.toggle('hidden');
       });
+    </script>
+    <script>
+    // Menú móvil: abrir/cerrar y cerrar al pulsar enlace o fuera
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuLinks = document.querySelectorAll('.menu-link');
+    let menuOpen = false;
+    menuToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      mobileMenu.classList.toggle('hidden');
+      if (mobileMenu.classList.contains('hidden')) {
+        mobileMenu.style.transform = 'translateX(-100%)';
+        menuOpen = false;
+      } else {
+        mobileMenu.style.transform = 'translateX(0)';
+        menuOpen = true;
+      }
+    });
+    menuLinks.forEach(link => link.addEventListener('click', () => {
+      if (window.innerWidth < 768) {
+        mobileMenu.classList.add('hidden');
+        mobileMenu.style.transform = 'translateX(-100%)';
+        menuOpen = false;
+      }
+    }));
+    document.addEventListener('click', function(e) {
+      if (menuOpen && window.innerWidth < 768 && !mobileMenu.contains(e.target) && e.target !== menuToggle) {
+        mobileMenu.classList.add('hidden');
+        mobileMenu.style.transform = 'translateX(-100%)';
+        menuOpen = false;
+      }
+    });
     </script>
 </body>
 </html>
