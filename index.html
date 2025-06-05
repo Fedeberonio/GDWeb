@@ -37,40 +37,36 @@
         <div class="container mx-auto flex items-center justify-between py-3 px-4">
             <div class="flex items-center gap-3">
                 <img src="LogoGD.jpg" alt="Green Dolio Logo" class="h-12 w-12 rounded-full">
-                <div class="flex flex-col">
-                    <span class="text-2xl font-bold text-green-800">Green Dolio</span>
-                </div>
             </div>
-            <button id="menu-toggle" class="md:hidden text-green-900 text-2xl focus:outline-none">
-                <i class="fas fa-bars"></i>
-            </button>
-            <nav id="mobile-menu" class="fixed top-0 left-0 w-4/5 max-w-xs h-full bg-white shadow-2xl z-50 flex flex-col gap-6 text-green-900 font-semibold p-8 transform -translate-x-full transition-transform duration-300 md:static md:transform-none md:flex-row md:gap-8 md:p-0 md:bg-transparent md:shadow-none md:w-auto md:h-auto md:relative hidden md:flex">
-                <a href="#inicio" class="hover:text-green-600 lang-es menu-link">Inicio</a>
-                <a href="#inicio" class="hover:text-green-600 lang-en menu-link" style="display:none;">Home</a>
-                <a href="#como" class="hover:text-green-600 lang-es menu-link">¿Cómo funciona?</a>
-                <a href="#como" class="hover:text-green-600 lang-en menu-link" style="display:none;">How it works?</a>
-                <a href="#cajas" class="hover:text-green-600 lang-es menu-link">Cajas</a>
-                <a href="#cajas" class="hover:text-green-600 lang-en menu-link" style="display:none;">Boxes</a>
-                <a href="#extras" class="hover:text-green-600 lang-es menu-link">Beneficios</a>
-                <a href="#extras" class="hover:text-green-600 lang-en menu-link" style="display:none;">Add-ons</a>
-                <a href="#nosotros" class="hover:text-green-600 lang-es menu-link">Nosotros</a>
-                <a href="#nosotros" class="hover:text-green-600 lang-en menu-link" style="display:none;">About us</a>
-                <a href="#contacto" class="hover:text-green-600 lang-es menu-link">Contacto</a>
-                <a href="#contacto" class="hover:text-green-600 lang-en menu-link" style="display:none;">Contact</a>
-                <a href="#faq" class="hover:text-green-600 lang-es menu-link">Preguntas</a>
-                <a href="#faq" class="hover:text-green-600 lang-en menu-link" style="display:none;">FAQ</a>
-            </nav>
-            <div class="flex gap-3 items-center">
-                <a href="https://wa.me/18493757338" class="text-green-600 text-2xl"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://www.instagram.com/green_dolio/" target="_blank" class="text-pink-500 text-2xl"><i class="fab fa-instagram"></i></a>
-                <!-- Selector de idioma -->
-                <div id="language-selector" class="ml-2 flex gap-2">
-                  <button id="btn-es" onclick="setLanguage('es')" class="px-3 py-1 rounded-full font-bold border-2 border-green-700 bg-gradient-to-r from-green-400 to-yellow-300 text-green-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110">
-                    <span style="font-size:1.2em;">🇪🇸</span> ES
-                  </button>
-                  <button id="btn-en" onclick="setLanguage('en')" class="px-3 py-1 rounded-full font-bold border-2 border-blue-700 bg-gradient-to-r from-blue-400 to-red-400 text-blue-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110">
-                    <span style="font-size:1.2em;">🇬🇧</span> EN
-                  </button>
+            <div class="flex items-center gap-2 relative">
+                <button id="menu-toggle" class="text-green-900 text-base flex items-center gap-1 px-2 py-1 rounded-md border border-green-200 bg-white shadow-sm focus:outline-none">
+                    <i class="fas fa-bars text-lg"></i>
+                    <span style="font-weight:600;">Menú</span>
+                </button>
+                <!-- Menú dropdown -->
+                <nav id="mobile-menu" class="absolute right-0 mt-2 w-56 bg-white bg-opacity-90 backdrop-blur-md shadow-2xl rounded-xl border border-green-100 flex-col items-stretch py-2 px-0 z-50 hidden transition-all duration-200">
+                    <a href="#inicio" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Inicio</a>
+                    <a href="#inicio" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Home</a>
+                    <a href="#como" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">¿Cómo funciona?</a>
+                    <a href="#como" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">How it works?</a>
+                    <a href="#cajas" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Cajas</a>
+                    <a href="#cajas" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Boxes</a>
+                    <a href="#extras" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Beneficios</a>
+                    <a href="#extras" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Add-ons</a>
+                    <a href="#nosotros" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Nosotros</a>
+                    <a href="#nosotros" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">About us</a>
+                    <a href="#contacto" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Contacto</a>
+                    <a href="#contacto" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">Contact</a>
+                    <a href="#faq" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-es">Preguntas</a>
+                    <a href="#faq" class="menu-link block text-base py-3 px-6 text-green-900 font-semibold hover:bg-green-50 rounded-md lang-en" style="display:none;">FAQ</a>
+                </nav>
+                <div id="language-selector" class="flex gap-2 ml-2">
+                    <button id="btn-es" onclick="setLanguage('es')" class="px-3 py-1 rounded-full font-bold border-2 border-green-700 bg-gradient-to-r from-green-400 to-yellow-300 text-green-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110">
+                        <span style="font-size:1.2em;">🇪🇸</span> ES
+                    </button>
+                    <button id="btn-en" onclick="setLanguage('en')" class="px-3 py-1 rounded-full font-bold border-2 border-blue-700 bg-gradient-to-r from-blue-400 to-red-400 text-blue-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110">
+                        <span style="font-size:1.2em;">🇬🇧</span> EN
+                    </button>
                 </div>
             </div>
         </div>
@@ -178,12 +174,16 @@
             </div>
           </div>
         </div>
-        <!-- Zócalo inferior '¡Iniciar! | Ver el catálogo de productos completo' -->
-        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-lg py-3 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-es">
-          <span>¡Iniciar! <span class="mx-1">|</span> Ver el catálogo completo</span>
+        <!-- Zócalo inferior solo con texto central y flechas móviles a los costados -->
+        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-lg py-3 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-es">
+          <span class="arrow-anim arrow-izq neon-arrow" style="font-size:2em; margin-right:0.7em;">&gt;&gt;&gt;</span>
+          <span>Comienza aquí</span>
+          <span class="arrow-anim arrow-der neon-arrow" style="font-size:2em; margin-left:0.7em;">&lt;&lt;&lt;</span>
         </a>
-        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-lg py-3 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-en" style="display:none;">
-          <span>Start! <span class="mx-1">|</span> See full catalog</span>
+        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-lg py-3 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-en" style="display:none;">
+          <span class="arrow-anim arrow-izq neon-arrow" style="font-size:2em; margin-right:0.7em;">&gt;&gt;&gt;</span>
+          <span>Start here</span>
+          <span class="arrow-anim arrow-der neon-arrow" style="font-size:2em; margin-left:0.7em;">&lt;&lt;&lt;</span>
         </a>
         <style>
         @keyframes arrowIn {
@@ -653,14 +653,8 @@
     });
     </script>
 
-    <!-- Agregar script para el menú desplegable -->
     <script>
-      document.getElementById('menu-toggle').addEventListener('click', function() {
-        document.getElementById('mobile-menu').classList.toggle('hidden');
-      });
-    </script>
-    <script>
-    // Menú móvil: abrir/cerrar y cerrar al pulsar enlace o fuera
+    // Menú dropdown: abrir/cerrar y cerrar al pulsar enlace o fuera
     const menuToggle = document.getElementById('menu-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
     const menuLinks = document.querySelectorAll('.menu-link');
@@ -668,25 +662,15 @@
     menuToggle.addEventListener('click', function(e) {
       e.stopPropagation();
       mobileMenu.classList.toggle('hidden');
-      if (mobileMenu.classList.contains('hidden')) {
-        mobileMenu.style.transform = 'translateX(-100%)';
-        menuOpen = false;
-      } else {
-        mobileMenu.style.transform = 'translateX(0)';
-        menuOpen = true;
-      }
+      menuOpen = !mobileMenu.classList.contains('hidden');
     });
     menuLinks.forEach(link => link.addEventListener('click', () => {
-      if (window.innerWidth < 768) {
-        mobileMenu.classList.add('hidden');
-        mobileMenu.style.transform = 'translateX(-100%)';
-        menuOpen = false;
-      }
+      mobileMenu.classList.add('hidden');
+      menuOpen = false;
     }));
     document.addEventListener('click', function(e) {
-      if (menuOpen && window.innerWidth < 768 && !mobileMenu.contains(e.target) && e.target !== menuToggle) {
+      if (menuOpen && !mobileMenu.contains(e.target) && e.target !== menuToggle && !menuToggle.contains(e.target)) {
         mobileMenu.classList.add('hidden');
-        mobileMenu.style.transform = 'translateX(-100%)';
         menuOpen = false;
       }
     });
