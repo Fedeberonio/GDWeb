@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Dolio | De la Huerta a Tu Puerta</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .bg-greendolio { background: #8dd94a; }
+        .sticky-nav { position: sticky; top: 0; z-index: 50; }
+        body {
+            background: url('fondoWeb.png') repeat fixed center center;
+            background-size: cover;
+            /* Parallax effect */
+        }
+        .parallax-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -100;
+            pointer-events: none;
+            background: url('fondoWeb.png') repeat;
+            background-size: cover;
+            opacity: 0.18;
+            filter: blur(2px) brightness(1.1);
+            will-change: background-position;
+            transition: background-position 0.1s linear;
+        }
+    </style>
+</head>
+<body class="bg-greendolio">
+    <!-- Header sticky -->
+    <header class="sticky-nav bg-white shadow-md w-full top-0 z-50">
+        <div class="container mx-auto flex items-center justify-between py-3 px-4">
+            <div class="flex items-center gap-3">
+                <img src="LogoGD.jpg" alt="Green Dolio Logo" class="h-12 w-12 rounded-full">
+                <div class="flex flex-col">
+                    <span class="text-2xl font-bold text-green-800">Green Dolio</span>
+                </div>
+            </div>
+            <nav class="hidden md:flex gap-8 text-green-900 font-semibold">
+                <a href="#inicio" class="hover:text-green-600 lang-es">Inicio</a>
+                <a href="#inicio" class="hover:text-green-600 lang-en" style="display:none;">Home</a>
+                <a href="#como" class="hover:text-green-600 lang-es">¿Cómo funciona?</a>
+                <a href="#como" class="hover:text-green-600 lang-en" style="display:none;">How it works?</a>
+                <a href="#cajas" class="hover:text-green-600 lang-es">Cajas</a>
+                <a href="#cajas" class="hover:text-green-600 lang-en" style="display:none;">Boxes</a>
+                <a href="#extras" class="hover:text-green-600 lang-es">Beneficios</a>
+                <a href="#extras" class="hover:text-green-600 lang-en" style="display:none;">Add-ons</a>
+                <a href="#nosotros" class="hover:text-green-600 lang-es">Nosotros</a>
+                <a href="#nosotros" class="hover:text-green-600 lang-en" style="display:none;">About us</a>
+                <a href="#contacto" class="hover:text-green-600 lang-es">Contacto</a>
+                <a href="#contacto" class="hover:text-green-600 lang-en" style="display:none;">Contact</a>
+                <a href="#faq" class="hover:text-green-600 lang-es">Preguntas</a>
+                <a href="#faq" class="hover:text-green-600 lang-en" style="display:none;">FAQ</a>
+            </nav>
+            <div class="flex gap-3 items-center">
+                <a href="https://wa.me/18493757338" class="text-green-600 text-2xl"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://www.instagram.com/green_dolio/" target="_blank" class="text-pink-500 text-2xl"><i class="fab fa-instagram"></i></a>
+                <!-- Selector de idioma -->
+                <div id="language-selector" class="ml-2 flex gap-2">
+                  <button id="btn-es" onclick="setLanguage('es')" class="px-3 py-1 rounded-full font-bold border-2 border-green-700 bg-gradient-to-r from-green-400 to-yellow-300 text-green-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110">
+                    <span style="font-size:1.2em;">🇪🇸</span> ES
+                  </button>
+                  <button id="btn-en" onclick="setLanguage('en')" class="px-3 py-1 rounded-full font-bold border-2 border-blue-700 bg-gradient-to-r from-blue-400 to-red-400 text-blue-900 shadow-md flex items-center gap-1 transition-all duration-200 hover:scale-110">
+                    <span style="font-size:1.2em;">🇬🇧</span> EN
+                  </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero / Banner -->
+    <section id="inicio" class="w-full h-screen flex flex-col items-center justify-center bg-greendolio relative">
+        <!-- Banner español -->
+        <img src="Banner2.jpg" alt="Banner Green Dolio" class="max-h-full max-w-full object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-es" style="background:transparent;">
+        <!-- Banner inglés (debes subir Banner2-en.jpg cuando lo tengas) -->
+        <img src="Banner2-en.jpg" alt="Green Dolio Banner English" class="h-auto w-auto max-h-[80vh] max-w-full object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-en" style="background:transparent; display:none; padding-top:2vh; padding-bottom:2vh;">
+        <div class="relative z-20 flex flex-col items-center justify-center h-full w-full bg-greendolio bg-opacity-40">
+            <h1 class="text-4xl md:text-6xl font-bold text-green-900 mb-4 drop-shadow-lg lang-es">Combos frescos, directos a tu puerta</h1>
+            <h1 class="text-4xl md:text-6xl font-bold text-green-900 mb-4 drop-shadow-lg lang-en" style="display:none;">Fresh combos, delivered to your door</h1>
+        </div>
+    </section>
+
+    <!-- Pasos para comprar -->
+    <section id="como" class="py-20 bg-green-50">
+      <div class="container mx-auto px-4">
+        <h2 class="text-4xl font-bold text-green-800 mb-8 text-center lang-es">¿Cómo funciona?</h2>
+        <h2 class="text-4xl font-bold text-green-800 mb-8 text-center lang-en" style="display:none;">How it works?</h2>
+        <div class="text-center text-green-900 text-xl md:text-2xl font-extrabold mb-32 px-2 md:px-12" style="font-family: 'Poppins', 'Comic Sans MS', cursive; border-radius: 2em; background:rgba(255,255,255,0.7); box-shadow:0 4px 24px 0 rgba(60,80,40,0.08); display:inline-block; margin:auto;">
+          <span class="lang-es" style="display:inline-block; padding:0.7em 1.2em; filter:drop-shadow(0 2px 8px #8dd94a88);">
+            Cada producto que llega a tu caja fue seleccionado el mismo día de tu entrega, garantizando la máxima frescura y calidad.
+          </span>
+          <span class="lang-en" style="display:none; padding:0.7em 1.2em; filter:drop-shadow(0 2px 8px #8dd94a88);">
+            Every product in your box is selected the same day as your delivery, ensuring maximum freshness and quality.
+          </span>
+        </div>
+        <div class="flex flex-col items-center w-full" style="margin-top: 40px;">
+          <div class="flex flex-row justify-center items-center w-full gap-8 mb-8">
+            <!-- Paso 1 -->
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">1</div>
+              <img src="0.png" alt="Inicia el pedido" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Inicia el pedido</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Start your order</span>
+              <p class="text-green-800 text-center lang-es">Haz click en la barra abajo para iniciar tu pedido.</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Click the bar below to start your order.</p>
+            </div>
+            <!-- Flecha 1 -->
+            <div class="hidden md:flex items-center">
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 30 Q30 10 50 30" stroke="#f9a825" stroke-width="6" fill="none"/>
+                <circle cx="50" cy="30" r="6" fill="#8dd94a" stroke="#f9a825" stroke-width="3"/>
+                <text x="18" y="22" font-size="18" fill="#f57c00" font-family="Poppins">🥕</text>
+              </svg>
+            </div>
+            <!-- Paso 2 -->
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">2</div>
+              <img src="1.png" alt="Elige tu caja" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Elige tu caja</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Choose your box</span>
+              <p class="text-green-800 text-center lang-es">Caribbean Fresh Pack (3 días),<br>Island Weekscential (1 semana),<br>Allgreenxclussive (2 semanas).</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Caribbean Fresh Pack (3 days),<br>Island Weeksential (1 week),<br>Allgreenxclusive (2 weeks).</p>
+              <div class="text-green-900 text-lg font-bold text-center mt-2 lang-es" style="letter-spacing:1px;">MIX, FRUITY o VEGGIE</div>
+              <div class="text-green-900 text-lg font-bold text-center mt-2 lang-en" style="letter-spacing:1px; display:none;">MIX, FRUITY or VEGGIE</div>
+            </div>
+          </div>
+          <div class="flex flex-row justify-center items-center w-full gap-8 mb-10">
+            <!-- Paso 3 -->
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">3</div>
+              <img src="2.png" alt="Personaliza" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Personaliza</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Customize</span>
+              <p class="text-green-800 text-center lang-es">Decinos lo que te gusta o lo que no querés recibir.</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Tell us what you like or what you don't want to receive.</p>
+            </div>
+            <!-- Flecha 2 -->
+            <div class="hidden md:flex items-center">
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 30 Q30 50 50 30" stroke="#8dd94a" stroke-width="6" fill="none"/>
+                <circle cx="50" cy="30" r="6" fill="#f9a825" stroke="#8dd94a" stroke-width="3"/>
+                <text x="18" y="48" font-size="18" fill="#8dd94a" font-family="Poppins">🍊</text>
+              </svg>
+            </div>
+            <!-- Paso 4 -->
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">4</div>
+              <img src="3.png" alt="Confirmación" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Confirmación</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Confirmation</span>
+              <p class="text-green-800 text-center lang-es">Te escribiremos por WhatsApp para confirmar y conversar tu pedido.</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">We will contact you via WhatsApp to confirm and discuss your order.</p>
+            </div>
+            <!-- Flecha 3 -->
+            <div class="hidden md:flex items-center">
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 30 Q30 10 50 30" stroke="#f57c00" stroke-width="6" fill="none"/>
+                <circle cx="50" cy="30" r="6" fill="#8dd94a" stroke="#f57c00" stroke-width="3"/>
+                <text x="18" y="22" font-size="18" fill="#f9a825" font-family="Poppins">🥑</text>
+              </svg>
+            </div>
+            <!-- Paso 5 -->
+            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-80 h-[420px]">
+              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">5</div>
+              <img src="4.png" alt="Entrega" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Entrega</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Delivery</span>
+              <p class="text-green-800 text-center lang-es">Lunes, miércoles y viernes GRATIS.<br>Otros días RD$100.<br>Todo en empaques 100% sostenibles.</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Monday, Wednesday and Friday FREE.<br>Other days RD$100.<br>All in 100% sustainable packaging.</p>
+            </div>
+          </div>
+        </div>
+        <!-- Zócalo inferior '¡Iniciar! | Ver el catálogo de productos completo' -->
+        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center gap-4 bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-2xl py-5 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-es">
+          <span class="arrow-anim arrow-izq hidden sm:inline-block neon-arrow" style="font-size:2em; margin-right:0.5em;">&gt;&gt;&gt;&gt;&gt;&gt;</span>
+          <span class="hidden sm:inline-block">🍓🍊🍌</span>
+          <span>¡Iniciar! <span class="mx-2">|</span> Ver el catálogo de productos completo</span>
+          <span class="hidden sm:inline-block">🍍🥑</span>
+          <span class="arrow-anim arrow-der hidden sm:inline-block neon-arrow" style="font-size:2em; margin-left:0.5em;">&lt;&lt;&lt;&lt;&lt;&lt;</span>
+        </a>
+        <a href="https://forms.gle/YNETrJcfggh2mBnaA" target="_blank" class="zocalo-iniciar fixed left-0 right-0 bottom-0 w-full flex items-center justify-center gap-4 bg-gradient-to-r from-green-500 via-green-600 to-green-500 text-white font-extrabold text-2xl py-5 shadow-xl transition-all duration-300 animate-zocalo-iniciar lang-en" style="display:none;">
+          <span class="arrow-anim arrow-izq hidden sm:inline-block neon-arrow" style="font-size:2em; margin-right:0.5em;">&gt;&gt;&gt;&gt;&gt;&gt;</span>
+          <span class="hidden sm:inline-block">🍓🍊🍌</span>
+          <span>Start! <span class="mx-2">|</span> See the full product catalog</span>
+          <span class="hidden sm:inline-block">🍍🥑</span>
+          <span class="arrow-anim arrow-der hidden sm:inline-block neon-arrow" style="font-size:2em; margin-left:0.5em;">&lt;&lt;&lt;&lt;&lt;&lt;</span>
+        </a>
+        <style>
+        @keyframes arrowIn {
+          0% { filter: brightness(0.7) drop-shadow(0 0 0px #7fff7f); opacity: 0.7; }
+          50% { filter: brightness(1.5) drop-shadow(0 0 8px #39ff14); opacity: 1; }
+          100% { filter: brightness(0.7) drop-shadow(0 0 0px #7fff7f); opacity: 0.7; }
+        }
+        @keyframes arrowInR {
+          0% { filter: brightness(0.7) drop-shadow(0 0 0px #7fff7f); opacity: 0.7; }
+          50% { filter: brightness(1.5) drop-shadow(0 0 8px #39ff14); opacity: 1; }
+          100% { filter: brightness(0.7) drop-shadow(0 0 0px #7fff7f); opacity: 0.7; }
+        }
+        .arrow-anim.arrow-izq, .arrow-anim.arrow-der {
+          animation: arrowIn 1.2s infinite alternate;
+          color: #b6ffb6;
+          text-shadow: 0 0 8px #39ff14, 0 0 16px #39ff1466;
+        }
+        .arrow-anim.arrow-der {
+          animation-name: arrowInR;
+        }
+        .neon-arrow {
+          font-family: 'Poppins', 'Consolas', monospace;
+          letter-spacing: 0.1em;
+        }
+        </style>
+      </div>
+    </section>
+
+    <!-- Catálogo de cajas -->
+    <section id="cajas" class="py-16 bg-white">
+      <div class="container mx-auto px-4 flex flex-col items-center">
+        <h2 class="text-3xl font-bold text-green-800 mb-10 text-center lang-en" style="display:block;">Boxes</h2>
+        <img src="elije_eng.png" alt="Choose your perfect combo" class="w-full max-w-3xl mb-8 rounded-2xl shadow-2xl object-contain transition-all duration-200" />
+        <img src="CajaGenerica_eng.png" alt="Box Green Dolio" class="w-full max-w-2xl mb-8 rounded-2xl shadow-2xl object-contain transition-all duration-200" />
+        <img src="variedades_eng.png" alt="Varieties" class="w-full max-w-3xl rounded-2xl shadow-2xl object-contain transition-all duration-200" />
+        <!-- Cajas individuales grandes debajo de variedades -->
+        <div class="flex flex-col gap-12 items-center w-full mt-10">
+          <img src="Box1_Eng.png" alt="Box 1" class="w-full max-w-3xl rounded-2xl shadow-2xl object-contain transition-all duration-200 bg-white" />
+          <img src="Box2_Eng.png" alt="Box 2" class="w-full max-w-3xl rounded-2xl shadow-2xl object-contain transition-all duration-200 bg-white" />
+          <img src="Box3_Eng.png" alt="Box 3" class="w-full max-w-3xl rounded-2xl shadow-2xl object-contain transition-all duration-200 bg-white" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Agrega a tu pedido! -->
+    <section id="extras" class="py-16 bg-green-50">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-green-800 mb-10 text-center lang-es">Agrega a tu pedido!</h2>
+        <h2 class="text-3xl font-bold text-green-800 mb-10 text-center lang-en" style="display:none;">Add to your order!</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra1.png" alt="Extra 1" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra2.png" alt="Extra 2" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra3.png" alt="Extra 3" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra4.png" alt="Extra 4" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra5.png" alt="Extra 5" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra6.png" alt="Extra 6" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra7.png" alt="Extra 7" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra8.png" alt="Extra 8" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
+            <img src="extra9.png" alt="Extra 9" class="object-contain w-full h-full rounded-xl shadow-md" />
+          </div>
+        </div>
+        <div class="w-full text-center mt-8">
+          <span class="text-green-800 text-xl font-bold lang-es">...y mucho más, consulta la lista completa!</span>
+          <span class="text-green-800 text-xl font-bold lang-en" style="display:none;">...and much more, check the full list!</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Beneficios al final -->
+    <section id="beneficios" class="py-12 bg-green-50">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="p-6 rounded-xl shadow bg-white lang-es">
+                    <i class="fas fa-leaf text-green-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-green-700 mb-2">Sin plásticos innecesarios</h4>
+                    <p>Empaques retornables y reciclables para cuidar el planeta.</p>
+                </div>
+                <div class="p-6 rounded-xl shadow bg-white lang-en" style="display:none;">
+                    <i class="fas fa-leaf text-green-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-green-700 mb-2">No unnecessary plastics</h4>
+                    <p>Returnable and recyclable packaging to care for the planet.</p>
+                </div>
+                <div class="p-6 rounded-xl shadow bg-white lang-es">
+                    <i class="fas fa-hand-holding-heart text-green-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-green-700 mb-2">Apoyamos productores locales</h4>
+                    <p>Frutas y vegetales frescos de agricultores de la zona.</p>
+                </div>
+                <div class="p-6 rounded-xl shadow bg-white lang-en" style="display:none;">
+                    <i class="fas fa-hand-holding-heart text-green-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-green-700 mb-2">We support local producers</h4>
+                    <p>Fresh fruits and vegetables from local farmers.</p>
+                </div>
+                <div class="p-6 rounded-xl shadow bg-white lang-es">
+                    <i class="fas fa-bicycle text-green-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-green-700 mb-2">Entrega sostenible</h4>
+                    <p>Rutas eficientes y entregas programadas para reducir emisiones.</p>
+                </div>
+                <div class="p-6 rounded-xl shadow bg-white lang-en" style="display:none;">
+                    <i class="fas fa-bicycle text-green-600 text-3xl mb-2"></i>
+                    <h4 class="font-bold text-green-700 mb-2">Sustainable delivery</h4>
+                    <p>Efficient routes and scheduled deliveries to reduce emissions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Nosotros -->
+    <section id="nosotros" class="py-16 bg-green-50">
+      <div class="container mx-auto px-4 max-w-3xl">
+        <h2 class="text-4xl font-extrabold text-green-800 mb-8 text-center lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px;">¿Qué es Green Dolio?</h2>
+        <h2 class="text-4xl font-extrabold text-green-800 mb-8 text-center lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px; display:none;">What is Green Dolio?</h2>
+        <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-green-900 text-lg md:text-xl font-semibold leading-relaxed lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive;">
+          Green Dolio es un servicio local y sustentable que entrega frutas y vegetales frescos del día y de estación, directo desde productores locales a tu puerta. No usamos productos de supermercado ni congelados. Todo lo seleccionamos a mano, uno por uno, según lo mejor que ofrece la naturaleza en ese momento.<br><br>
+          Nuestras cajas son personalizadas: nos decís lo que te gusta y armamos tu pedido a medida, sin desperdicios.<br><br>
+          También elaboramos jugos frescos, baba ganoush, hummus, miel pura y más, todo hecho con ingredientes reales, sin químicos y con amor.<br><br>
+          Y como parte de nuestro compromiso con el planeta, usamos solo empaques reciclables, biodegradables y retornables.
+        </div>
+        <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-green-900 text-lg md:text-xl font-semibold leading-relaxed lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; display:none;">
+          Green Dolio is a local and sustainable service that delivers fresh, seasonal fruits and vegetables straight from local producers to your door. We do not use supermarket or frozen products. Everything is hand-selected, one by one, according to the best nature has to offer at that moment.<br><br>
+          Our boxes are personalized: you tell us what you like and we prepare your order to your taste, with no waste.<br><br>
+          We also make fresh juices, baba ganoush, hummus, pure honey and more, all made with real ingredients, no chemicals, and lots of love.<br><br>
+          And as part of our commitment to the planet, we only use recyclable, biodegradable, and returnable packaging.
+        </div>
+      </div>
+    </section>
+
+    <!-- Formas de Pago -->
+    <section id="pagos" class="py-16 bg-white">
+      <div class="container mx-auto px-4 max-w-3xl">
+        <h2 class="text-3xl font-extrabold text-green-800 mb-8 text-center lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px;">Formas de Pago</h2>
+        <h2 class="text-3xl font-extrabold text-green-800 mb-8 text-center lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px; display:none;">Payment Methods</h2>
+        <div class="flex flex-col md:flex-row items-center justify-center gap-8 mb-8">
+          <div class="flex flex-col items-center">
+            <img src="transferencia.png" alt="Transferencia" class="w-20 h-20 mb-2 rounded-xl shadow-md bg-green-50 object-contain" loading="lazy"/>
+            <span class="text-green-900 text-lg font-bold lang-es">Transferencia</span>
+            <span class="text-green-900 text-lg font-bold lang-en" style="display:none;">Bank transfer</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <img src="monedas.png" alt="Efectivo" class="w-20 h-20 mb-2 rounded-xl shadow-md bg-green-50 object-contain" loading="lazy"/>
+            <span class="text-green-900 text-lg font-bold lang-es">Efectivo (Pesos, USD, EUR)</span>
+            <span class="text-green-900 text-lg font-bold lang-en" style="display:none;">Cash (DOP, USD, EUR)</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <img src="paypal.png" alt="PayPal" class="w-20 h-20 mb-2 rounded-xl shadow-md bg-green-50 object-contain" loading="lazy"/>
+            <span class="text-green-900 text-lg font-bold lang-es">PayPal <span class='text-xs'>(10% recargo)</span></span>
+            <span class="text-green-900 text-lg font-bold lang-en" style="display:none;">PayPal <span class='text-xs'>(10% surcharge)</span></span>
+          </div>
+        </div>
+        <div class="bg-green-50 rounded-2xl shadow-lg p-6 text-green-900 text-lg md:text-xl font-semibold text-center lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive;">
+          Queremos que tu experiencia sea simple desde el principio. Por eso, te ofrecemos varias formas de pago seguras y cómodas:<br><br>
+          💵 Efectivo al recibir<br>
+          💳 Transferencia bancaria<br>
+          🌐 PayPal<br>
+          💲 Pagos en pesos dominicanos, dólares o euros<br>
+          🧾 Muy pronto: tarjeta de débito y crédito<br><br>
+          Coordinamos todo por WhatsApp para que puedas elegir la opción que más te convenga.
+        </div>
+        <div class="bg-green-50 rounded-2xl shadow-lg p-6 text-green-900 text-lg md:text-xl font-semibold text-center lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; display:none;">
+          We want your experience to be simple from the start. That's why we offer several secure and convenient payment methods:<br><br>
+          💵 Cash on delivery<br>
+          💳 Bank transfer<br>
+          🌐 PayPal (10% surcharge)<br>
+          💲 Payments in DOP, USD, or EUR<br>
+          🧾 Coming soon: debit and credit card<br><br>
+          We coordinate everything via WhatsApp so you can choose the option that suits you best.
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Contacto -->
+    <section id="contacto" class="py-16 bg-white">
+      <div class="container mx-auto px-4 max-w-2xl text-center">
+        <h2 class="text-3xl font-extrabold text-green-800 mb-8 lang-es">Contacto</h2>
+        <h2 class="text-3xl font-extrabold text-green-800 mb-8 lang-en" style="display:none;">Contact</h2>
+        <div class="text-green-900 text-xl font-semibold mb-4">
+          <span class="lang-es">¿Tienes dudas o quieres hacer un pedido especial? Escríbenos a:</span>
+          <span class="lang-en" style="display:none;">Questions or special orders? Write to us at:</span>
+        </div>
+        <a href="mailto:grendolioexpress@gmail.com" class="inline-block text-green-700 font-bold text-2xl underline hover:text-green-900 transition-all">grendolioexpress@gmail.com</a>
+      </div>
+    </section>
+
+    <!-- FAQ - Preguntas Frecuentes -->
+    <section id="faq" class="py-16 bg-white">
+      <div class="container mx-auto px-4 max-w-3xl">
+        <!-- Español -->
+        <h2 class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px;">Preguntas Frecuentes</h2>
+        <div class="space-y-8 lang-es">
+          <h3 class="text-2xl font-bold text-green-700 mb-2">🛒 Pedidos y Productos</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Cómo hago un pedido?</summary>
+            <p>Puedes hacer tu pedido a través de nuestro formulario online o escribiéndonos directamente por WhatsApp. También puedes seguirnos en Instagram @green_dolio para ver nuestros productos disponibles.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Qué tipos de cajas ofrecen?</summary>
+            <ul class="list-disc ml-6">
+              <li><b>Caribbean Fresh Pack</b>: $650 (3 días)</li>
+              <li><b>Island Weeksential</b>: $990 (1 semana)</li>
+              <li><b>All Green-clusive Mix</b>: $1990 (2 semanas)</li>
+            </ul>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Puedo personalizar mi caja?</summary>
+            <p>¡Absolutamente! Cada caja se arma según tus gustos y lo que esté más fresco el día de tu pedido. Solo dinos qué te gusta y qué no.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Ofrecen pedidos "a la carta"?</summary>
+            <p>Sí, comunícate por WhatsApp con tu pedido específico y te enviaremos disponibilidad y cotización.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Qué productos extras tienen disponibles?</summary>
+            <p>Ofrecemos huevos de campo, quinoa, baba ganoush, miel, aceite de oliva, chimi churri, hummus y jugos naturales, y más. Revisa nuestro catálogo completo o consúltanos por WhatsApp.</p>
+          </details>
+
+          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">🚛 Entregas</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿A dónde entregan?</summary>
+            <ul class="list-disc ml-6">
+              <li><b>Juan Dolio</b>: Pedido mínimo $650</li>
+              <li><b>Santo Domingo</b>: Pedido mínimo $990</li>
+              <li><b>Boca Chica</b>: Pedido mínimo $990</li>
+            </ul>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Qué días hacen entregas?</summary>
+            <p>Entregamos todos los días de 9:00 AM a 6:00 PM. Los martes, jueves y sábados son GRATIS. Otros días tienen cargo de delivery de $100.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Con cuánta anticipación debo hacer mi pedido?</summary>
+            <p>Preferentemente con 24 horas de anticipación, o hasta las 12:00 PM del mismo día de entrega.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Tienen entrega gratis?</summary>
+            <p>Sí, ofrecemos entrega gratis en nuestras zonas de cobertura cuando cumples con el pedido mínimo.</p>
+          </details>
+
+          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">🌱 Productos y Calidad</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Sus productos son orgánicos?</summary>
+            <p>Sí, trabajamos con frutas y vegetales orgánicos, frescos y locales.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Cómo garantizan la frescura?</summary>
+            <p>Seleccionamos los productos el mismo día de tu entrega, directo del mercado a tu puerta.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Qué pasa si no me gusta algo de mi caja?</summary>
+            <p>Como personalizamos cada caja según tus gustos, es muy raro que esto pase. Pero si algo no te satisface, contáctanos y lo solucionamos.</p>
+          </details>
+
+          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">💚 Sustentabilidad</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Tienen programa retornable?</summary>
+            <p>Sí, manejamos un programa retornable para ser más amigables con el medio ambiente.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Cómo puedo participar en el programa retornable?</summary>
+            <p>Cada vez que devuelvas una caja o botella, tendrás un descuento en la próxima compra. Pregúntanos sobre nuestro programa cuando hagas tu pedido y te explicamos todos los detalles.</p>
+          </details>
+
+          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">💰 Pagos</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Qué formas de pago aceptan?</summary>
+             <ul class="list-disc ml-6">
+               <li><b>Efectivo</b></li>
+               <li><b>Transferencia bancaria</b></li>
+               <li><b>PayPal</b> (con 10% de recargo)</li>
+             </ul>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">¿Cuándo debo pagar?</summary>
+            <p>¡Solo pagas cuando recibes tu pedido, no antes!</p>
+          </details>
+
+          <div class="mt-10 text-center text-green-800 text-lg font-bold">
+            ¿No encontraste tu respuesta?<br>
+            Escríbenos por WhatsApp o síguenos en Instagram <a href="https://www.instagram.com/green_dolio/" target="_blank" class="underline hover:text-green-600">@green_dolio</a>. ¡Estamos aquí para ayudarte! 🌿
+          </div>
+        </div>
+        <!-- Inglés -->
+        <h2 class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px; display:none;">Frequently Asked Questions</h2>
+        <div class="space-y-8 lang-en" style="display:none;">
+          <h3 class="text-2xl font-bold text-green-700 mb-2">🛒 Orders & Products</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">How do I place an order?</summary>
+            <p>You can place your order through our online form or by writing to us directly on WhatsApp. You can also follow us on Instagram @green_dolio to see our available products.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">What types of boxes do you offer?</summary>
+            <ul class="list-disc ml-6">
+              <li><b>Caribbean Fresh Pack</b>: $650 (3 days)</li>
+              <li><b>Island Weeksential</b>: $990 (1 week)</li>
+              <li><b>All Green-clusive Mix</b>: $1990 (2 weeks)</li>
+            </ul>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">Can I customize my box?</summary>
+            <p>Absolutely! Each box is made according to your preferences and what is freshest on the day of your order. Just tell us what you like and what you don't.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">Do you offer "à la carte" orders?</summary>
+            <p>Sí, contact us via WhatsApp with your specific order and we will send you availability and a quote.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">What extra products are available?</summary>
+            <p>We offer free-range eggs, quinoa, baba ganoush, honey, olive oil, chimichurri, hummus, natural juices, and more. Check our full catalog or ask us on WhatsApp.</p>
+          </details>
+
+          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">🚛 Delivery</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">Where do you deliver?</summary>
+            <ul class="list-disc ml-6">
+              <li><b>Juan Dolio</b>: Minimum order $650</li>
+              <li><b>Santo Domingo</b>: Minimum order $990</li>
+              <li><b>Boca Chica</b>: Minimum order $990</li>
+            </ul>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">What days do you deliver?</summary>
+            <p>We deliver every day from 9:00 AM to 6:00 PM. Tuesdays, Thursdays, and Saturdays are FREE. Other days have a delivery fee of $100.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">How far in advance should I order?</summary>
+            <p>Preferably 24 hours in advance, or until 12:00 PM on the same day of delivery.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">Is there free delivery?</summary>
+            <p>Sí, ofrecemos entrega gratis en nuestras zonas de cobertura cuando cumples con el pedido mínimo.</p>
+          </details>
+
+          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">🌱 Products & Quality</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">Are your products organic?</summary>
+            <p>Sí, trabajamos con frutas y vegetales orgánicos, frescos y locales.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">How do you guarantee freshness?</summary>
+            <p>We select the products the same day as your delivery, straight from the market to your door.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">What if I don't like something in my box?</summary>
+            <p>Since we personalize each box according to your preferences, it's very rare for this to happen. But if something doesn't satisfy you, contact us and we'll fix it.</p>
+          </details>
+
+          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">💚 Sustainability</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">Do you have a returnable program?</summary>
+            <p>Sí, manejamos un programa retornable para ser más amigables con el medio ambiente.</p>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">How can I participate in the returnable program?</summary>
+            <p>Every time you return a box or bottle, you'll get a discount on your next purchase. Ask us about our program when you place your order and we'll explain all the details.</p>
+          </details>
+
+          <h3 class="text-2xl font-bold text-green-700 mt-8 mb-2">💰 Payment</h3>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">What payment methods do you accept?</summary>
+             <ul class="list-disc ml-6">
+               <li><b>Cash</b></li>
+               <li><b>Transferencia bancaria</b></li>
+               <li><b>PayPal</b> (with 10% surcharge)</li>
+             </ul>
+          </details>
+          <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+            <summary class="font-bold text-green-800 cursor-pointer">When do I have to pay?</summary>
+            <p>¡Solo pagas cuando recibes tu pedido, no antes!</p>
+          </details>
+
+          <div class="mt-10 text-center text-green-800 text-lg font-bold">
+            Didn't find your answer?<br>
+            Write to us on WhatsApp or follow us on Instagram <a href="https://www.instagram.com/green_dolio/" target="_blank" class="underline hover:text-green-600">@green_dolio</a>. We're here to help you! 🌿
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer mejorado -->
+    <footer class="bg-green-800 text-white py-8 text-center">
+      <div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <p class="font-bold text-lg">Green Dolio</p>
+          <p class="text-green-200 lang-es">De la Huerta a Tu Puerta</p>
+          <p class="text-green-200 lang-en" style="display:none;">From the Farm to Your Door</p>
+        </div>
+        <div class="flex gap-4 mt-4 md:mt-0">
+          <a href="https://wa.me/18493757338" target="_blank" class="text-2xl hover:text-green-400"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://www.instagram.com/green_dolio/" target="_blank" class="text-2xl hover:text-pink-400"><i class="fab fa-instagram"></i></a>
+          <a href="https://www.facebook.com/share/1EEXAFjWFu/?mibextid=wwXIfr" target="_blank" class="text-2xl hover:text-blue-400"><i class="fab fa-facebook"></i></a>
+        </div>
+        <div class="text-green-200 text-sm mt-4 md:mt-0">&copy; 2024 Green Dolio. Todos los derechos reservados.</div>
+        <div class="text-green-200 text-sm mt-4 md:mt-0 lang-en" style="display:none;">&copy; 2024 Green Dolio. All rights reserved.</div>
+      </div>
+    </footer>
+
+    <!-- Efectos hover en cajas y productos -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.bg-green-50.rounded-xl.shadow.p-6').forEach(function(el) {
+          el.classList.add('caja-hover');
+        });
+        document.querySelectorAll('.bg-green-50.rounded-xl.shadow.p-4').forEach(function(el) {
+          el.classList.add('producto-hover');
+        });
+      });
+    </script>
+    <script>
+      function setLanguage(lang) {
+        document.querySelectorAll('.lang-es').forEach(el => {
+          el.style.display = (lang === 'es') ? '' : 'none';
+        });
+        document.querySelectorAll('.lang-en').forEach(el => {
+          el.style.display = (lang === 'en') ? '' : 'none';
+        });
+        document.getElementById('btn-es').classList.toggle('bg-green-600', lang === 'es');
+        document.getElementById('btn-es').classList.toggle('text-white', lang === 'es');
+        document.getElementById('btn-en').classList.toggle('bg-green-600', lang === 'en');
+        document.getElementById('btn-en').classList.toggle('text-white', lang === 'en');
+        localStorage.setItem('lang', lang);
+        // Reiniciar animación del banner visible
+        setTimeout(() => {
+          const banner = document.querySelector(`.parallax-banner.lang-${lang}`);
+          if (banner) {
+            banner.classList.remove('banner-animado');
+            // Forzar reflow para reiniciar la animación
+            void banner.offsetWidth;
+            banner.classList.add('banner-animado');
+          }
+        }, 50);
+      }
+      window.onload = function() {
+        const lang = localStorage.getItem('lang') || 'es';
+        setLanguage(lang);
+      };
+    </script>
+
+    <!-- Botón flotante de WhatsApp -->
+    <a href="https://wa.me/18493757338" target="_blank" class="btn-wsp-flotante fixed z-50 top-1/2 right-6 -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-2xl flex items-center justify-center w-16 h-16 text-4xl transition-all duration-200">
+      <i class="fab fa-whatsapp"></i>
+    </a>
+    <!-- Botón flotante de Instagram -->
+    <a href="https://www.instagram.com/green_dolio/" target="_blank" class="btn-ig-flotante fixed z-50 top-1/2 left-6 -translate-y-1/2 bg-gradient-to-r from-pink-400 via-pink-500 to-yellow-400 hover:from-pink-500 hover:to-yellow-500 text-white rounded-full shadow-2xl flex items-center justify-center w-16 h-16 text-4xl transition-all duration-200">
+      <i class="fab fa-instagram"></i>
+    </a>
+
+    <div class="parallax-bg"></div>
+    <script>
+    window.addEventListener('scroll', function() {
+      const scrolled = window.scrollY;
+      document.querySelector('.parallax-bg').style.backgroundPositionY = `${scrolled * 0.15}px`;
+    });
+    </script>
+</body>
+</html>
