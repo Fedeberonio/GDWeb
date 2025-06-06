@@ -686,13 +686,15 @@ html {
 }
 @media (max-width: 700px) {
   .cinta-carrusel-container {
-    min-height: 55px;
+    min-height: 32px !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
   }
   .carrusel-img {
-    height: 45px;
-    border-radius: 10px;
+    height: 26px !important;
+    border-radius: 6px !important;
   }
   .cinta-carrusel {
-    gap: 1.5rem;
+    gap: 0.7rem !important;
   }
 }
