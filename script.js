@@ -107,3 +107,18 @@ window.addEventListener('scroll', function() {
   showStep(0);
 })();
   
+// Mostrar FAQ automáticamente al hacer scroll si entra en el viewport (solo el principal)
+window.addEventListener('scroll', function() {
+  const faqSection = document.getElementById('faq');
+  const faqMain = document.getElementById('faq-main');
+  const faqMainEn = document.getElementById('faq-main-en');
+  if (faqSection) {
+    const rect = faqSection.getBoundingClientRect();
+    const inView = rect.top < window.innerHeight && rect.bottom > 0;
+    if (inView) {
+      if (faqMain) faqMain.setAttribute('open', 'open');
+      if (faqMainEn) faqMainEn.setAttribute('open', 'open');
+    }
+  }
+});
+  

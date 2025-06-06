@@ -74,17 +74,15 @@
     <!-- Hero / Banner -->
     <section id="inicio" class="w-full min-h-[60vh] flex flex-col items-center justify-center bg-greendolio relative pt-2 pb-2">
         <!-- Banner español -->
-        <img src="Banner2.jpg" alt="Banner Green Dolio" class="banner-img w-full max-w-[420px] h-auto object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-es" style="background:transparent;">
+        <img src="Banner2.jpg" alt="Banner Green Dolio" class="banner-img w-full max-w-[420px] h-auto object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-es" style="background:transparent; margin-bottom:0.25rem;">
         <!-- Banner inglés -->
-        <img src="Banner2-en.jpg" alt="Green Dolio Banner English" class="banner-img w-full max-w-[420px] h-auto object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-en" style="background:transparent; display:none;">
-        <div class="relative z-20 flex flex-col items-center justify-center w-full px-2 mt-2">
-            <h1 class="banner-title text-2xl font-bold text-green-900 mb-2 drop-shadow-lg text-center lang-es">Combos frescos, directos a tu puerta</h1>
-            <h1 class="banner-title text-2xl font-bold text-green-900 mb-2 drop-shadow-lg text-center lang-en" style="display:none;">Fresh combos, delivered to your door</h1>
+        <img src="Banner2-en.jpg" alt="Green Dolio Banner English" class="banner-img w-full max-w-[420px] h-auto object-contain mx-auto block banner-animado parallax-banner relative z-10 lang-en" style="background:transparent; display:none; margin-bottom:0.5rem;">
+        <div class="relative z-20 flex flex-col items-center justify-center w-full px-2 mt-0">
         </div>
     </section>
 
     <!-- Carrusel de productos -->
-    <section class="cinta-carrusel-container w-full flex justify-center items-center py-2 bg-white" style="overflow:hidden; border-bottom:2px solid #e0f2e9;">
+    <section class="cinta-carrusel-container w-full flex justify-center items-center" style="border-bottom:2px solid #e0f2e9; margin-top:0; padding-top:0;">
       <div class="cinta-carrusel flex items-center gap-6" style="white-space:nowrap;">
         <img src="Carrousel001.jpg" alt="Producto 1" class="carrusel-img"/>
         <img src="Carrousel002.jpg" alt="Producto 2" class="carrusel-img"/>
@@ -128,6 +126,18 @@
       </div>
     </section>
 
+    <!-- Sección ¿Por qué? -->
+    <section id="porque" class="py-8 flex justify-center items-center w-full">
+      <div class="porque-capsula max-w-2xl mx-auto px-6 py-6 rounded-3xl shadow-xl text-center text-green-900 font-semibold text-lg md:text-2xl" style="background:rgba(255,255,255,0.82); box-shadow:0 6px 32px 0 rgba(60,80,40,0.13); font-family:'Poppins','Comic Sans MS',cursive;">
+        <h2 class="text-3xl md:text-4xl font-extrabold mb-4 lang-es" style="color:#5e8c3a; display:flex; align-items:center; justify-content:center; gap:0.3em;">
+          <span style="font-size:1.2em;">🌱</span> ¿Por qué? <span style="font-size:1.2em;">🌱</span>
+        </h2>
+        <h2 class="text-3xl md:text-4xl font-extrabold mb-4 lang-en" style="color:#5e8c3a; display:none;">🌱 Why? 🌱</h2>
+        <p class="mb-0 lang-es" style="line-height:1.5;">Green Dolio nace para acercar productos frescos, naturales y de calidad directamente del productor a tu mesa, cuidando el planeta y apoyando a la comunidad local. Creemos en una alimentación saludable, sostenible y personalizada, sin intermediarios ni desperdicios. ¡Por eso hacemos lo que hacemos!</p>
+        <p class="mb-0 lang-en" style="line-height:1.5; display:none;">Green Dolio was created to bring fresh, natural, high-quality products directly from the producer to your table, caring for the planet and supporting the local community. We believe in healthy, sustainable, and personalized eating, with no middlemen or waste. That's why we do what we do!</p>
+      </div>
+    </section>
+
     <!-- Pasos para comprar -->
     <section id="como" class="py-20 bg-green-50">
       <div class="container mx-auto px-4">
@@ -144,13 +154,13 @@
         <div class="flex flex-col items-center w-full" style="margin-top: 40px;">
           <div class="flex flex-col md:flex-row justify-center items-center w-full gap-4 md:gap-8 mb-4 md:mb-8">
             <!-- Paso 1 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
-              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">1</div>
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-[420px] mb-6 md:mb-0">
+              <div class="paso-num absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">1</div>
               <img src="0.png" alt="Inicia el pedido" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
-              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Inicia el pedido</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Inicia tu pedido</span>
               <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Start your order</span>
-              <p class="text-green-800 text-center lang-es">Haz click en la barra abajo para iniciar tu pedido.</p>
-              <p class="text-green-800 text-center lang-en" style="display:none;">Click the bar below to start your order.</p>
+              <p class="text-green-800 text-center lang-es">Elige comenzar tu compra tocando la barra inferior. ¡Es rápido y sencillo!</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Start your purchase by tapping the bar below. It's quick and easy!</p>
             </div>
             <!-- Flecha 1 -->
             <div class="hidden md:flex items-center">
@@ -161,26 +171,24 @@
               </svg>
             </div>
             <!-- Paso 2 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
-              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">2</div>
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 md:p-8 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full md:w-80 h-[420px] mb-6 md:mb-0">
+              <div class="paso-num absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">2</div>
               <img src="1.png" alt="Elige tu caja" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
-              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Elige tu caja</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Selecciona tu caja</span>
               <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Choose your box</span>
-              <p class="text-green-800 text-center lang-es">Caribbean Fresh Pack (3 días),<br>Island Weekscential (1 semana),<br>Allgreenxclussive (2 semanas).</p>
-              <p class="text-green-800 text-center lang-en" style="display:none;">Caribbean Fresh Pack (3 days),<br>Island Weeksential (1 week),<br>Allgreenxclusive (2 weeks).</p>
-              <div class="text-green-900 text-lg font-bold text-center mt-2 lang-es" style="letter-spacing:1px;">MIX, FRUITY o VEGGIE</div>
-              <div class="text-green-900 text-lg font-bold text-center mt-2 lang-en" style="letter-spacing:1px; display:none;">MIX, FRUITY or VEGGIE</div>
+              <p class="text-green-800 text-center lang-es">Escoge entre nuestras opciones: Caribbean Fresh Pack (3 días), Island Weekscential (para 1 semana) o Allgreenxclusive (para 2 semanas).</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Choose from our options: Caribbean Fresh Pack (3 days), Island Weekscential (for 1 week) or Allgreenxclusive (for 2 weeks).</p>
             </div>
           </div>
           <div class="flex flex-col md:flex-row justify-center items-center w-full gap-4 md:gap-8 mb-4 md:mb-10">
             <!-- Paso 3 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
-              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">3</div>
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 md:p-8 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full md:w-80 h-[420px] mb-6 md:mb-0">
+              <div class="paso-num absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">3</div>
               <img src="2.png" alt="Personaliza" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
-              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Personaliza</span>
-              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Customize</span>
-              <p class="text-green-800 text-center lang-es">Decinos lo que te gusta o lo que no querés recibir.</p>
-              <p class="text-green-800 text-center lang-en" style="display:none;">Tell us what you like or what you don't want to receive.</p>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Personaliza tu pedido</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Customize your order</span>
+              <p class="text-green-800 text-center lang-es">Indícanos tus preferencias y si hay algo que no prefieres recibir. Agrega otros productos.</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Tell us your preferences and if there is anything you prefer not to receive. Add other products.</p>
             </div>
             <!-- Flecha 2 -->
             <div class="hidden md:flex items-center">
@@ -191,13 +199,13 @@
               </svg>
             </div>
             <!-- Paso 4 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
-              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">4</div>
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 md:p-8 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full md:w-80 h-[420px] mb-6 md:mb-0">
+              <div class="paso-num absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">4</div>
               <img src="3.png" alt="Confirmación" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
               <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Confirmación</span>
               <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Confirmation</span>
-              <p class="text-green-800 text-center lang-es">Te escribiremos por WhatsApp para confirmar y conversar tu pedido.</p>
-              <p class="text-green-800 text-center lang-en" style="display:none;">We will contact you via WhatsApp to confirm and discuss your order.</p>
+              <p class="text-green-800 text-center lang-es">Completa y envía el formulario. Te contactaremos por WhatsApp para revisar y confirmar tu pedido.</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Fill out and send the form. We will contact you via WhatsApp to review and confirm your order.</p>
             </div>
             <!-- Flecha 3 -->
             <div class="hidden md:flex items-center">
@@ -208,13 +216,13 @@
               </svg>
             </div>
             <!-- Paso 5 -->
-            <div class="flex flex-col items-center bg-white rounded-2xl shadow-xl p-4 md:p-8 transition hover:shadow-2xl hover:shadow-orange-400 hover:scale-105 duration-200 relative w-full md:w-80 h-auto md:h-[420px] mb-6 md:mb-0">
-              <div class="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">5</div>
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 md:p-8 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full md:w-80 h-[420px] mb-6 md:mb-0">
+              <div class="paso-num absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 flex items-center justify-center rounded-full bg-green-400 text-white text-3xl font-bold border-4 border-white shadow" style="z-index:2;">5</div>
               <img src="4.png" alt="Entrega" class="w-44 h-44 object-contain mb-4 rounded-2xl shadow-lg bg-green-50 mt-4">
-              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Entrega</span>
-              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Delivery</span>
-              <p class="text-green-800 text-center lang-es">Lunes, miércoles y viernes GRATIS.<br>Otros días RD$100.<br>Todo en empaques 100% sostenibles.</p>
-              <p class="text-green-800 text-center lang-en" style="display:none;">Monday, Wednesday and Friday FREE.<br>Other days RD$100.<br>All in 100% sustainable packaging.</p>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins',sans-serif;">Entrega a domicilio</span>
+              <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins',sans-serif; display:none;">Delivery to your door</span>
+              <p class="text-green-800 text-center lang-es">Recibe tu caja en casa. Entregas gratis algunos días y siempre en empaques sostenibles.</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">Receive your box at home. We offer free delivery on some days and always in sustainable packaging.</p>
             </div>
           </div>
         </div>
@@ -259,10 +267,31 @@
     <!-- Catálogo de cajas -->
     <section id="cajas" class="py-16 bg-white">
       <div class="container mx-auto px-4 flex flex-col items-center">
-        <h2 class="text-3xl font-bold text-green-800 mb-10 text-center lang-en" style="display:block;">Boxes</h2>
-        <img src="elije_eng.png" alt="Choose your perfect combo" class="w-full max-w-3xl mb-8 rounded-2xl shadow-2xl object-contain transition-all duration-200" />
-        <img src="CajaGenerica_eng.png" alt="Box Green Dolio" class="w-full max-w-2xl mb-8 rounded-2xl shadow-2xl object-contain transition-all duration-200" />
-        <img src="variedades_eng.png" alt="Varieties" class="w-full max-w-3xl rounded-2xl shadow-2xl object-contain transition-all duration-200" />
+        <h2 class="text-4xl md:text-5xl font-extrabold text-green-800 mb-8 text-center lang-es" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px;">Cajas</h2>
+        <div class="variedades-capsula mb-10 w-full max-w-3xl mx-auto rounded-[3em] shadow-xl flex flex-col items-center justify-center px-4 py-6">
+          <div class="text-2xl md:text-3xl font-extrabold text-green-900 mb-2 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px;">Variedades:</div>
+          <div class="text-2xl md:text-3xl font-extrabold text-green-900 mb-2 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px; display:none;">Varieties:</div>
+          <div class="flex flex-col md:flex-row items-center justify-center gap-8 w-full">
+            <div class="flex flex-col items-center flex-1">
+              <span class="variedad-titulo lang-es" style="font-size:2.5em; font-weight:900; color:#4b6e2a; text-shadow:2px 4px 0 #222; letter-spacing:2px;">MIX</span>
+              <span class="variedad-titulo lang-en" style="font-size:2.5em; font-weight:900; color:#4b6e2a; text-shadow:2px 4px 0 #222; letter-spacing:2px; display:none;">MIX</span>
+              <span class="variedad-desc text-green-800 font-bold text-lg mt-1 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;">frutas y vegetales</span>
+              <span class="variedad-desc text-green-800 font-bold text-lg mt-1 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;">fruits & vegetables</span>
+            </div>
+            <div class="flex flex-col items-center flex-1">
+              <span class="variedad-titulo lang-es" style="font-size:2.5em; font-weight:900; color:#4b6e2a; text-shadow:2px 4px 0 #222; letter-spacing:2px;">FRUITY</span>
+              <span class="variedad-titulo lang-en" style="font-size:2.5em; font-weight:900; color:#4b6e2a; text-shadow:2px 4px 0 #222; letter-spacing:2px; display:none;">FRUITY</span>
+              <span class="variedad-desc text-green-800 font-bold text-lg mt-1 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;">solo frutas</span>
+              <span class="variedad-desc text-green-800 font-bold text-lg mt-1 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;">fruits only</span>
+            </div>
+            <div class="flex flex-col items-center flex-1">
+              <span class="variedad-titulo lang-es" style="font-size:2.5em; font-weight:900; color:#4b6e2a; text-shadow:2px 4px 0 #222; letter-spacing:2px;">VEGGIE</span>
+              <span class="variedad-titulo lang-en" style="font-size:2.5em; font-weight:900; color:#4b6e2a; text-shadow:2px 4px 0 #222; letter-spacing:2px; display:none;">VEGGIE</span>
+              <span class="variedad-desc text-green-800 font-bold text-lg mt-1 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;">solo vegetales</span>
+              <span class="variedad-desc text-green-800 font-bold text-lg mt-1 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;">vegetables only</span>
+            </div>
+          </div>
+        </div>
         <!-- Cajas individuales grandes debajo de variedades -->
         <div class="flex flex-col gap-12 items-center w-full mt-10">
           <img src="Box1_Eng.png" alt="Box 1" class="w-full max-w-3xl rounded-2xl shadow-2xl object-contain transition-all duration-200 bg-white" />
@@ -275,101 +304,181 @@
     <!-- Sección Agrega a tu pedido! -->
     <section id="extras" class="py-16 bg-green-50">
       <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold text-green-800 mb-10 text-center lang-es">Agrega a tu pedido!</h2>
-        <h2 class="text-3xl font-bold text-green-800 mb-10 text-center lang-en" style="display:none;">Add to your order!</h2>
-        <div class="flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-8 text-center">
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra1.png" alt="Extra 1" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra2.png" alt="Extra 2" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra3.png" alt="Extra 3" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra4.png" alt="Extra 4" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra5.png" alt="Extra 5" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra6.png" alt="Extra 6" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra7.png" alt="Extra 7" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra8.png" alt="Extra 8" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-          <div class="bg-[#c8f5b1] rounded-2xl shadow-lg p-6 flex items-center justify-center w-full max-w-lg h-80 transition-all duration-200 hover:shadow-2xl hover:scale-105">
-            <img src="extra9.png" alt="Extra 9" class="object-contain w-full h-full rounded-xl shadow-md" />
-          </div>
-        </div>
-        <div class="w-full text-center mt-8">
-          <span class="text-green-800 text-xl font-bold lang-es">...y mucho más, consulta la lista completa!</span>
-          <span class="text-green-800 text-xl font-bold lang-en" style="display:none;">...and much more, check the full list!</span>
-        </div>
-      </div>
-    </section>
+        <h2 class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-es" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px;">Agrega a tu pedido</h2>
+        <h2 class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px; display:none;">Add to your order</h2>
 
-    <!-- Beneficios al final -->
-    <section id="beneficios" class="py-12 bg-green-50">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:grid md:grid-cols-3 gap-4 md:gap-8 text-center">
-                <div class="p-6 rounded-xl shadow bg-white lang-es">
-                    <i class="fas fa-leaf text-green-600 text-3xl mb-2"></i>
-                    <h4 class="font-bold text-green-700 mb-2">Sin plásticos innecesarios</h4>
-                    <p>Empaques retornables y reciclables para cuidar el planeta.</p>
-                </div>
-                <div class="p-6 rounded-xl shadow bg-white lang-en" style="display:none;">
-                    <i class="fas fa-leaf text-green-600 text-3xl mb-2"></i>
-                    <h4 class="font-bold text-green-700 mb-2">No unnecessary plastics</h4>
-                    <p>Returnable and recyclable packaging to care for the planet.</p>
-                </div>
-                <div class="p-6 rounded-xl shadow bg-white lang-es">
-                    <i class="fas fa-hand-holding-heart text-green-600 text-3xl mb-2"></i>
-                    <h4 class="font-bold text-green-700 mb-2">Apoyamos productores locales</h4>
-                    <p>Frutas y vegetales frescos de agricultores de la zona.</p>
-                </div>
-                <div class="p-6 rounded-xl shadow bg-white lang-en" style="display:none;">
-                    <i class="fas fa-hand-holding-heart text-green-600 text-3xl mb-2"></i>
-                    <h4 class="font-bold text-green-700 mb-2">We support local producers</h4>
-                    <p>Fresh fruits and vegetables from local farmers.</p>
-                </div>
-                <div class="p-6 rounded-xl shadow bg-white lang-es">
-                    <i class="fas fa-bicycle text-green-600 text-3xl mb-2"></i>
-                    <h4 class="font-bold text-green-700 mb-2">Entrega sostenible</h4>
-                    <p>Rutas eficientes y entregas programadas para reducir emisiones.</p>
-                </div>
-                <div class="p-6 rounded-xl shadow bg-white lang-en" style="display:none;">
-                    <i class="fas fa-bicycle text-green-600 text-3xl mb-2"></i>
-                    <h4 class="font-bold text-green-700 mb-2">Sustainable delivery</h4>
-                    <p>Efficient routes and scheduled deliveries to reduce emissions.</p>
-                </div>
+        <!-- Productos elaborados -->
+        <div class="mb-10">
+          <h3 class="text-2xl font-bold text-green-700 mb-6 flex items-center justify-center gap-2 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;"><i class="fas fa-utensils text-green-500"></i> Productos elaborados</h3>
+          <h3 class="text-2xl font-bold text-green-700 mb-6 flex items-center justify-center gap-2 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;"><i class="fas fa-utensils text-green-500"></i> Prepared products</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <!-- Baba Ganoush -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Baba Ganoush.jpg" alt="Baba Ganoush" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Baba Ganoush</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Baba Ganoush</span>
+              <p class="text-green-800 text-center lang-es">DOP 500 - 16 oz</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 500 - 16 oz</p>
             </div>
+            <!-- Hummus -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Hummus.jpg" alt="Hummus" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Hummus</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Hummus</span>
+              <p class="text-green-800 text-center lang-es">DOP 500 - 16 oz</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 500 - 16 oz</p>
+            </div>
+            <!-- Guacamole -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Guacamole.jpg" alt="Guacamole" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Guacamole</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Guacamole</span>
+              <p class="text-green-800 text-center lang-es">DOP 500 - 16 oz</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 500 - 16 oz</p>
+            </div>
+            <!-- Chimi Churri -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Chimichurri.jpg" alt="Chimi Churri" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Chimi Churri</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Chimichurri</span>
+              <p class="text-green-800 text-center lang-es">DOP 350 - 9.5 oz</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 350 - 9.5 oz</p>
+            </div>
+          </div>
         </div>
-    </section>
 
-    <!-- Nosotros -->
-    <section id="nosotros" class="py-16 bg-green-50">
-      <div class="container mx-auto px-4 max-w-3xl">
-        <h2 class="text-4xl font-extrabold text-green-800 mb-8 text-center lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px;">¿Qué es Green Dolio?</h2>
-        <h2 class="text-4xl font-extrabold text-green-800 mb-8 text-center lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px; display:none;">What is Green Dolio?</h2>
-        <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-green-900 text-lg md:text-xl font-semibold leading-relaxed lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive;">
-          Green Dolio es un servicio local y sustentable que entrega frutas y vegetales frescos del día y de estación, directo desde productores locales a tu puerta. No usamos productos de supermercado ni congelados. Todo lo seleccionamos a mano, uno por uno, según lo mejor que ofrece la naturaleza en ese momento.<br><br>
-          Nuestras cajas son personalizadas: nos decís lo que te gusta y armamos tu pedido a medida, sin desperdicios.<br><br>
-          También elaboramos jugos frescos, baba ganoush, hummus, miel pura y más, todo hecho con ingredientes reales, sin químicos y con amor.<br><br>
-          Y como parte de nuestro compromiso con el planeta, usamos solo empaques reciclables, biodegradables y retornables.
+        <!-- Productos de campo -->
+        <div class="mb-10">
+          <h3 class="text-2xl font-bold text-green-700 mb-6 flex items-center justify-center gap-2 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;"><i class="fas fa-egg text-yellow-600"></i> Productos de campo</h3>
+          <h3 class="text-2xl font-bold text-green-700 mb-6 flex items-center justify-center gap-2 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;"><i class="fas fa-egg text-yellow-600"></i> Farm products</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <!-- Huevos Blancos -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Huevos blancos.jpg" alt="Huevos Blancos" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Huevos Blancos</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">White Eggs</span>
+              <p class="text-green-800 text-center lang-es">12 x DOP 150 - DOP 15 C-U</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">12 x DOP 150 - DOP 15 each</p>
+            </div>
+            <!-- Huevos de color -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Huevos marrones.jpg" alt="Huevos de color" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Huevos de color</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Brown Eggs</span>
+              <p class="text-green-800 text-center lang-es">12 x DOP 190 - DOP 17 C-U</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">12 x DOP 190 - DOP 17 each</p>
+            </div>
+            <!-- Huevos de campo orgánicos -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Huevos de campo.jpg" alt="Huevos de campo orgánicos" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Huevos de campo orgánicos</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Organic Free-range Eggs</span>
+              <p class="text-green-800 text-center lang-es">12 x DOP 380 - DOP 33 C-U</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">12 x DOP 380 - DOP 33 each</p>
+            </div>
+            <!-- Miel pura de abejas -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Miel de abejas.jpg" alt="Miel pura de abejas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Miel pura de abejas</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Pure Bee Honey</span>
+              <p class="text-green-800 text-center lang-es">DOP 250 - 6.5 oz</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 250 - 6.5 oz</p>
+            </div>
+            <!-- Miel de abejas orgánica con panal -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Miel de abeja con panal. jpg.png" alt="Miel de abejas orgánica con panal" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Miel de abejas orgánica con panal</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Organic Honey with Honeycomb</span>
+              <p class="text-green-800 text-center lang-es">DOP 500 - 12 oz</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 500 - 12 oz</p>
+            </div>
+          </div>
         </div>
-        <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-green-900 text-lg md:text-xl font-semibold leading-relaxed lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; display:none;">
-          Green Dolio is a local and sustainable service that delivers fresh, seasonal fruits and vegetables straight from local producers to your door. We do not use supermarket or frozen products. Everything is hand-selected, one by one, according to the best nature has to offer at that moment.<br><br>
-          Our boxes are personalized: you tell us what you like and we prepare your order to your taste, with no waste.<br><br>
-          We also make fresh juices, baba ganoush, hummus, pure honey and more, all made with real ingredients, no chemicals, and lots of love.<br><br>
-          And as part of our commitment to the planet, we only use recyclable, biodegradable, and returnable packaging.
+
+        <!-- Otros -->
+        <div class="mb-4">
+          <h3 class="text-2xl font-bold text-green-700 mb-6 flex items-center justify-center gap-2 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;"><i class="fas fa-seedling text-green-600"></i> Otros</h3>
+          <h3 class="text-2xl font-bold text-green-700 mb-6 flex items-center justify-center gap-2 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;"><i class="fas fa-seedling text-green-600"></i> Others</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <!-- Aceite de oliva sabor ajo -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Aceite de oliva.jpg" alt="Aceite de oliva sabor ajo" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Aceite de oliva sabor ajo</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Garlic Flavored Olive Oil</span>
+              <p class="text-green-800 text-center lang-es">DOP 390 - 400cc</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 390 - 400cc</p>
+            </div>
+            <!-- Aceite de oliva extra virgen importado -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Aceite de oliva 3litros.jpg" alt="Aceite de oliva extra virgen importado" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Aceite de oliva extra virgen importado</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Imported Extra Virgin Olive Oil</span>
+              <p class="text-green-800 text-center lang-es">DOP 2900 - 3 litros</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 2900 - 3 liters</p>
+            </div>
+            <!-- Quinoa -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Quinoa.jpg" alt="Quinoa" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Quinoa</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Quinoa</span>
+              <p class="text-green-800 text-center lang-es">DOP 450 x 16oz</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 450 x 16oz</p>
+            </div>
+            <!-- Arroz blanco -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Arroz blanco.jpg" alt="Arroz blanco" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Arroz blanco</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">White Rice</span>
+              <p class="text-green-800 text-center lang-es">DOP 100 - 400 gr</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 100 - 400 gr</p>
+            </div>
+            <!-- Arroz integral -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Arroz integral.jpg" alt="Arroz integral" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Arroz integral</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Brown Rice</span>
+              <p class="text-green-800 text-center lang-es">DOP 150 - 400 gr</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 150 - 400 gr</p>
+            </div>
+            <!-- Lentejas -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Lentejas.jpg" alt="Lentejas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Lentejas</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Lentils</span>
+              <p class="text-green-800 text-center lang-es">DOP 175 - 400 gr</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 175 - 400 gr</p>
+            </div>
+            <!-- Habichuelas rojas -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Frijoles rojos.jpg" alt="Habichuelas rojas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Habichuelas rojas</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Red Beans</span>
+              <p class="text-green-800 text-center lang-es">DOP 100 - 400 gr</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 100 - 400 gr</p>
+            </div>
+            <!-- Habichuelas negras -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Frijoles negros.jpg" alt="Habichuelas negras" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Habichuelas negras</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Black Beans</span>
+              <p class="text-green-800 text-center lang-es">DOP 100 - 400 gr</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 100 - 400 gr</p>
+            </div>
+            <!-- Habichuelas blancas -->
+            <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px]">
+              <img src="Frijoles blancos.jpg" alt="Habichuelas blancas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+              <span class="font-bold text-lg mb-2 text-green-900 lang-es">Habichuelas blancas</span>
+              <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">White Beans</span>
+              <p class="text-green-800 text-center lang-es">DOP 100 - 400 gr</p>
+              <p class="text-green-800 text-center lang-en" style="display:none;">DOP 100 - 400 gr</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
+
+
+
 
     <!-- Formas de Pago -->
     <section id="pagos" class="py-16 bg-white">
@@ -377,55 +486,26 @@
         <h2 class="text-3xl font-extrabold text-green-800 mb-8 text-center lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px;">Formas de Pago</h2>
         <h2 class="text-3xl font-extrabold text-green-800 mb-8 text-center lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px; display:none;">Payment Methods</h2>
         <div class="flex flex-col md:flex-row items-center justify-center gap-8 mb-8">
-          <div class="flex flex-col items-center">
-            <img src="transferencia.png" alt="Transferencia" class="w-20 h-20 mb-2 rounded-xl shadow-md bg-green-50 object-contain" loading="lazy"/>
-            <span class="text-green-900 text-lg font-bold lang-es">Transferencia</span>
-            <span class="text-green-900 text-lg font-bold lang-en" style="display:none;">Bank transfer</span>
+          <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 w-full md:w-80 h-[320px] mx-auto">
+            <img src="transferencias.jpg" alt="Transferencia" class="object-contain mb-4 rounded-2xl shadow-lg bg-green-50" style="width:110px; height:110px;">
+            <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;">Transferencia</span>
+            <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;">Bank transfer</span>
           </div>
-          <div class="flex flex-col items-center">
-            <img src="monedas.png" alt="Efectivo" class="w-20 h-20 mb-2 rounded-xl shadow-md bg-green-50 object-contain" loading="lazy"/>
-            <span class="text-green-900 text-lg font-bold lang-es">Efectivo (Pesos, USD, EUR)</span>
-            <span class="text-green-900 text-lg font-bold lang-en" style="display:none;">Cash (DOP, USD, EUR)</span>
+          <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 w-full md:w-80 h-[320px] mx-auto">
+            <img src="monedas.png" alt="Efectivo" class="object-contain mb-4 rounded-2xl shadow-lg bg-green-50" style="width:110px; height:110px;">
+            <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;">Efectivo (Pesos, USD, EUR)</span>
+            <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;">Cash (DOP, USD, EUR)</span>
           </div>
-          <div class="flex flex-col items-center">
-            <img src="paypal.png" alt="PayPal" class="w-20 h-20 mb-2 rounded-xl shadow-md bg-green-50 object-contain" loading="lazy"/>
-            <span class="text-green-900 text-lg font-bold lang-es">PayPal <span class='text-xs'>(10% recargo)</span></span>
-            <span class="text-green-900 text-lg font-bold lang-en" style="display:none;">PayPal <span class='text-xs'>(10% surcharge)</span></span>
+          <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 w-full md:w-80 h-[320px] mx-auto">
+            <img src="paypal.png" alt="PayPal" class="object-contain mb-4 rounded-2xl shadow-lg bg-green-50" style="width:110px; height:110px;">
+            <span class="font-bold text-xl mb-2 text-green-900 lang-es" style="font-family:'Poppins','Comic Sans MS',cursive;">PayPal <span class='text-xs'>(10% recargo)</span></span>
+            <span class="font-bold text-xl mb-2 text-green-900 lang-en" style="font-family:'Poppins','Comic Sans MS',cursive; display:none;">PayPal <span class='text-xs'>(10% surcharge)</span></span>
           </div>
         </div>
-        <div class="bg-green-50 rounded-2xl shadow-lg p-6 text-green-900 text-lg md:text-xl font-semibold text-center lang-es" style="font-family: 'Poppins', 'Comic Sans MS', cursive;">
-          Queremos que tu experiencia sea simple desde el principio. Por eso, te ofrecemos varias formas de pago seguras y cómodas:<br><br>
-          💵 Efectivo al recibir<br>
-          💳 Transferencia bancaria<br>
-          🌐 PayPal<br>
-          💲 Pagos en pesos dominicanos, dólares o euros<br>
-          🧾 Muy pronto: tarjeta de débito y crédito<br><br>
-          Coordinamos todo por WhatsApp para que puedas elegir la opción que más te convenga.
-        </div>
-        <div class="bg-green-50 rounded-2xl shadow-lg p-6 text-green-900 text-lg md:text-xl font-semibold text-center lang-en" style="font-family: 'Poppins', 'Comic Sans MS', cursive; display:none;">
-          We want your experience to be simple from the start. That's why we offer several secure and convenient payment methods:<br><br>
-          💵 Cash on delivery<br>
-          💳 Bank transfer<br>
-          🌐 PayPal (10% surcharge)<br>
-          💲 Payments in DOP, USD, or EUR<br>
-          🧾 Coming soon: debit and credit card<br><br>
-          We coordinate everything via WhatsApp so you can choose the option that suits you best.
-        </div>
-      </div>
+        iv>
     </section>
 
-    <!-- Sección Contacto -->
-    <section id="contacto" class="py-16 bg-white">
-      <div class="container mx-auto px-4 max-w-2xl text-center">
-        <h2 class="text-3xl font-extrabold text-green-800 mb-8 lang-es">Contacto</h2>
-        <h2 class="text-3xl font-extrabold text-green-800 mb-8 lang-en" style="display:none;">Contact</h2>
-        <div class="text-green-900 text-xl font-semibold mb-4">
-          <span class="lang-es">¿Tienes dudas o quieres hacer un pedido especial? Escríbenos a:</span>
-          <span class="lang-en" style="display:none;">Questions or special orders? Write to us at:</span>
-        </div>
-        <a href="mailto:grendolioexpress@gmail.com" class="inline-block text-green-700 font-bold text-2xl underline hover:text-green-900 transition-all">grendolioexpress@gmail.com</a>
-      </div>
-    </section>
+
 
     <!-- Sección FAQ -->
     <section id="faq" class="py-16 bg-white">
@@ -509,7 +589,75 @@
         <details id="faq-main-en">
           <summary class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-en cursor-pointer" style="font-family: 'Poppins', 'Comic Sans MS', cursive; letter-spacing:1px; display:none;">Frequently Asked Questions</summary>
           <div class="space-y-8 lang-en" style="display:none;">
-            <!-- Aquí puedes replicar la estructura de acordeón para inglés si lo deseas -->
+            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+              <summary class="font-bold text-green-800 cursor-pointer">🛒 Orders & Products</summary>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">How do I place an order?</summary>
+                <p>You can place your order through our online form or by writing to us directly on WhatsApp. You can also follow us on Instagram @green_dolio to see our available products.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">What types of boxes do you offer?</summary>
+                <ul class="list-disc ml-6">
+                  <li><b>Caribbean Fresh Pack</b>: $650 (3 days)</li>
+                  <li><b>Island Weeksential</b>: $990 (1 week)</li>
+                  <li><b>All Green-clusive Mix</b>: $1990 (2 weeks)</li>
+                </ul>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">Can I customize my box?</summary>
+                <p>Absolutely! Each box is assembled according to your tastes and what is freshest on the day of your order. Just tell us what you like and what you don't.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">Do you offer "à la carte" orders?</summary>
+                <p>Yes, contact us via WhatsApp with your specific order and we will send you availability and a quote.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">What extra products are available?</summary>
+                <p>We offer free-range eggs, quinoa, baba ganoush, honey, olive oil, chimichurri, hummus, natural juices, and more. Check our full catalog or ask us on WhatsApp.</p>
+              </details>
+            </details>
+            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+              <summary class="font-bold text-green-800 cursor-pointer">🚛 Deliveries</summary>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">Where do you deliver?</summary>
+                <ul class="list-disc ml-6">
+                  <li><b>Juan Dolio</b>: Minimum order $650</li>
+                  <li><b>Santo Domingo</b>: Minimum order $990</li>
+                  <li><b>Boca Chica</b>: Minimum order $990</li>
+                </ul>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">What days do you deliver?</summary>
+                <p>We deliver every day from 9:00 AM to 6:00 PM. Tuesdays, Thursdays, and Saturdays are FREE. Other days have a delivery charge of $100.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">How far in advance should I order?</summary>
+                <p>Preferably 24 hours in advance, or until 12:00 PM on the same day of delivery.</p>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">Do you offer free delivery?</summary>
+                <p>Yes, we offer free delivery in our coverage areas when you meet the minimum order.</p>
+              </details>
+            </details>
+            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
+              <summary class="font-bold text-green-800 cursor-pointer">💰 Payments</summary>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">What payment methods do you accept?</summary>
+                <ul class="list-disc ml-6">
+                  <li><b>Cash</b></li>
+                  <li><b>Bank transfer</b></li>
+                  <li><b>PayPal</b> (10% surcharge)</li>
+                </ul>
+              </details>
+              <details class="bg-white rounded shadow p-2 mb-1">
+                <summary class="font-semibold text-green-700 cursor-pointer">When do I have to pay?</summary>
+                <p>You only pay when you receive your order, never before!</p>
+              </details>
+            </details>
+            <div class="mt-10 text-center text-green-800 text-lg font-bold">
+              Didn't find your answer?<br>
+              Write to us on WhatsApp or follow us on Instagram <a href="https://www.instagram.com/green_dolio/" target="_blank" class="underline hover:text-green-600">@green_dolio</a>. We're here to help!
+            </div>
           </div>
         </details>
       </div>
