@@ -1,0 +1,309 @@
+/* Variables globales */
+:root {
+    --primary-color: #7bb661;
+    --primary-dark: #5e8c3a;
+    --secondary-color: #f9a825;
+    --text-color: #2e4d25;
+    --background-color: #f9f5ec;
+    --white: #fff;
+    --shadow: 0 2px 8px rgba(60,80,40,0.08);
+}
+
+/* Estilos base */
+body {
+    background: var(--background-color) url('assets/images/backgrounds/fondoWeb.png') center center/cover no-repeat fixed;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    @apply pb-20; /* Espacio para el zócalo */
+}
+
+/* Modal de imagen a pantalla completa */
+.modal-imagen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    cursor: pointer;
+}
+
+.modal-imagen img {
+    max-width: 90%;
+    max-height: 90vh;
+    margin: auto;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+}
+
+.modal-imagen.activo {
+    display: block;
+}
+
+/* Header y navegación */
+header {
+    background: var(--white);
+    text-align: center;
+    padding: 2rem 1rem 1rem 1rem;
+    border-bottom: 4px solid var(--primary-color);
+}
+
+.sticky-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--white);
+    box-shadow: var(--shadow);
+}
+
+.logo {
+    width: 120px;
+    margin-bottom: 0.5rem;
+}
+
+/* Botones de like/dislike */
+.like-btn.active {
+    background-color: #059669;
+    transform: scale(1.1);
+}
+
+.dislike-btn.active {
+    background-color: #dc2626;
+    transform: scale(1.1);
+}
+
+.like-btn, .dislike-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.like-btn:hover, .dislike-btn:hover {
+    transform: scale(1.05);
+}
+
+.like-btn.active:hover, .dislike-btn.active:hover {
+    transform: scale(1.15);
+}
+
+/* Sección de configuración de caja */
+#configura-caja {
+    transition: opacity 0.3s ease-in-out;
+}
+
+#configura-caja.hidden {
+    display: none;
+    opacity: 0;
+}
+
+#configura-caja:not(.hidden) {
+    display: block;
+    opacity: 1;
+}
+
+/* Carrusel */
+.cinta-carrusel-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem 0;
+}
+
+.cinta-carrusel {
+    display: flex;
+    gap: 1rem;
+    animation: cinta-move 30s linear infinite;
+    will-change: transform;
+}
+
+@keyframes cinta-move {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.carrusel-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid var(--primary-color);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    position: relative;
+    cursor: pointer;
+}
+
+.carrusel-img:hover {
+    transform: scale(1.2);
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Sección ¿Por qué? */
+.porque-capsula {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+}
+
+/* Pasos */
+.paso-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.paso-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Variedades */
+.variedades-capsula {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 800px;
+}
+
+.variedad-btn {
+    background: var(--white);
+    border: 2px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.variedad-btn.selected {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+/* Media Queries */
+@media (max-width: 700px) {
+    .carrusel-img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .carrusel-img:hover {
+        transform: scale(1.15);
+    }
+
+    .porque-capsula {
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+    .paso-card {
+        padding: 1rem;
+    }
+
+    .variedades-capsula {
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+    @keyframes cinta-move {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(calc(-100px * 19 - 1rem * 19));
+        }
+    }
+}
+
+/* Pausar animación al hover */
+.cinta-carrusel-container:hover .cinta-carrusel {
+    animation-play-state: paused;
+}
+
+@keyframes fadeZoomIn {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.banner-animado {
+    animation: fadeZoomIn 1s ease-out;
+}
+
+.sticky-preferencias {
+    position: sticky;
+    top: 64px;
+    z-index: 40;
+    transition: opacity 0.3s;
+}
+
+/* ==== Selección fija en Configura tu caja ==== */
+.producto-hover.seleccion-like {
+    box-shadow: 0 0 0 4px #059669 !important;
+    border: 2px solid #059669 !important;
+}
+
+.producto-hover.seleccion-dislike {
+    box-shadow: 0 0 0 4px #dc2626 !important;
+    border: 2px solid #dc2626 !important;
+}
+
+.banner-img {
+    max-width: 400px;
+    width: 90vw;
+    height: auto;
+    border-radius: 2.5em;
+    display: block;
+    margin: 0 auto 1rem auto;
+}
+
+#bottom-bar {
+    @apply shadow-lg;
+    animation: glow 4s ease-in-out infinite alternate;
+}
+
+#bottom-bar button {
+    @apply text-green-700 text-2xl rounded-full p-3 transition-transform hover:scale-110;
+    animation: glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 4px rgba(124,252,0,.4); }
+    to   { box-shadow: 0 0 16px rgba(124,252,0,.8); }
+}
+
+dialog:open #bottom-bar {
+    display: none;
+}
+
+/* Menú móvil */
+#mobile-menu {
+    transition: all 0.3s ease-in-out;
+    transform-origin: top right;
+}
+
+#mobile-menu.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+#mobile-menu:not(.hidden) {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+} 
