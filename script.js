@@ -53,10 +53,10 @@ function mostrarContenidoCaja(boxId) {
   }
 }
 
-// Extrae sólo el primer número del texto de precio
+// Extrae el número del texto de precio, manejando comas
 function parsePrecio(txt){
-  const m = (txt||'').match(/\d+(?:\.\d+)?/);
-  return m ? parseFloat(m[0]) : 0;
+  const m = (txt||'').match(/\d+(?:,\d+)?/);
+  return m ? parseFloat(m[0].replace(',', '')) : 0;
 }
 
 // Función para reproducir el sonido de gota
@@ -273,7 +273,6 @@ const PRODUCTOS_TRADUCCIONES = {
   'Pitahaya': 'Dragon Fruit',
   'Naranjas': 'Oranges',
   'Carambola': 'Star Fruit',
-  'Chinola': 'Passion Fruit',
   'Cilantro': 'Cilantro',
   'Genjibre': 'Ginger',
   'Orégano': 'Oregano',
@@ -307,12 +306,43 @@ function clonarProductosSiHaceFalta() {
 
   // Definir categorías
   const frutas = [
-    'Banana', 'Piña', 'Fresas', 'Lechosa', 'Cerezas', 'Manzanas', 'Sandía',
-    'Melón', 'Pitahaya', 'Naranjas', 'Carambola',
-    'Mango', 'Coco', 'Limón', 'Uvas blancas', 'Uvas moradas',
-    'Mandarinas', 'Aguacates', 'Chinola'          // ← Chinola = Passion Fruit
+    // Frutas tropicales
+    'Banana', 'Piña', 'Mango', 'Lechosa', 'Pitahaya', 'Carambola',
+    // Frutas cítricas
+    'Naranjas', 'Limón', 'Mandarinas',
+    // Frutas de temporada
+    'Fresas', 'Cerezas', 'Manzanas', 'Sandía', 'Melón', 'Melón Francés',
+    // Frutas secas
+    'Uvas blancas', 'Uvas moradas',
+    // Otras frutas
+    'Coco', 'Aguacates'
   ];
-  const hierbas = ['Cilantro', 'Genjibre', 'Orégano', 'Perejil', 'Romero', 'Cebollín'];
+
+  const vegetales = [
+    // Tubérculos y raíces
+    'Yuca', 'Ñame', 'Batata',
+    // Verduras de hoja
+    'Repollo blanco', 'Lechuga',
+    // Verduras crucíferas
+    'Coliflor', 'Brocoli',
+    // Verduras de bulbo
+    'Cebolla amarilla', 'Cebolla morada', 'Ajo',
+    // Verduras de fruto
+    'Tomate bugalú', 'Tomate redondo', 'Pepino', 'Calabaza', 'Maíz',
+    // Legumbres
+    'Lentejas', 'Habichuelas rojas', 'Habichuelas negras',
+    // Granos
+    'Quinoa', 'Arroz blanco', 'Arroz integral'
+  ];
+
+  const hierbas = [
+    // Hierbas aromáticas
+    'Cilantro', 'Perejil', 'Romero', 'Orégano',
+    // Hierbas medicinales
+    'Genjibre',
+    // Hierbas de cocina
+    'Cebollín'
+  ];
 
   document.querySelectorAll('#alacarta .producto-hover').forEach(card => {
     const clon = card.cloneNode(true);
@@ -364,7 +394,7 @@ function clonarProductosSiHaceFalta() {
       gridFrutas.appendChild(clon);
     } else if (hierbas.includes(nombre)) {
       gridHierbas.appendChild(clon);
-    } else if (nombre !== 'Melón Francés') {
+    } else {
       gridVegetales.appendChild(clon);
     }
   });
