@@ -3,12 +3,43 @@ window.preferenciasCaja = { like: [], dislike: [] };
 const estadoCajas = {};   /* boxId -> { variedad:null, like:[], dislike:[], ok:false } */
 let cajaActual = null;
 window.carrito = window.carrito || [];
+// ====== Estado del flujo del carrito ====== //
+window.estadoFlujoCarrito = "lista";
+
+/* ----------  PLANTILLA ORIGINAL DEL DIÁLOGO  ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  const dlgCarrito = document.getElementById('dlg-carrito');
+  if (!dlgCarrito) return;
+  const plantillaCarrito = dlgCarrito.innerHTML;
+
+  /*  NUEVO  ➜  restaura + re-engancha el botón "X"  */
+  window.resetCarritoDialog = () => {
+    dlgCarrito.innerHTML = plantillaCarrito;             // 1°  clona HTML
+
+    // 2°  vuelve a conectar el botón "X" recién clonado
+    dlgCarrito.querySelector('#dlg-carrito-cerrar')
+              ?.addEventListener('click', () => {
+        dlgCarrito.close();
+        window.estadoFlujoCarrito = 'lista';
+        renderCarrito();
+    });
+  };
+});
 
 /* ====== Contenido estático de las cajas ====== */
 const BOX_CONTENT = {
-  1: `🥥 **Caribbean fresh pack** (3 días)\n\n📦 Contenido referencia:\n1 ajo, 2 cebollas, 1 ají, 2 papas/batatas, 1 brócoli chico, 2 tomates, 1 lechuga/repollo, 1 plátano, 2 chinolas, 1 mango, 1 piña, 3 limones, apio + sorpresas (perejil, cilantro, romero, orégano, canela, etc.)`,
-  2: `🍍 **Weekssential** (1 semana)\n\n📦 Contenido referencia:\n1 ajo, 4 cebollas, 1 ají, 6 papas/batatas, 1 calabaza, 1 brócoli grande, 4 tomates, 1 lechuga, 1 repollo, 2 plátanos, 5 guineos verdes, 4 guineos maduros, fresas, 2 mangos, 1 piña, 1 lechosa, apio, 2 berenjenas + sorpresas (perejil, cilantro, romero, orégano, canela, etc.)`,
-  3: `🥑 **All greenxclusive** (2 semanas)\n\n📦 Contenido referencia:\n2 ajos, 6 cebollas, 2 ajíes, 8 papas/batatas, 1 brócoli grande, 1 coliflor mediana, 8 tomates, 2 lechugas, 1 repollo entero, apio, 2 plátanos grandes, 10 guineos verdes, 4 mangos, 2 piñas, 10 limones, 5 zanahorias, 4 pepinos, 4 berenjenas + sorpresas (perejil, cilantro, romero, orégano, canela, etc.)`
+  1: {
+    es: `🥥 **Caribbean fresh pack** (3 días)\n\n📦 Contenido referencia:\n1 ajo, 2 cebollas, 1 ají, 2 papas/batatas, 1 brócoli chico, 2 tomates, 1 lechuga/repollo, 1 plátano, 2 chinolas, 1 mango, 1 piña, 3 limones, apio + sorpresas (perejil, cilantro, romero, orégano, canela, etc.)`,
+    en: `🥥 **Caribbean fresh pack** (3 days)\n\n📦 Reference content:\n1 garlic, 2 onions, 1 pepper, 2 potatoes/sweet potatoes, 1 small broccoli, 2 tomatoes, 1 lettuce/cabbage, 1 plantain, 2 passion fruits, 1 mango, 1 pineapple, 3 lemons, celery + surprises (parsley, cilantro, rosemary, oregano, cinnamon, etc.)`
+  },
+  2: {
+    es: `🍍 **Weekssential** (1 semana)\n\n📦 Contenido referencia:\n1 ajo, 4 cebollas, 1 ají, 6 papas/batatas, 1 calabaza, 1 brócoli grande, 4 tomates, 1 lechuga, 1 repollo, 2 plátanos, 5 guineos verdes, 4 guineos maduros, fresas, 2 mangos, 1 piña, 1 lechosa, apio, 2 berenjenas + sorpresas (perejil, cilantro, romero, orégano, canela, etc.)`,
+    en: `🍍 **Weekssential** (1 week)\n\n📦 Reference content:\n1 garlic, 4 onions, 1 pepper, 6 potatoes/sweet potatoes, 1 pumpkin, 1 large broccoli, 4 tomatoes, 1 lettuce, 1 cabbage, 2 plantains, 5 green bananas, 4 ripe bananas, strawberries, 2 mangos, 1 pineapple, 1 papaya, celery, 2 eggplants + surprises (parsley, cilantro, rosemary, oregano, cinnamon, etc.)`
+  },
+  3: {
+    es: `🥑 **All greenxclusive** (2 semanas)\n\n📦 Contenido referencia:\n2 ajos, 6 cebollas, 2 ajíes, 8 papas/batatas, 1 brócoli grande, 1 coliflor mediana, 8 tomates, 2 lechugas, 1 repollo entero, apio, 2 plátanos grandes, 10 guineos verdes, 4 mangos, 2 piñas, 10 limones, 5 zanahorias, 4 pepinos, 4 berenjenas + sorpresas (perejil, cilantro, romero, orégano, canela, etc.)`,
+    en: `🥑 **All greenxclusive** (2 weeks)\n\n📦 Reference content:\n2 garlic, 6 onions, 2 peppers, 8 potatoes/sweet potatoes, 1 large broccoli, 1 medium cauliflower, 8 tomatoes, 2 lettuces, 1 whole cabbage, celery, 2 large plantains, 10 green bananas, 4 mangos, 2 pineapples, 10 lemons, 5 carrots, 4 cucumbers, 4 eggplants + surprises (parsley, cilantro, rosemary, oregano, cinnamon, etc.)`
+  }
 };
 
 /* ====== Funcionalidad del modal de cajas ====== */
@@ -16,7 +47,8 @@ function mostrarContenidoCaja(boxId) {
   const modal = document.getElementById('modal-box-content');
   const modalText = document.getElementById('modal-box-text');
   if (modal && modalText) {
-    modalText.textContent = BOX_CONTENT[boxId];
+    const lang = document.documentElement.lang || 'es';
+    modalText.textContent = BOX_CONTENT[boxId][lang];
     modal.showModal();
   }
 }
@@ -60,43 +92,77 @@ function setupImagenModal() {
 
 /* ----------  CARRITO  ---------- */
 function renderCarrito() {
-  const raw = localStorage.getItem('carrito');
-  let carrito = JSON.parse(raw || '[]');
-  if (!Array.isArray(carrito)) carrito = [];
   const cont = document.getElementById('carrito-contenido');
-
+  let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  if (!Array.isArray(carrito)) carrito = [];
   if (!cont) return;
+  let html = '';
+  let total = 0;
+  const lang = document.documentElement.lang || 'es';
 
   if (carrito.length === 0) {
-    cont.innerHTML =
-      '<p class="text-center text-gray-500">El carrito está vacío</p>';
-    document.getElementById('carrito-cantidad-header').textContent = '0';
+    html = `
+      <div class="text-center text-gray-500 my-8">
+        <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">El carrito está vacío</span>
+        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">The cart is empty</span>
+      </div>
+    `;
+    cont.innerHTML = html;
     return;
   }
 
-  let html = '';
-  let total = 0;
   carrito.forEach((item, index) => {
     const subtotal = item.precio * (item.cantidad || 1);
     total += subtotal;
     html += `
-      <div class="p-2 border-b border-green-200 relative group">
-        <button onclick="eliminarDelCarrito(${index})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity">
-          <i class="fas fa-trash-alt text-sm"></i>
-        </button>
-        <div class="flex justify-between items-start pr-8">
+      <div class="bg-white rounded-lg shadow p-4 flex flex-col gap-2 mb-4">
+        <div class="flex justify-between items-center">
           <div>
-            <p class="font-semibold">${item.nombre}</p>
-            ${item.variedad ? `<p class="text-xs text-gray-600">Variedad: ${item.variedad}</p>` : ''}
+            <div class="font-bold text-green-800 text-lg">${item.nombre}</div>
+            ${item.variedad ? `<div class="text-sm text-gray-600">
+              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Variedad:</span>
+              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Variety:</span>
+              ${item.variedad}
+            </div>` : ''}
             ${item.preferencias ? `
               <div class="ml-2 text-sm bg-green-50 rounded-lg p-2">
-                <div><b>👍</b> ${item.preferencias.like.join(', ') || '-'}</div>
-                <div><b>👎</b> ${item.preferencias.dislike.join(', ') || '-'}</div>
+                <div>
+                  <b>👍</b> 
+                  <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Me gusta:</span>
+                  <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Likes:</span>
+                  ${item.preferencias.like.map(n => {
+                    const en = PRODUCTOS_TRADUCCIONES[n] || n;
+                    return lang === 'es' ? n : en;
+                  }).join(', ') || '-'}
+                </div>
+                <div>
+                  <b>👎</b> 
+                  <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">No me gusta:</span>
+                  <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Dislikes:</span>
+                  ${item.preferencias.dislike.map(n => {
+                    const en = PRODUCTOS_TRADUCCIONES[n] || n;
+                    return lang === 'es' ? n : en;
+                  }).join(', ') || '-'}
+                </div>
               </div>` : ''}
           </div>
           <div class="text-right">
-            <p class="text-sm text-gray-600">Cantidad: ${item.cantidad || 1}</p>
+            <div class="flex items-center gap-2">
+              <button onclick="cambiarCantidad(${index}, -1)"
+                      class="w-7 h-7 bg-red-500 text-white rounded-full text-lg leading-none flex items-center justify-center">−</button>
+              <span class="min-w-[32px] text-center font-semibold">${item.cantidad || 1}</span>
+              <button onclick="cambiarCantidad(${index},  1)"
+                      class="w-7 h-7 bg-green-600 text-white rounded-full text-lg leading-none flex items-center justify-center">+</button>
+            </div>
             <p class="text-sm font-semibold text-green-800">DOP ${subtotal.toFixed(2)}</p>
+            <button onclick="eliminarDelCarrito(${index})"
+                    class="mt-2 text-red-500 hover:text-red-700 text-sm font-medium flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Eliminar</span>
+              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Remove</span>
+            </button>
           </div>
         </div>
       </div>`;
@@ -104,24 +170,30 @@ function renderCarrito() {
 
   // Agregar el total y el botón de continuar
   html += `
-    <div class="mt-4 p-4 bg-green-50 rounded-lg">
-      <div class="flex justify-between items-center mb-4">
-        <span class="text-lg font-bold text-green-800">Total:</span>
+    <div class="mt-6 p-6 bg-green-50 rounded-lg">
+      <div class="flex justify-between items-center mb-6">
+        <span class="text-xl font-bold text-green-800">
+          <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Total:</span>
+          <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Total:</span>
+        </span>
         <span class="text-xl font-bold text-green-800">DOP ${total.toFixed(2)}</span>
       </div>
       <button id="btn-continuar-pedido" 
-              class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
-        <span class="lang-es">Continuar con el pedido</span>
-        <span class="lang-en" style="display:none;">Continue with order</span>
+              class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold">
+        <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Continuar con el pedido</span>
+        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Continue with order</span>
       </button>
     </div>`;
 
   cont.innerHTML = html;
-  document.getElementById('carrito-cantidad-header').textContent =
-    carrito.reduce((total, item) => total + (item.cantidad || 1), 0);
 
-  // Agregar el listener para el botón de continuar
-  document.getElementById('btn-continuar-pedido')?.addEventListener('click', mostrarFormularioPedido);
+  // Actualizar el contador del icono del carrito
+  const headerCount = document.getElementById('carrito-cantidad-header');
+  if (headerCount) {
+    headerCount.textContent = carrito.reduce((total, item) => total + (item.cantidad || 1), 0);
+  }
+  // Listener para el botón de continuar
+  document.getElementById('btn-continuar-pedido')?.addEventListener('click', handleContinuarPedido);
 }
 
 // Función para eliminar un producto del carrito
@@ -136,6 +208,17 @@ function eliminarDelCarrito(index) {
   mostrarNotificacion('Producto eliminado del carrito');
 }
 
+function cambiarCantidad(index, delta) {
+  playWaterDrop();
+  let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  if (!Array.isArray(carrito) || !carrito[index]) return;
+
+  carrito[index].cantidad = (carrito[index].cantidad || 1) + delta;
+  if (carrito[index].cantidad < 1) carrito[index].cantidad = 1; // nunca < 1
+  localStorage.setItem('carrito', JSON.stringify(carrito));
+  renderCarrito();
+}
+
 /* ----------  CONFIGURAR CAJA ---------- */
 function abrirConfig(btn) {
   playWaterDrop();
@@ -147,6 +230,7 @@ function abrirConfig(btn) {
   preferenciasCaja.dislike = [...estadoCajas[boxId].dislike];
 
   clonarProductosSiHaceFalta();
+  setLanguage(localStorage.getItem('lang') || 'es');
   document.getElementById('configurar-caja').classList.remove('hidden');
   requestAnimationFrame(() =>
     document.getElementById('configurar-caja').scrollIntoView({ behavior: 'smooth' })
@@ -154,7 +238,14 @@ function abrirConfig(btn) {
   refrescarPreferenciasUI();
 
   const btnSave = document.getElementById('btn-guardar-preferencias');
-  if (btnSave) { btnSave.classList.remove('hidden'); btnSave.disabled = true; }
+  if (btnSave) {
+    btnSave.classList.remove('hidden');
+    btnSave.style.display = '';
+    btnSave.disabled = true;
+  }
+
+  // Oculta la lista hasta que el usuario marque algo
+  document.getElementById('lista-preferencias')?.classList.add('hidden');
 
   /* Borde de selección previo */
   const categorias = ['config-productos-frutas', 'config-productos-vegetales', 'config-productos-hierbas'];
@@ -167,6 +258,43 @@ function abrirConfig(btn) {
     });
   });
 }
+
+// Definir traducciones de productos
+const PRODUCTOS_TRADUCCIONES = {
+  'Banana': 'Banana',
+  'Piña': 'Pineapple',
+  'Fresas': 'Strawberries',
+  'Lechosa': 'Papaya',
+  'Cerezas': 'Cherries',
+  'Manzanas': 'Apples',
+  'Sandía': 'Watermelon',
+  'Melón': 'Melon',
+  'Melón Francés': 'French Melon',
+  'Pitahaya': 'Dragon Fruit',
+  'Naranjas': 'Oranges',
+  'Carambola': 'Star Fruit',
+  'Cilantro': 'Cilantro',
+  'Genjibre': 'Ginger',
+  'Orégano': 'Oregano',
+  'Perejil': 'Parsley',
+  'Romero': 'Rosemary',
+  'Cebollín': 'Chives',
+  'Calabaza': 'Pumpkin',
+  'Pepino': 'Cucumber',
+  'Guineo verde': 'Green Banana',
+  'Yuca': 'Cassava',
+  'Repollo blanco': 'White Cabbage',
+  'Coliflor': 'Cauliflower',
+  'Brocoli': 'Broccoli',
+  'Cebolla amarilla': 'Yellow Onion',
+  'Zanahoria': 'Carrot',
+  'Batata': 'Sweet Potato',
+  'Aji morrones': 'Bell Pepper',
+  'Maíz': 'Corn',
+  'Limón': 'Lemon',
+  'Cebolla morada': 'Red Onion',
+  'Ajo': 'Garlic'
+};
 
 function clonarProductosSiHaceFalta() {
   const gridFrutas = document.getElementById('config-productos-frutas');
@@ -184,9 +312,10 @@ function clonarProductosSiHaceFalta() {
     const nombre = clon.querySelector('.font-bold').textContent.trim();
     clon.dataset.nombre = nombre;
     
-    // Remover precio y botón de agregar
-    clon.querySelector('.text-green-800').remove();
-    clon.querySelector('.agregar-carrito').remove();
+    // Remover todos los precios y el botón de agregar
+    clon.querySelectorAll('.text-green-800').forEach(e => e.remove());
+    const btnAgregar = clon.querySelector('.agregar-carrito');
+    if (btnAgregar) btnAgregar.remove();
 
     // Agregar botones de like/dislike
     const like = Object.assign(document.createElement('button'), { 
@@ -204,6 +333,24 @@ function clonarProductosSiHaceFalta() {
     const contBtn = Object.assign(document.createElement('div'), { className: 'flex gap-2 justify-center mt-2' });
     contBtn.append(like, dislike);
     clon.appendChild(contBtn);
+
+    // Agregar traducciones
+    const titulo = clon.querySelector('.font-bold');
+    const nombreEn = PRODUCTOS_TRADUCCIONES[nombre] || nombre;
+    
+    // Crear elementos span para cada idioma
+    const spanEs = document.createElement('span');
+    spanEs.className = 'lang-es';
+    spanEs.textContent = nombre;
+    
+    const spanEn = document.createElement('span');
+    spanEn.className = 'lang-en';
+    spanEn.textContent = nombreEn;
+    
+    // Reemplazar el contenido del título
+    titulo.innerHTML = '';
+    titulo.appendChild(spanEs);
+    titulo.appendChild(spanEn);
 
     // Distribuir en la categoría correspondiente
     if (frutas.includes(nombre)) {
@@ -323,16 +470,19 @@ document.addEventListener('DOMContentLoaded', () => {
           });
 
   document.getElementById('carrito-header-btn')
-          ?.addEventListener('click', () => { 
+          ?.addEventListener('click', () => {
             playWaterDrop();
-            renderCarrito(); 
-            document.getElementById('dlg-carrito').showModal(); 
+            resetCarritoDialog();
+            window.estadoFlujoCarrito = "lista";
+            renderCarrito();
+            document.getElementById('dlg-carrito').showModal();
           });
           
   document.getElementById('dlg-carrito-cerrar')
           ?.addEventListener('click', () => {
             playWaterDrop();
             document.getElementById('dlg-carrito').close();
+            window.estadoFlujoCarrito = "lista"; // Resetear flujo al cerrar
           });
 
   /* Delegación global para todos los botones "Agregar" */
@@ -404,6 +554,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-back').onclick = () => history.back();
   document.getElementById('btn-cart').onclick = () => {
     playWaterDrop();
+    resetCarritoDialog();
+    window.estadoFlujoCarrito = "lista";
     renderCarrito();
     document.getElementById('dlg-carrito').showModal();
   };
@@ -428,7 +580,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+  actualizarBotonesAgregar();
 });
+
+/* ----------  RESETEAR OTRAS CAJAS (al cambiar de variedad) ---------- */
+function resetearCajasExcepto(boxIdKeep) {
+  Object.keys(estadoCajas).forEach(boxId => {
+    if (boxId !== boxIdKeep) {
+      estadoCajas[boxId] = { variedad: null, like: [], dislike: [], ok: false };
+      actualizarBotonAgregar(boxId);
+    }
+  });
+
+  /* 4‒ Quita marcas visuales de productos */
+  document.querySelectorAll('#configurar-caja .producto-hover')
+          .forEach(card => {
+            card.classList.remove(
+              'seleccion-like','seleccion-dislike',
+              'ring-4','ring-green-400','ring-red-400'
+            );
+          });
+}
 
 /* ----------  SELECCIONAR VARIEDAD ---------- */
 function seleccionarVariedad(btn) {
@@ -436,6 +609,8 @@ function seleccionarVariedad(btn) {
   const card  = btn.closest('.caja-hover');
   if (!card) return;
   const boxId = card.dataset.box;
+
+  resetearCajasExcepto(boxId);
 
   // crea estado si no existe
   if (!estadoCajas[boxId])
@@ -483,8 +658,14 @@ function guardarPreferencias() {
 
   // Resumen en el diálogo
   const div = document.getElementById('resumen-contenido');
-  const likes    = estadoCajas[cajaActual].like   .map(n => `👍 ${n}`).join('<br>');
-  const dislikes = estadoCajas[cajaActual].dislike.map(n => `👎 ${n}`).join('<br>');
+  const likes = estadoCajas[cajaActual].like.map(n => {
+    const en = PRODUCTOS_TRADUCCIONES[n] || n;
+    return `👍 ${n} / ${en}`;
+  }).join('<br>');
+  const dislikes = estadoCajas[cajaActual].dislike.map(n => {
+    const en = PRODUCTOS_TRADUCCIONES[n] || n;
+    return `👎 ${n} / ${en}`;
+  }).join('<br>');
   div.innerHTML = (likes || dislikes) ? `${likes}<br>${dislikes}` : '<i>Sin preferencias</i>';
 
   // Habilita el botón "Agregar" de esa caja
@@ -535,99 +716,109 @@ function mostrarNotificacion(mensaje) {
 
 // Función para mostrar el formulario de pedido
 function mostrarFormularioPedido() {
+  // Solo permitir mostrar el formulario si el flujo fue iniciado por el botón de continuar
+  if (window.estadoFlujoCarrito !== 'formulario') {
+    // Si no fue iniciado correctamente, forzar la lista
+    window.estadoFlujoCarrito = 'lista';
+    renderCarrito();
+    return;
+  }
   const dialog = document.getElementById('dlg-carrito');
+  const lang = document.documentElement.lang || 'es';
   dialog.innerHTML = `
     <div class="p-6">
       <h3 class="text-xl font-bold text-green-800 mb-6 text-center">
         <span class="lang-es">Completar pedido</span>
-        <span class="lang-en" style="display:none;">Complete order</span>
+        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Complete order</span>
       </h3>
       
       <form id="form-pedido" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
             <span class="lang-es">Nombre</span>
-            <span class="lang-en" style="display:none;">Name</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Name</span>
           </label>
           <input type="text" name="nombre" required
+                 placeholder="${lang === 'en' ? 'Your name' : 'Tu nombre'}"
                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
             <span class="lang-es">WhatsApp</span>
-            <span class="lang-en" style="display:none;">WhatsApp</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">WhatsApp</span>
           </label>
           <input type="tel" name="whatsapp" required
+                 placeholder="${lang === 'en' ? 'Your WhatsApp number' : 'Tu número de WhatsApp'}"
                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
             <span class="lang-es">Día de entrega</span>
-            <span class="lang-en" style="display:none;">Delivery day</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery day</span>
           </label>
           <select name="dia" required
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-            <option value="">Seleccionar día</option>
-            <option value="Lunes">Lunes (12:30-20:00) - Gratis</option>
-            <option value="Martes">Martes (12:30-20:00) - DOP 100</option>
-            <option value="Miércoles">Miércoles (12:30-20:00) - Gratis</option>
-            <option value="Jueves">Jueves (12:30-20:00) - DOP 100</option>
-            <option value="Viernes">Viernes (12:30-20:00) - Gratis</option>
-            <option value="Sábado">Sábado (12:30-20:00) - DOP 100</option>
+            <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
+            <option value="Lunes">${lang === 'en' ? 'Monday (12:30-20:00) - Free' : 'Lunes (12:30-20:00) - Gratis'}</option>
+            <option value="Martes">${lang === 'en' ? 'Tuesday (12:30-20:00) - DOP 100' : 'Martes (12:30-20:00) - DOP 100'}</option>
+            <option value="Miércoles">${lang === 'en' ? 'Wednesday (12:30-20:00) - Free' : 'Miércoles (12:30-20:00) - Gratis'}</option>
+            <option value="Jueves">${lang === 'en' ? 'Thursday (12:30-20:00) - DOP 100' : 'Jueves (12:30-20:00) - DOP 100'}</option>
+            <option value="Viernes">${lang === 'en' ? 'Friday (12:30-20:00) - Free' : 'Viernes (12:30-20:00) - Gratis'}</option>
+            <option value="Sábado">${lang === 'en' ? 'Saturday (12:30-20:00) - DOP 100' : 'Sábado (12:30-20:00) - DOP 100'}</option>
           </select>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
             <span class="lang-es">Dirección de entrega</span>
-            <span class="lang-en" style="display:none;">Delivery address</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery address</span>
           </label>
           <textarea name="direccion" required rows="3"
+                    placeholder="${lang === 'en' ? 'Delivery address' : 'Dirección de entrega'}"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
             <span class="lang-es">Observaciones (opcional)</span>
-            <span class="lang-en" style="display:none;">Notes (optional)</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Notes (optional)</span>
           </label>
           <textarea name="observaciones" rows="2"
+                    placeholder="${lang === 'en' ? 'Notes (optional)' : 'Observaciones (opcional)'}"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
             <span class="lang-es">Modo de pago</span>
-            <span class="lang-en" style="display:none;">Payment method</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Payment method</span>
           </label>
           <select name="pago" required
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-            <option value="">Seleccionar método</option>
-            <option value="Cash">Cash</option>
-            <option value="Transferencia">Transferencia</option>
+            <option value="">${lang === 'en' ? 'Select method' : 'Seleccionar método'}</option>
+            <option value="Cash">${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
+            <option value="Transferencia">${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
             <option value="PayPal">PayPal (+10%)</option>
           </select>
         </div>
 
         <div class="flex justify-end gap-4 mt-6">
-          <button type="button" onclick="document.getElementById('dlg-carrito').close()"
+          <button type="button" onclick="resetCarritoDialog(); document.getElementById('dlg-carrito').close(); window.estadoFlujoCarrito = 'lista'; renderCarrito();"
                   class="px-4 py-2 text-gray-600 hover:text-gray-800">
             <span class="lang-es">Cancelar</span>
-            <span class="lang-en" style="display:none;">Cancel</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Cancel</span>
           </button>
           <button type="submit"
                   class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
             <span class="lang-es">Enviar pedido</span>
-            <span class="lang-en" style="display:none;">Send order</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Send order</span>
           </button>
         </div>
       </form>
     </div>
   `;
-
-  // Agregar el listener para el envío del formulario
   document.getElementById('form-pedido')?.addEventListener('submit', enviarPedido);
 }
 
@@ -636,43 +827,41 @@ function enviarPedido(event) {
   event.preventDefault();
   const form = event.target;
   const formData = new FormData(form);
-  
+  const lang = document.documentElement.lang || 'es';
   // Obtener el carrito actual
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   if (!Array.isArray(carrito) || carrito.length === 0) {
-    alert('El carrito está vacío');
+    alert(lang === 'en' ? 'The cart is empty' : 'El carrito está vacío');
     return;
   }
 
   // Construir el mensaje usando el mismo formato que se muestra en el checkout
-  let mensaje = `*Nuevo Pedido GreenDolio*\n\n`;
-  mensaje += `*Cliente:* ${formData.get('nombre')}\n`;
+  let mensaje = lang === 'en' ? `*New GreenDolio Order*\n\n` : `*Nuevo Pedido GreenDolio*\n\n`;
+  mensaje += lang === 'en' ? `*Customer:* ${formData.get('nombre')}\n` : `*Cliente:* ${formData.get('nombre')}\n`;
   mensaje += `*WhatsApp:* ${formData.get('whatsapp')}\n`;
-  mensaje += `*Día de entrega:* ${formData.get('dia')}\n`;
-  mensaje += `*Dirección:* ${formData.get('direccion')}\n`;
+  mensaje += lang === 'en' ? `*Delivery day:* ${formData.get('dia')}\n` : `*Día de entrega:* ${formData.get('dia')}\n`;
+  mensaje += lang === 'en' ? `*Address:* ${formData.get('direccion')}\n` : `*Dirección:* ${formData.get('direccion')}\n`;
   if (formData.get('observaciones')) {
-    mensaje += `*Observaciones:* ${formData.get('observaciones')}\n`;
+    mensaje += lang === 'en' ? `*Notes:* ${formData.get('observaciones')}\n` : `*Observaciones:* ${formData.get('observaciones')}\n`;
   }
-  mensaje += `*Método de pago:* ${formData.get('pago')}\n\n`;
+  mensaje += lang === 'en' ? `*Payment method:* ${formData.get('pago')}\n\n` : `*Método de pago:* ${formData.get('pago')}\n\n`;
   
-  mensaje += `*Productos:*\n`;
+  mensaje += lang === 'en' ? `*Products:*\n` : `*Productos:*\n`;
   carrito.forEach(item => {
     const subtotal = item.precio * (item.cantidad || 1);
     mensaje += `\n*${item.nombre}*\n`;
-    mensaje += `Cantidad: ${item.cantidad || 1}\n`;
-    mensaje += `Precio unitario: DOP ${item.precio.toFixed(2)}\n`;
-    mensaje += `Subtotal: DOP ${subtotal.toFixed(2)}\n`;
-    
+    mensaje += lang === 'en' ? `Quantity: ${item.cantidad || 1}\n` : `Cantidad: ${item.cantidad || 1}\n`;
+    mensaje += lang === 'en' ? `Unit price: DOP ${item.precio.toFixed(2)}\n` : `Precio unitario: DOP ${item.precio.toFixed(2)}\n`;
+    mensaje += lang === 'en' ? `Subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal: DOP ${subtotal.toFixed(2)}\n`;
     if (item.variedad) {
-      mensaje += `Variedad: ${item.variedad}\n`;
+      mensaje += lang === 'en' ? `Variety: ${item.variedad}\n` : `Variedad: ${item.variedad}\n`;
     }
-    
     if (item.preferencias) {
       if (item.preferencias.like.length > 0) {
-        mensaje += `👍 Me gusta: ${item.preferencias.like.join(', ')}\n`;
+        mensaje += lang === 'en' ? `👍 Likes: ${item.preferencias.like.join(', ')}\n` : `👍 Me gusta: ${item.preferencias.like.join(', ')}\n`;
       }
       if (item.preferencias.dislike.length > 0) {
-        mensaje += `👎 No me gusta: ${item.preferencias.dislike.join(', ')}\n`;
+        mensaje += lang === 'en' ? `👎 Dislikes: ${item.preferencias.dislike.join(', ')}\n` : `👎 No me gusta: ${item.preferencias.dislike.join(', ')}\n`;
       }
     }
   });
@@ -681,33 +870,32 @@ function enviarPedido(event) {
   let subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
   let total = subtotal;
   
-  mensaje += `\n*Resumen de costos:*\n`;
-  mensaje += `Subtotal productos: DOP ${subtotal.toFixed(2)}\n`;
+  mensaje += lang === 'en' ? `\n*Cost summary:*\n` : `\n*Resumen de costos:*\n`;
+  mensaje += lang === 'en' ? `Products subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal productos: DOP ${subtotal.toFixed(2)}\n`;
   
   // Agregar costo de delivery si aplica
-  const dia = formData.get('dia');
-  if (['Martes', 'Jueves', 'Sábado'].includes(dia)) {
+  if ([lang === 'en' ? 'Tuesday' : 'Martes', lang === 'en' ? 'Thursday' : 'Jueves', lang === 'en' ? 'Saturday' : 'Sábado'].includes(formData.get('dia'))) {
     total += 100;
-    mensaje += `Costo de delivery: DOP 100.00\n`;
+    mensaje += lang === 'en' ? `Delivery cost: DOP 100.00\n` : `Costo de delivery: DOP 100.00\n`;
   }
   
   // Agregar comisión PayPal si aplica
   if (formData.get('pago') === 'PayPal') {
     const comisionPayPal = total * 0.1;
     total += comisionPayPal;
-    mensaje += `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
+    mensaje += lang === 'en' ? `PayPal fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
   }
   
-  mensaje += `*Total final:* DOP ${total.toFixed(2)}`;
+  mensaje += lang === 'en' ? `*Final total:* DOP ${total.toFixed(2)}` : `*Total final:* DOP ${total.toFixed(2)}`;
 
   // Crear y mostrar el diálogo de confirmación
-  const dialog = document.createElement('dialog');
-  dialog.className = 'p-6 rounded-lg shadow-xl max-w-lg w-full';
-  dialog.innerHTML = `
+  const dialogConfirm = document.createElement('dialog');
+  dialogConfirm.className = 'p-6 rounded-lg shadow-xl max-w-lg w-full';
+  dialogConfirm.innerHTML = `
     <div class="space-y-4">
       <h3 class="text-xl font-bold text-green-800 mb-4">
         <span class="lang-es">Confirmar pedido</span>
-        <span class="lang-en" style="display:none;">Confirm order</span>
+        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Confirm order</span>
       </h3>
       
       <div class="bg-gray-50 p-4 rounded-lg">
@@ -718,36 +906,65 @@ function enviarPedido(event) {
         <button type="button" onclick="this.closest('dialog').close()"
                 class="px-4 py-2 text-gray-600 hover:text-gray-800">
           <span class="lang-es">Cancelar</span>
-          <span class="lang-en" style="display:none;">Cancel</span>
+          <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Cancel</span>
         </button>
         <button type="button" onclick="enviarPedidoWhatsApp(this.closest('dialog'))"
                 class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
           <span class="lang-es">Enviar por WhatsApp</span>
-          <span class="lang-en" style="display:none;">Send via WhatsApp</span>
+          <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Send via WhatsApp</span>
         </button>
       </div>
     </div>
   `;
 
-  document.body.appendChild(dialog);
-  dialog.showModal();
+  document.body.appendChild(dialogConfirm);
+  dialogConfirm.showModal();
 }
 
 function enviarPedidoWhatsApp(dialog) {
-  const mensaje = dialog.querySelector('pre').textContent;
-  const mensajeCodificado = encodeURIComponent(mensaje);
+  const formData = new FormData(document.getElementById('form-pedido'));
+  const lang = document.documentElement.lang || 'es';
   const numeroWhatsApp = '18493757338';
-  
-  // Abrir WhatsApp
-  window.open(`https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`, '_blank');
-  
-  // Cerrar todos los diálogos
-  dialog.close();
-  document.getElementById('dlg-carrito').close();
-  
-  // Limpiar el carrito
-  localStorage.removeItem('carrito');
-  renderCarrito();
+
+  let mensaje = lang === 'en' ? 'Hello! I want to place an order:\n\n' : '¡Hola! Quiero hacer un pedido:\n\n';
+
+  // Agregar items del carrito
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  carrito.forEach((item, index) => {
+    mensaje += `${index + 1}. ${item.nombre}\n`;
+    if (item.variedad) {
+      mensaje += lang === 'en' ? `   Variety: ${item.variedad}\n` : `   Variedad: ${item.variedad}\n`;
+    }
+    if (item.preferencias) {
+      if (item.preferencias.like.length > 0) {
+        mensaje += lang === 'en' ? `   👍 Likes: ${item.preferencias.like.join(', ')}\n` : `   👍 Me gusta: ${item.preferencias.like.join(', ')}\n`;
+      }
+      if (item.preferencias.dislike.length > 0) {
+        mensaje += lang === 'en' ? `   👎 Dislikes: ${item.preferencias.dislike.join(', ')}\n` : `   👎 No me gusta: ${item.preferencias.dislike.join(', ')}\n`;
+      }
+    }
+    mensaje += lang === 'en' ? `   Quantity: ${item.cantidad || 1}\n` : `   Cantidad: ${item.cantidad || 1}\n`;
+    mensaje += `   DOP ${(item.precio * (item.cantidad || 1)).toFixed(2)}\n\n`;
+  });
+
+  // Agregar total
+  const total = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
+  mensaje += lang === 'en' ? `Total: DOP ${total.toFixed(2)}\n\n` : `Total: DOP ${total.toFixed(2)}\n\n`;
+
+  // Agregar datos de entrega
+  mensaje += lang === 'en' ? 'Delivery Information:\n' : 'Datos de entrega:\n';
+  mensaje += lang === 'en' ? `Name: ${formData.get('nombre')}\n` : `Nombre: ${formData.get('nombre')}\n`;
+  mensaje += `WhatsApp: ${formData.get('whatsapp')}\n`;
+  mensaje += lang === 'en' ? `Address: ${formData.get('direccion')}\n` : `Dirección: ${formData.get('direccion')}\n`;
+  mensaje += lang === 'en' ? `Delivery day: ${formData.get('dia')}\n` : `Día de entrega: ${formData.get('dia')}\n`;
+  mensaje += lang === 'en' ? `Payment method: ${formData.get('pago')}\n` : `Método de pago: ${formData.get('pago')}\n`;
+  if (formData.get('observaciones')) {
+    mensaje += lang === 'en' ? `Notes: ${formData.get('observaciones')}\n` : `Observaciones: ${formData.get('observaciones')}\n`;
+  }
+
+  // Abrir WhatsApp con el mensaje
+  const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, '_blank');
 }
 
 
@@ -779,3 +996,27 @@ document.addEventListener('click', function(event) {
     menu.classList.add('hidden');
   }
 });
+
+function actualizarBotonesAgregar() {
+  document.querySelectorAll('.agregar-carrito').forEach(btn => {
+    if (!btn.querySelector('.lang-es')) {
+      const spanEs = document.createElement('span');
+      spanEs.className = 'lang-es';
+      spanEs.textContent = 'Agregar';
+      
+      const spanEn = document.createElement('span');
+      spanEn.className = 'lang-en';
+      spanEn.textContent = 'Add';
+      
+      btn.innerHTML = '<i class="fas fa-cart-plus"></i>';
+      btn.appendChild(spanEs);
+      btn.appendChild(spanEn);
+    }
+  });
+}
+
+// Refuerzo: Solo abrir el formulario si el usuario presiona continuar
+function handleContinuarPedido() {
+  window.estadoFlujoCarrito = 'formulario';
+  mostrarFormularioPedido();
+}
