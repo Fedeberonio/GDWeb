@@ -273,6 +273,7 @@ const PRODUCTOS_TRADUCCIONES = {
   'Pitahaya': 'Dragon Fruit',
   'Naranjas': 'Oranges',
   'Carambola': 'Star Fruit',
+  'Chinola': 'Passion Fruit',
   'Cilantro': 'Cilantro',
   'Genjibre': 'Ginger',
   'Orégano': 'Oregano',
@@ -293,7 +294,8 @@ const PRODUCTOS_TRADUCCIONES = {
   'Maíz': 'Corn',
   'Limón': 'Lemon',
   'Cebolla morada': 'Red Onion',
-  'Ajo': 'Garlic'
+  'Ajo': 'Garlic',
+  'Uvas moradas': 'Purple Grapes'
 };
 
 function clonarProductosSiHaceFalta() {
@@ -304,7 +306,12 @@ function clonarProductosSiHaceFalta() {
   if (gridFrutas.dataset.ready) return;
 
   // Definir categorías
-  const frutas = ['Banana', 'Piña', 'Fresas', 'Lechosa', 'Cerezas', 'Manzanas', 'Sandía', 'Melón', 'Melón Francés', 'Pitahaya', 'Naranjas', 'Carambola'];
+  const frutas = [
+    'Banana', 'Piña', 'Fresas', 'Lechosa', 'Cerezas', 'Manzanas', 'Sandía',
+    'Melón', 'Pitahaya', 'Naranjas', 'Carambola',
+    'Mango', 'Coco', 'Limón', 'Uvas blancas', 'Uvas moradas',
+    'Mandarinas', 'Aguacates', 'Chinola'          // ← Chinola = Passion Fruit
+  ];
   const hierbas = ['Cilantro', 'Genjibre', 'Orégano', 'Perejil', 'Romero', 'Cebollín'];
 
   document.querySelectorAll('#alacarta .producto-hover').forEach(card => {
@@ -357,7 +364,7 @@ function clonarProductosSiHaceFalta() {
       gridFrutas.appendChild(clon);
     } else if (hierbas.includes(nombre)) {
       gridHierbas.appendChild(clon);
-    } else {
+    } else if (nombre !== 'Melón Francés') {
       gridVegetales.appendChild(clon);
     }
   });
