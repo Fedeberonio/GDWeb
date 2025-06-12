@@ -103,8 +103,7 @@ function renderCarrito() {
   if (carrito.length === 0) {
     html = `
       <div class="text-center text-gray-500 my-8">
-        <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">El carrito está vacío</span>
-        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">The cart is empty</span>
+        ${lang === 'es' ? 'El carrito está vacío' : 'The cart is empty'}
       </div>
     `;
     cont.innerHTML = html;
@@ -120,26 +119,20 @@ function renderCarrito() {
           <div>
             <div class="font-bold text-green-800 text-lg">${item.nombre}</div>
             ${item.variedad ? `<div class="text-sm text-gray-600">
-              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Variedad:</span>
-              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Variety:</span>
-              ${item.variedad}
+              ${lang === 'es' ? 'Variedad:' : 'Variety:'} ${item.variedad}
             </div>` : ''}
             ${item.preferencias ? `
               <div class="ml-2 text-sm bg-green-50 rounded-lg p-2">
                 <div>
                   <b>👍</b> 
-                  <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Me gusta:</span>
-                  <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Likes:</span>
-                  ${item.preferencias.like.map(n => {
+                  ${lang === 'es' ? 'Me gusta:' : 'Likes:'} ${item.preferencias.like.map(n => {
                     const en = PRODUCTOS_TRADUCCIONES[n] || n;
                     return lang === 'es' ? n : en;
                   }).join(', ') || '-'}
                 </div>
                 <div>
                   <b>👎</b> 
-                  <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">No me gusta:</span>
-                  <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Dislikes:</span>
-                  ${item.preferencias.dislike.map(n => {
+                  ${lang === 'es' ? 'No me gusta:' : 'Dislikes:'} ${item.preferencias.dislike.map(n => {
                     const en = PRODUCTOS_TRADUCCIONES[n] || n;
                     return lang === 'es' ? n : en;
                   }).join(', ') || '-'}
@@ -160,8 +153,7 @@ function renderCarrito() {
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Eliminar</span>
-              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Remove</span>
+              ${lang === 'es' ? 'Eliminar' : 'Remove'}
             </button>
           </div>
         </div>
@@ -173,15 +165,13 @@ function renderCarrito() {
     <div class="mt-6 p-6 bg-green-50 rounded-lg">
       <div class="flex justify-between items-center mb-6">
         <span class="text-xl font-bold text-green-800">
-          <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Total:</span>
-          <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Total:</span>
+          ${lang === 'es' ? 'Total:' : 'Total:'}
         </span>
         <span class="text-xl font-bold text-green-800">DOP ${total.toFixed(2)}</span>
       </div>
       <button id="btn-continuar-pedido" 
               class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold">
-        <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Continuar con el pedido</span>
-        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Continue with order</span>
+        ${lang === 'es' ? 'Continuar con el pedido' : 'Continue with order'}
       </button>
     </div>`;
 
@@ -765,15 +755,13 @@ function mostrarFormularioPedido() {
   dialog.innerHTML = `
     <div class="p-6">
       <h3 class="text-xl font-bold text-green-800 mb-6 text-center">
-        <span class="lang-es">Completar pedido</span>
-        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Complete order</span>
+        ${lang === 'es' ? 'Completar pedido' : 'Complete order'}
       </h3>
       
       <form id="form-pedido" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            <span class="lang-es">Nombre</span>
-            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Name</span>
+            ${lang === 'es' ? 'Nombre' : 'Name'}
           </label>
           <input type="text" name="nombre" required
                  placeholder="${lang === 'en' ? 'Your name' : 'Tu nombre'}"
@@ -782,8 +770,7 @@ function mostrarFormularioPedido() {
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            <span class="lang-es">WhatsApp</span>
-            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">WhatsApp</span>
+            WhatsApp
           </label>
           <input type="tel" name="whatsapp" required
                  placeholder="${lang === 'en' ? 'Your WhatsApp number' : 'Tu número de WhatsApp'}"
@@ -792,8 +779,7 @@ function mostrarFormularioPedido() {
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            <span class="lang-es">Día de entrega</span>
-            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery day</span>
+            ${lang === 'es' ? 'Día de entrega' : 'Delivery day'}
           </label>
           <select name="dia" required
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -809,8 +795,7 @@ function mostrarFormularioPedido() {
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            <span class="lang-es">Dirección de entrega</span>
-            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery address</span>
+            ${lang === 'es' ? 'Dirección de entrega' : 'Delivery address'}
           </label>
           <textarea name="direccion" required rows="3"
                     placeholder="${lang === 'en' ? 'Delivery address' : 'Dirección de entrega'}"
@@ -819,8 +804,7 @@ function mostrarFormularioPedido() {
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            <span class="lang-es">Observaciones (opcional)</span>
-            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Notes (optional)</span>
+            ${lang === 'es' ? 'Observaciones (opcional)' : 'Notes (optional)'}
           </label>
           <textarea name="observaciones" rows="2"
                     placeholder="${lang === 'en' ? 'Notes (optional)' : 'Observaciones (opcional)'}"
@@ -829,8 +813,7 @@ function mostrarFormularioPedido() {
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            <span class="lang-es">Modo de pago</span>
-            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Payment method</span>
+            ${lang === 'es' ? 'Modo de pago' : 'Payment method'}
           </label>
           <select name="pago" required
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -844,13 +827,11 @@ function mostrarFormularioPedido() {
         <div class="flex justify-end gap-4 mt-6">
           <button type="button" onclick="resetCarritoDialog(); document.getElementById('dlg-carrito').close(); window.estadoFlujoCarrito = 'lista'; renderCarrito();"
                   class="px-4 py-2 text-gray-600 hover:text-gray-800">
-            <span class="lang-es">Cancelar</span>
-            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Cancel</span>
+            ${lang === 'es' ? 'Cancelar' : 'Cancel'}
           </button>
           <button type="submit"
                   class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            <span class="lang-es">Enviar pedido</span>
-            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Send order</span>
+            ${lang === 'es' ? 'Enviar pedido' : 'Send order'}
           </button>
         </div>
       </form>
