@@ -1,3 +1,85 @@
+/* ====== Autenticación con Google ====== */
+document.addEventListener('DOMContentLoaded', () => {
+  const auth = firebase.auth();
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  const btnLogin = document.getElementById('btn-login');
+  const btnLogout = document.getElementById('btn-logout');
+  const userInfoContainer = document.getElementById('user-info');
+  const userPic = document.getElementById('user-pic');
+  const userName = document.getElementById('user-name');
+
+  // Variable global para guardar los datos del perfil
+  window.userProfile = null;
+
+  // Función para Iniciar Sesión
+  const login = () => {
+    auth.signInWithPopup(provider)
+      .then((result) => {
+        console.log("¡Inicio de sesión exitoso!", result.user);
+        mostrarNotificacion('¡Bienvenid@ de vuelta!');
+      })
+      .catch((error) => {
+        console.error("Error en el inicio de sesión:", error);
+        mostrarNotificacion('Error al iniciar sesión. Por favor, intenta de nuevo.');
+      });
+  };
+
+  // Función para Cerrar Sesión
+  const logout = () => {
+    auth.signOut()
+      .then(() => {
+        console.log("Sesión cerrada.");
+        mostrarNotificacion('Has cerrado sesión. ¡Vuelve pronto!');
+      })
+      .catch((error) => {
+        console.error("Error al cerrar sesión:", error);
+        mostrarNotificacion('Error al cerrar sesión. Por favor, intenta de nuevo.');
+      });
+  };
+
+  // Escuchar cambios en el estado de autenticación
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      // Usuario ha iniciado sesión
+      const db = firebase.firestore();
+      const userRef = db.collection("users").doc(user.uid);
+
+      userRef.get().then((doc) => {
+        if (doc.exists) {
+          // Si el documento existe, el usuario es recurrente.
+          console.log("Usuario recurrente, cargando perfil...");
+          window.userProfile = doc.data(); // Guardamos los datos en la variable global
+        } else {
+          // Si el documento NO existe, es un usuario nuevo.
+          console.log("¡Hola, usuario nuevo! Mostrando formulario de perfil.");
+          guardarPerfilDeUsuario(user);
+        }
+      }).catch((error) => {
+        console.error("Error al obtener el documento del usuario:", error);
+      });
+
+      // --- Esto es el código que ya tenías para cambiar la interfaz ---
+      btnLogin.style.display = 'none';
+      userInfoContainer.style.display = 'flex';
+      userPic.src = user.photoURL;
+      userName.textContent = user.displayName;
+
+    } else {
+      // Usuario ha cerrado sesión
+      window.userProfile = null; // Limpiamos el perfil al cerrar sesión
+      btnLogin.style.display = 'block';
+      userInfoContainer.style.display = 'none';
+      userPic.src = '';
+      userName.textContent = '';
+    }
+  });
+
+  // Asignar eventos a los botones
+  btnLogin.addEventListener('click', login);
+  btnLogout.addEventListener('click', logout);
+});
+
 /* ====== preferencias de la caja (global) ====== */
 window.preferenciasCaja = { like: [], dislike: [] };
 const estadoCajas = {};   /* boxId -> { variedad:null, like:[], dislike:[], ok:false } */
@@ -720,15 +802,37 @@ function mostrarNotificacion(mensaje) {
 
 // Función para mostrar el formulario de pedido
 function mostrarFormularioPedido() {
-  // Solo permitir mostrar el formulario si el flujo fue iniciado por el botón de continuar
   if (window.estadoFlujoCarrito !== 'formulario') {
-    // Si no fue iniciado correctamente, forzar la lista
     window.estadoFlujoCarrito = 'lista';
     renderCarrito();
     return;
   }
   const dialog = document.getElementById('dlg-carrito');
   const lang = document.documentElement.lang || 'es';
+
+  const user = firebase.auth().currentUser;
+  const profile = window.userProfile || {};
+
+  const nombre = user ? user.displayName : '';
+  const telefono = profile.telefono || '';
+  const direccion = profile.direccion || '';
+
+  // 1. Obtenemos el método de pago preferido
+  const pagoPreferido = profile.pagoPreferido || '';
+
+  // 2. Creamos el texto para las notas a partir de las preferencias
+  let notasPreferidas = '';
+  if (profile.likes || profile.dislikes) {
+    let notasArray = [];
+    if (profile.likes) {
+      notasArray.push(`👍 Preferencias: ${profile.likes}`);
+    }
+    if (profile.dislikes) {
+      notasArray.push(`👎 Evitar: ${profile.dislikes}`);
+    }
+    notasPreferidas = notasArray.join('\n');
+  }
+
   dialog.innerHTML = /* html */`
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -747,62 +851,67 @@ function mostrarFormularioPedido() {
           <form id="form-pedido" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Nombre</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Name</span>
+                <span class="lang-es">Nombre</span><span class="lang-en" style="display:none;">Name</span>
               </label>
               <input type="text" name="nombre" required
                      placeholder="${lang === 'en' ? 'Your name' : 'Tu nombre'}"
+                     value="${nombre}"  
                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Día de entrega</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery day</span>
+                <span class="lang-es">Teléfono</span><span class="lang-en" style="display:none;">Phone</span>
               </label>
-              <select name="dia" required
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
-                <option value="Lunes">${lang === 'en' ? 'Monday (12:30-20:00) - Free' : 'Lunes (12:30-20:00) - Gratis'}</option>
-                <option value="Martes">${lang === 'en' ? 'Tuesday (12:30-20:00) - DOP 100' : 'Martes (12:30-20:00) - DOP 100'}</option>
-                <option value="Miércoles">${lang === 'en' ? 'Wednesday (12:30-20:00) - Free' : 'Miércoles (12:30-20:00) - Gratis'}</option>
-                <option value="Jueves">${lang === 'en' ? 'Thursday (12:30-20:00) - DOP 100' : 'Jueves (12:30-20:00) - DOP 100'}</option>
-                <option value="Viernes">${lang === 'en' ? 'Friday (12:30-20:00) - Free' : 'Viernes (12:30-20:00) - Gratis'}</option>
-                <option value="Sábado">${lang === 'en' ? 'Saturday (12:30-20:00) - DOP 100' : 'Sábado (12:30-20:00) - DOP 100'}</option>
-              </select>
+              <input type="tel" name="telefono" required
+                     placeholder="${lang === 'en' ? 'Your phone number' : 'Tu número de teléfono'}"
+                     value="${telefono}" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Día de entrega</label>
+                <select name="dia" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
+                    <option value="Lunes">Lunes (12:30-20:00) - Gratis</option>
+                    <option value="Martes">Martes (12:30-20:00) - DOP 100</option>
+                    <option value="Miércoles">Miércoles (12:30-20:00) - Gratis</option>
+                    <option value="Jueves">Jueves (12:30-20:00) - DOP 100</option>
+                    <option value="Viernes">Viernes (12:30-20:00) - Gratis</option>
+                    <option value="Sábado">Sábado (12:30-20:00) - DOP 100</option>
+                </select>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Dirección de entrega</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery address</span>
+                <span class="lang-es">Dirección de entrega</span><span class="lang-en" style="display:none;">Delivery address</span>
               </label>
               <textarea name="direccion" required rows="3"
                         placeholder="${lang === 'en' ? 'Delivery address' : 'Dirección de entrega'}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">${direccion}</textarea>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 <span class="lang-es">Observaciones (opcional)</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Notes (optional)</span>
+                <span class="lang-en" style="display:none;">Notes (optional)</span>
               </label>
-              <textarea name="observaciones" rows="2"
+              <textarea name="observaciones" rows="3"
                         placeholder="${lang === 'en' ? 'Notes (optional)' : 'Observaciones (opcional)'}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">${notasPreferidas}</textarea>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 <span class="lang-es">Modo de pago</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Payment method</span>
+                <span class="lang-en" style="display:none;">Payment method</span>
               </label>
               <select name="pago" required
                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                 <option value="">${lang === 'en' ? 'Select method' : 'Seleccionar método'}</option>
-                <option value="Cash">${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
-                <option value="Transferencia">${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
-                <option value="PayPal">PayPal (+10%)</option>
+                <option value="Cash" ${pagoPreferido === 'Cash' ? 'selected' : ''}>${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
+                <option value="Transferencia" ${pagoPreferido === 'Transferencia' ? 'selected' : ''}>${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
+                <option value="PayPal" ${pagoPreferido === 'PayPal' ? 'selected' : ''}>PayPal (+10%)</option>
               </select>
             </div>
 
@@ -824,8 +933,7 @@ function mostrarFormularioPedido() {
     </div>
   `;
 
-  setLanguage(lang);   // actualiza visibilidad de .lang-es / .lang-en
-
+  setLanguage(lang);
   document.getElementById('form-pedido')?.addEventListener('submit', enviarPedido);
 }
 
@@ -836,25 +944,22 @@ function enviarPedido(event) {
   const formData = new FormData(form);
   const lang = document.documentElement.lang || 'es';
   
-  // Obtener el carrito actual
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   if (!Array.isArray(carrito) || carrito.length === 0) {
     alert(lang === 'en' ? 'The cart is empty' : 'El carrito está vacío');
     return;
   }
 
-  // Verificar si hay cajas en el carrito
   const tieneCajas = carrito.some(item => item.tipo === 'caja');
   
-  // Calcular subtotal
-  const subtotal = carrito.reduce(
+  const subtotalProductos = carrito.reduce(
     (sum, item) => sum + item.precio * (item.cantidad || 1),
     0
   );
 
-  // Verificar pedido mínimo si no hay cajas
-  if (!tieneCajas && subtotal < 500) {
-    const faltante = 500 - subtotal;
+  // Pedido mínimo solo aplica si no hay cajas
+  if (!tieneCajas && subtotalProductos < 500) {
+    const faltante = 500 - subtotalProductos;
     alert(lang === 'en' 
       ? `Minimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
       : `Pedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`
@@ -862,9 +967,10 @@ function enviarPedido(event) {
     return;
   }
 
-  // Construir el mensaje usando el mismo formato que se muestra en el checkout
+  // ---- Construcción del Mensaje ----
   let mensaje = lang === 'en' ? `*New GreenDolio Order*\n\n` : `*Nuevo Pedido GreenDolio*\n\n`;
   mensaje += lang === 'en' ? `*Customer:* ${formData.get('nombre')}\n` : `*Cliente:* ${formData.get('nombre')}\n`;
+  mensaje += lang === 'en' ? `*Phone:* ${formData.get('telefono')}\n` : `*Teléfono:* ${formData.get('telefono')}\n`;
   mensaje += lang === 'en' ? `*Delivery day:* ${formData.get('dia')}\n` : `*Día de entrega:* ${formData.get('dia')}\n`;
   mensaje += lang === 'en' ? `*Address:* ${formData.get('direccion')}\n` : `*Dirección:* ${formData.get('direccion')}\n`;
   if (formData.get('observaciones')) {
@@ -874,11 +980,11 @@ function enviarPedido(event) {
   
   mensaje += lang === 'en' ? `*Products:*\n` : `*Productos:*\n`;
   carrito.forEach(item => {
-    const subtotal = item.precio * (item.cantidad || 1);
+    const subtotalItem = item.precio * (item.cantidad || 1);
     mensaje += `\n*${item.nombre}*\n`;
     mensaje += lang === 'en' ? `Quantity: ${item.cantidad || 1}\n` : `Cantidad: ${item.cantidad || 1}\n`;
     mensaje += lang === 'en' ? `Unit price: DOP ${item.precio.toFixed(2)}\n` : `Precio unitario: DOP ${item.precio.toFixed(2)}\n`;
-    mensaje += lang === 'en' ? `Subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal: DOP ${subtotal.toFixed(2)}\n`;
+    mensaje += lang === 'en' ? `Subtotal: DOP ${subtotalItem.toFixed(2)}\n` : `Subtotal: DOP ${subtotalItem.toFixed(2)}\n`;
     if (item.variedad) {
       mensaje += lang === 'en' ? `Variety: ${item.variedad}\n` : `Variedad: ${item.variedad}\n`;
     }
@@ -892,27 +998,35 @@ function enviarPedido(event) {
     }
   });
 
-  // Calcular totales
-  let total = subtotal;
-
-  // Agregar costo de delivery si no hay cajas
-  if (!tieneCajas) {
-    total += 100;
-    mensaje += lang === 'en'
-      ? 'Delivery cost: DOP 100.00\n'
-      : 'Costo de delivery: DOP 100.00\n';
-  }
+  // ===== LÓGICA DE CÁLCULO CORREGIDA =====
   
-  // Agregar comisión PayPal si aplica
+  let total = subtotalProductos;
+  
+  const diaSeleccionado = formData.get('dia');
+  const diasConCargo = ['Martes', 'Jueves', 'Sábado'];
+  const deliveryCost = 100;
+  
+  // Condición corregida: solo se basa en el día
+  if (diasConCargo.includes(diaSeleccionado)) {
+      total += deliveryCost;
+      mensaje += lang === 'en'
+          ? `\nDelivery Cost: DOP ${deliveryCost.toFixed(2)}\n`
+          : `\nCosto de Delivery: DOP ${deliveryCost.toFixed(2)}\n`;
+  }
+
   if (formData.get('pago') === 'PayPal') {
     const comisionPayPal = total * 0.1;
+    mensaje += lang === 'en' 
+        ? `PayPal Fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` 
+        : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
     total += comisionPayPal;
-    mensaje += lang === 'en' ? `PayPal fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
   }
   
-  mensaje += lang === 'en' ? `*Final total:* DOP ${total.toFixed(2)}` : `*Total final:* DOP ${total.toFixed(2)}`;
+  mensaje += `\n*${lang === 'en' ? 'Final Total' : 'Total Final'}:* DOP ${total.toFixed(2)}`;
+  
+  // ===== FIN DE LA LÓGICA =====
 
-  // Crear y mostrar el diálogo de confirmación
+  // ---- Mostrar diálogo de confirmación (sin cambios) ----
   const dialogConfirm = document.createElement('dialog');
   dialogConfirm.className = 'p-6 rounded-lg shadow-xl max-w-lg w-full';
   dialogConfirm.innerHTML = `
@@ -942,7 +1056,7 @@ function enviarPedido(event) {
   `;
 
   document.body.appendChild(dialogConfirm);
-  setLanguage(lang);   // oculta duplicados en modo EN
+  setLanguage(lang);
   dialogConfirm.showModal();
 }
 
@@ -953,7 +1067,6 @@ function enviarPedidoWhatsApp(dialog) {
 
   let mensaje = lang === 'en' ? 'Hello! I want to place an order:\n\n' : '¡Hola! Quiero hacer un pedido:\n\n';
 
-  // Agregar items del carrito
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   carrito.forEach((item, index) => {
     mensaje += `${index + 1}. ${item.nombre}\n`;
@@ -972,16 +1085,14 @@ function enviarPedidoWhatsApp(dialog) {
     mensaje += `   DOP ${(item.precio * (item.cantidad || 1)).toFixed(2)}\n\n`;
   });
 
-  // Calcular totales
   const subtotal = carrito.reduce(
     (sum, item) => sum + item.precio * (item.cantidad || 1),
     0
   );
 
-  let   total    = subtotal;
+  let total = subtotal;
 
-  // Delivery
-  const diasConCargo = ['Martes', 'Tuesday', 'Jueves', 'Thursday', 'Sábado', 'Saturday'];
+  const diasConCargo = ['Martes', 'Jueves', 'Sábado'];
   if (diasConCargo.includes(formData.get('dia'))) {
     total += 100;
     mensaje += lang === 'en'
@@ -989,11 +1100,6 @@ function enviarPedidoWhatsApp(dialog) {
       : 'Costo de delivery: DOP 100.00\n';
   }
 
-  // Agregar resumen de costos
-  mensaje += lang === 'en' ? `Cost summary:\n` : `Resumen de costos:\n`;
-  mensaje += lang === 'en' ? `Products subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal productos: DOP ${subtotal.toFixed(2)}\n`;
-  
-  // Agregar comisión PayPal si aplica
   if (formData.get('pago') === 'PayPal') {
     const comisionPayPal = total * 0.1;
     total += comisionPayPal;
@@ -1002,7 +1108,6 @@ function enviarPedidoWhatsApp(dialog) {
 
   mensaje += lang === 'en' ? `Final total: DOP ${total.toFixed(2)}\n\n` : `Total final: DOP ${total.toFixed(2)}\n\n`;
 
-  // Agregar datos de entrega
   mensaje += lang === 'en' ? 'Delivery Information:\n' : 'Datos de entrega:\n';
   mensaje += lang === 'en' ? `Name: ${formData.get('nombre')}\n` : `Nombre: ${formData.get('nombre')}\n`;
   mensaje += lang === 'en' ? `Address: ${formData.get('direccion')}\n` : `Dirección: ${formData.get('direccion')}\n`;
@@ -1012,11 +1117,9 @@ function enviarPedidoWhatsApp(dialog) {
     mensaje += lang === 'en' ? `Notes: ${formData.get('observaciones')}\n` : `Observaciones: ${formData.get('observaciones')}\n`;
   }
 
-  // Abrir WhatsApp con el mensaje
   const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, '_blank');
 }
-
 
 /* ----------  MULTI‑IDIOMA ---------- */
 function setLanguage(lang){
@@ -1264,4 +1367,59 @@ function actualizarCarrito() {
   // Actualizar botones
   btnContinuar.disabled = carrito.length === 0 || (!tieneCajas && subtotal < 500);
   btnVaciar.disabled = carrito.length === 0;
+}
+
+/* ----------  PERFIL DE USUARIO ---------- */
+function guardarPerfilDeUsuario(user) {
+  const seccionFormulario = document.getElementById('profile-setup');
+  const formulario = document.getElementById('profile-form');
+
+  seccionFormulario.classList.remove('hidden');
+  document.getElementById('nombre').value = user.displayName;
+
+  formulario.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const telefono = document.getElementById('telefono').value;
+    const direccion = document.getElementById('direccion').value;
+    const pagoPreferido = document.getElementById('pago-preferido').value;
+    const likes = document.getElementById('likes').value;
+    const dislikes = document.getElementById('dislikes').value;
+    const comoNosConocio = document.getElementById('como-nos-conocio').value;
+
+    const db = firebase.firestore();
+
+    db.collection("users").doc(user.uid).set({
+      displayName: user.displayName,
+      email: user.email,
+      telefono: telefono,
+      direccion: direccion,
+      pagoPreferido: pagoPreferido,
+      likes: likes,
+      dislikes: dislikes,
+      comoNosConocio: comoNosConocio,
+      fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+      console.log("¡Perfil guardado con éxito!");
+      seccionFormulario.classList.add('hidden');
+      mostrarNotificacion("¡Gracias! Tu perfil ha sido guardado.");
+      
+      window.userProfile = {
+          displayName: user.displayName,
+          email: user.email,
+          telefono: telefono,
+          direccion: direccion,
+          pagoPreferido: pagoPreferido,
+          likes: likes,
+          dislikes: dislikes,
+          comoNosConocio: comoNosConocio
+      };
+
+    })
+    .catch((error) => {
+      console.error("Error al guardar el perfil: ", error);
+      mostrarNotificacion("Hubo un error al guardar tu perfil. Por favor, intenta de nuevo.");
+    });
+  });
 }

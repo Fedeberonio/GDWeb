@@ -69,6 +69,85 @@
     </style>
 </head>
 <body class="bg-greendolio">
+<!-- Formulario de perfil de usuario (solo visible para usuarios nuevos) -->
+<div id="profile-setup" class="hidden" style="max-width:400px;margin:40px auto;padding:32px;background:#fff;border-radius:16px;box-shadow:0 2px 16px #0002;">
+  
+  <div class="text-center mb-6">
+    <h2 class="text-3xl font-bold text-green-800" style="font-family:'Poppins', sans-serif;">¡Bienvenid@ a la familia GreenDolio!</h2>
+    <p class="text-gray-600 mt-2">Estás a un solo paso de hacer tus compras mucho más fáciles.</p>
+  </div>
+  <p class="text-center bg-green-50 p-3 rounded-lg text-green-900 mb-4">
+    Completa tus datos de contacto <strong class="text-green-700">por única vez</strong>. Con esto, tus futuros pedidos serán súper rápidos:
+  </p>
+  <ul class="space-y-2 text-left mb-6">
+    <li class="flex items-start">
+      <span class="text-green-500 mr-2">✅</span>
+      <span><strong>Ahorra tiempo:</strong> Tu dirección y teléfono se rellenarán automáticamente en cada pedido.</span>
+    </li>
+    <li class="flex items-start">
+      <span class="text-green-500 mr-2">⚡</span>
+      <span><strong>Compra en segundos:</strong> Pasa de elegir tus productos a finalizar la compra sin escribir de más.</span>
+    </li>
+  </ul>
+  <h2 class="text-2xl font-bold text-green-800 mb-4">Completa tu perfil</h2>
+  <form id="profile-form" class="space-y-4">
+    
+    <div>
+      <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+      <input type="text" id="nombre" name="nombre" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none bg-gray-100 cursor-not-allowed">
+    </div>
+
+    <div>
+      <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+      <input type="tel" id="telefono" name="telefono" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ej: 809-123-4567">
+    </div>
+
+    <div>
+      <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+      <textarea id="direccion" name="direccion" required rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Tu dirección completa"></textarea>
+    </div>
+
+    <div>
+      <label for="pago-preferido" class="block text-sm font-medium text-gray-700 mb-1">Método de pago preferido</label>
+      <select id="pago-preferido" name="pago-preferido" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        <option value="">Seleccionar uno...</option>
+        <option value="Cash">Efectivo (Cash)</option>
+        <option value="Transferencia">Transferencia Bancaria</option>
+        <option value="PayPal">PayPal (+10%)</option>
+      </select>
+    </div>
+
+    <div>
+        <label for="como-nos-conocio" class="block text-sm font-medium text-gray-700 mb-1">¿Cómo te enteraste de nosotros? <span class="text-red-500">*</span></label>
+        <select id="como-nos-conocio" name="como-nos-conocio" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="" disabled selected>Elige una opción...</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Flyer">Flyer (volante)</option>
+            <option value="Instagram">Instagram</option>
+            <option value="TikTok">TikTok</option>
+            <option value="YouTube">YouTube</option>
+            <option value="Google">Búsqueda de Google</option>
+            <option value="IA">Inteligencia Artificial (Chatbot, etc.)</option>
+            <option value="Recomendacion">Alguien me chismoseó</option>
+            <option value="Sueño">¡Lo soñé!</option>
+        </select>
+    </div>
+    
+    <div>
+      <label for="likes" class="block text-sm font-medium text-gray-700 mb-1">¿Algo que SIEMPRE te gustaría recibir? (Opcional)</label>
+      <textarea id="likes" name="likes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ej: Me encantan los aguacates y el mango"></textarea>
+    </div>
+
+    <div>
+      <label for="dislikes" class="block text-sm font-medium text-gray-700 mb-1">¿Algún producto que NUNCA quieras recibir? (Opcional)</label>
+      <textarea id="dislikes" name="dislikes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ej: No me gusta el repollo"></textarea>
+    </div>
+
+    <button type="submit" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold">
+      Guardar Perfil
+    </button>
+  </form>
+</div>
     <!-- Header sticky -->
     <header class="sticky-nav bg-white shadow-md w-full top-0 z-50" style="padding:0;">
         <div class="container mx-auto flex items-center justify-between h-16 px-2" style="min-height:56px; height:56px;">
@@ -78,6 +157,23 @@
                 </a>
             </div>
             <div class="flex items-center gap-2 h-full">
+                <!-- Botón de autenticación -->
+                <div id="auth-container" class="flex items-center gap-2">
+                    <button id="btn-login" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-700 transition-all">
+                        <i class="fab fa-google mr-2"></i>
+                        <span class="lang-es">Iniciar sesión</span>
+                        <span class="lang-en" style="display:none;">Login</span>
+                    </button>
+
+                    <div id="user-info" class="hidden items-center gap-2">
+                        <img id="user-pic" class="w-10 h-10 rounded-full" alt="User photo">
+                        <span id="user-name" class="font-semibold text-sm text-green-800"></span>
+                        <button id="btn-logout" class="bg-red-500 text-white font-bold py-1 px-2 rounded-full hover:bg-red-700 transition-all text-xs">
+                            <span class="lang-es">Salir</span>
+                            <span class="lang-en" style="display:none;">Logout</span>
+                        </button>
+                    </div>
+                </div>
                 <!-- Botón de carrito en la barra superior -->
                 <button id="carrito-header-btn" class="relative flex items-center justify-center rounded-full border border-green-200 bg-white shadow-sm focus:outline-none hover:bg-green-100 transition-all" style="height:44px;width:44px;font-size:1.2em;padding:0;">
                   <i class="fas fa-shopping-cart text-green-700" style="font-size:1.2em;"></i>
@@ -112,6 +208,29 @@
           <a href="#contacto" class="menu-link block text-base py-2 px-4 text-green-900 font-semibold hover:bg-green-100 rounded-xl lang-en" style="display:none;">Contact</a>
         </nav>
     </header>
+
+    <!-- Scripts de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Configuración de Firebase
+              const firebaseConfig = {
+                apiKey: "AIzaSyCjvz1uxCVR5xVxaNt3qushp1se1Ep8glY",
+                authDomain: "greendolio-tienda.firebaseapp.com",
+                projectId: "greendolio-tienda",
+                storageBucket: "greendolio-tienda.appspot.com",
+                messagingSenderId: "64271997064",
+                appId: "1:64271997064:web:8001973cad419458fd379f",
+                measurementId: "G-H9F4SXPJPA"
+              };
+
+      // Inicializar Firebase
+      firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
+    </script>
 
     <!-- Hero / Banner -->
     <section id="inicio" class="w-full min-h-[60vh] flex flex-col items-center justify-center bg-greendolio relative pt-2 pb-2">
@@ -318,7 +437,7 @@
             </div>
 
             <!-- 2. Subtítulo -->
-            <span class="text-3xl md:text-4xl font-bold text-green-800 mb-2 text-center" style="font-family:'Poppins','Comic Sans MS',cursive;">"Island Weekscential"</span>
+            <span class="text-3xl md:text-4xl font-bold text-green-800 mb-2 text-center" style="font-family:'Poppins','Comic Sans MS',cursive;">"Island Weekssential"</span>
 
             <!-- 3. Imagen -->
             <img src="assets/images/boxes/Box2_optimized.png" alt="Box 2" class="rounded-xl shadow-lg object-contain bg-white my-2 cursor-pointer hover:scale-105 transition-transform" style="border:6px solid #fff; width:80%; max-width:240px; min-width:90px;" onclick="mostrarContenidoCaja(2)" />
@@ -1398,7 +1517,7 @@
                 <summary class="font-semibold text-green-700 cursor-pointer">¿Qué tipos de cajas ofrecen?</summary>
                 <ul class="list-disc ml-6">
                   <li><b>Caribbean Fresh Pack</b>: $650 (3 días)</li>
-                  <li><b>Island Weeksential</b>: $990 (1 semana)</li>
+                  <li><b>Island Weekssential</b>: $990 (1 semana)</li>
                   <li><b>All Green-clusive Mix</b>: $1990 (2 semanas)</li>
                 </ul>
               </details>
@@ -1476,7 +1595,7 @@
                 <summary class="font-semibold text-green-700 cursor-pointer">What types of boxes do you offer?</summary>
                 <ul class="list-disc ml-6">
                   <li><b>Caribbean Fresh Pack</b>: $650 (3 days)</li>
-                  <li><b>Island Weeksential</b>: $990 (1 week)</li>
+                  <li><b>Island Weekssential</b>: $990 (1 week)</li>
                   <li><b>All Green-clusive Mix</b>: $1990 (2 weeks)</li>
                 </ul>
               </details>
@@ -1982,24 +2101,23 @@ function enviarPedido() {
       window.open(`https://wa.me/18493757338?text=${mensajeCodificado}`, '_blank');
     }
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btn-infografia-cajas');
-    const dlg = document.getElementById('dlg-infografia-cajas');
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('btn-infografia-cajas');
+      const dlg = document.getElementById('dlg-infografia-cajas');
 
-    if (!btn || !dlg) return;
+      if (!btn || !dlg) return;
 
-    btn.addEventListener('click', () => {
-      const img = dlg.querySelector('img.infografia-img');
-      if (!img) return;
-      const englishVisible = getComputedStyle(btn.querySelector('.lang-en')).display !== 'none';
-      img.src = englishVisible
-        ? 'assets/images/banners/InfografiaCajasENG.jpg'
-        : 'assets/images/banners/InfografiaCajasESP.jpg';
-      dlg.showModal();
+      btn.addEventListener('click', () => {
+        const img = dlg.querySelector('img.infografia-img');
+        if (!img) return;
+        const englishVisible = getComputedStyle(btn.querySelector('.lang-en')).display !== 'none';
+        img.src = englishVisible
+          ? 'assets/images/banners/InfografiaCajasENG.jpg'
+          : 'assets/images/banners/InfografiaCajasESP.jpg';
+        dlg.showModal();
+      });
     });
-  });
-</script>
+    </script>
 
   <footer id="bottom-bar" class="fixed bottom-0 left-0 w-full flex justify-center items-center px-6 py-3 bg-white border-t border-gray-200 z-50">
     <div class="flex items-center gap-4">
