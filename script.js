@@ -220,42 +220,37 @@ function cambiarCantidad(index, delta) {
 }
 
 /* ----------  CONFIGURAR CAJA ---------- */
-function abrirConfig(btn) {
-  playWaterDrop();
-  const boxId = btn.dataset.box;
-  cajaActual = boxId;
-  if (!estadoCajas[boxId]) estadoCajas[boxId] = { variedad: null, like: [], dislike: [], ok: false };
-
-  preferenciasCaja.like = [...estadoCajas[boxId].like];
-  preferenciasCaja.dislike = [...estadoCajas[boxId].dislike];
+function abrirConfig(boxId) {
+  preferenciasCaja.like = [...(estadoCajas[boxId]?.like || [])];
+  preferenciasCaja.dislike = [...(estadoCajas[boxId]?.dislike || [])];
 
   clonarProductosSiHaceFalta();
   setLanguage(localStorage.getItem('lang') || 'es');
-  document.getElementById('configurar-caja').classList.remove('hidden');
+  
+  const configSection = document.getElementById('configurar-caja');
+  configSection.classList.remove('hidden');
   requestAnimationFrame(() =>
-    document.getElementById('configurar-caja').scrollIntoView({ behavior: 'smooth' })
+    configSection.scrollIntoView({ behavior: 'smooth' })
   );
+  
   refrescarPreferenciasUI();
 
   const btnSave = document.getElementById('btn-guardar-preferencias');
   if (btnSave) {
     btnSave.classList.remove('hidden');
     btnSave.style.display = '';
-    btnSave.disabled = true;
+    btnSave.disabled = true; // Se activa al marcar una preferencia
   }
 
-  // Oculta la lista hasta que el usuario marque algo
+  // Oculta la lista de resumen hasta que el usuario marque algo
   document.getElementById('lista-preferencias')?.classList.add('hidden');
 
-  /* Borde de selección previo */
-  const categorias = ['config-productos-frutas', 'config-productos-vegetales', 'config-productos-hierbas'];
-  categorias.forEach(categoria => {
-    document.querySelectorAll(`#${categoria} .producto-hover`).forEach(card => {
-      const n = card.dataset.nombre;
-      card.classList.remove('ring-4', 'ring-green-400', 'ring-red-400');
-      if (estadoCajas[cajaActual].like.includes(n)) card.classList.add('ring-4', 'ring-green-400');
-      else if (estadoCajas[cajaActual].dislike.includes(n)) card.classList.add('ring-4', 'ring-red-400');
-    });
+  // Resalta las selecciones previas para esta caja
+  document.querySelectorAll('#configurar-caja .producto-hover').forEach(card => {
+    const n = card.dataset.nombre;
+    card.classList.remove('ring-4', 'ring-green-400', 'ring-red-400');
+    if (estadoCajas[boxId]?.like.includes(n)) card.classList.add('ring-4', 'ring-green-400');
+    else if (estadoCajas[boxId]?.dislike.includes(n)) card.classList.add('ring-4', 'ring-red-400');
   });
 }
 
@@ -432,55 +427,22 @@ function refrescarPreferenciasUI() {
 /* ----------  AGREGAR AL CARRITO ---------- */
 function agregarAlCarritoDesdeTarjeta(btn) {
   playWaterDrop();
-  if (btn.disabled) return;
-  const card = btn.closest('.caja-hover, .paso-card');
+  const card = btn.closest('.paso-card');
   if (!card) return;
 
-  const tipo = btn.dataset.tipo;
-  let item;
+  // Esta función ahora solo maneja productos simples, no cajas.
+  const nombre = card.querySelector('.font-bold')?.textContent.trim() || 'Producto';
+  const precioText = card.querySelector('.text-green-800')?.textContent;
+  const precio = parsePrecio(precioText);
 
-  if (tipo === 'caja') {
-    const boxId = card.dataset.box;
-    const estado = estadoCajas[boxId];
-    if (!estado || !estado.ok) { alert('Falta configurar la caja'); return; }
-
-    const nombre = card.querySelector('.text-3xl, .text-4xl')?.textContent.trim() || 'Caja';
-    const precio = parsePrecio(card.querySelector('.inline-block.bg-white')?.textContent);
-
-    item = { tipo: 'caja', nombre, precio: isNaN(precio) ? 0 : precio,
-             variedad: estado.variedad,
-             preferencias: { like: [...estado.like], dislike: [...estado.dislike] },
-             cantidad: 1 };
-  } else {
-    const nombre = card.querySelector('.font-bold, span')?.textContent.trim() || 'Producto';
-    const precio = parsePrecio(card.querySelector('.text-green-800')?.textContent);
-    item = { tipo: 'producto', nombre, precio: isNaN(precio) ? 0 : precio, cantidad: 1 };
-  }
-
-  let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-  if (!Array.isArray(carrito)) carrito = [];
-
-  // Buscar si el item ya existe en el carrito
-  const itemExistente = carrito.find(i => 
-    i.tipo === item.tipo && 
-    i.nombre === item.nombre && 
-    JSON.stringify(i.variedad || {}) === JSON.stringify(item.variedad || {}) &&
-    JSON.stringify(i.preferencias || {}) === JSON.stringify(item.preferencias || {})
-  );
-
-  if (itemExistente) {
-    // Si ya existe, incrementa la cantidad
-    itemExistente.cantidad = (itemExistente.cantidad || 1) + 1;
-    mostrarNotificacion('Cantidad actualizada en el carrito');
-  } else {
-    // Si no existe, lo agrega al carrito con cantidad 1
-    item.cantidad = 1;
-    carrito.push(item);
-    mostrarNotificacion('Producto agregado al carrito');
-  }
-
-  localStorage.setItem('carrito', JSON.stringify(carrito));
-  renderCarrito();
+  const item = {
+    tipo: 'producto',
+    nombre: nombre,
+    precio: isNaN(precio) ? 0 : precio,
+    cantidad: 1
+  };
+  
+  agregarAlCarrito(item);
 }
 
 /* ----------  INICIALIZACIÓN ---------- */
@@ -619,6 +581,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   actualizarBotonesAgregar();
+
+  limpiarCarritoAlIniciar();
 });
 
 /* ----------  RESETEAR OTRAS CAJAS (al cambiar de variedad) ---------- */
@@ -685,37 +649,40 @@ function actualizarBotonAgregar(boxId) {
 function guardarPreferencias() {
   playWaterDrop();
   if (!cajaActual || !estadoCajas[cajaActual]) {
-    alert('Elegí la caja primero'); return;
+    alert('Error: No se ha seleccionado ninguna caja.');
+    return;
   }
 
-  // Copia la selección actual al estado de la caja
-  estadoCajas[cajaActual].like    = [...preferenciasCaja.like];
+  // 1. Guarda las preferencias en el estado de la caja
+  estadoCajas[cajaActual].like = [...preferenciasCaja.like];
   estadoCajas[cajaActual].dislike = [...preferenciasCaja.dislike];
-  estadoCajas[cajaActual].ok      = true;
+  estadoCajas[cajaActual].ok = true;
 
-  // Resumen en el diálogo
-  const div = document.getElementById('resumen-contenido');
-  const likes = estadoCajas[cajaActual].like.map(n => {
-    const en = PRODUCTOS_TRADUCCIONES[n] || n;
-    return `👍 ${n} / ${en}`;
-  }).join('<br>');
-  const dislikes = estadoCajas[cajaActual].dislike.map(n => {
-    const en = PRODUCTOS_TRADUCCIONES[n] || n;
-    return `👎 ${n} / ${en}`;
-  }).join('<br>');
-  div.innerHTML = (likes || dislikes) ? `${likes}<br>${dislikes}` : '<i>Sin preferencias</i>';
-
-  // Habilita el botón "Agregar" de esa caja
-  actualizarBotonAgregar(cajaActual);
-
-  // Oculta el botón de guardar preferencias
-  const btnSave = document.getElementById('btn-guardar-preferencias');
-  if (btnSave) {
-    btnSave.style.display = 'none';
+  // 2. Obtiene los datos de la tarjeta HTML para crear el item del carrito
+  const card = document.querySelector(`.caja-hover[data-box="box${cajaActual}"]`);
+  if (!card) {
+    alert('Error: No se encontró la tarjeta de la caja.');
+    return;
   }
+  const nombre = card.querySelector('.text-3xl, .text-4xl')?.textContent.trim() || `Caja ${cajaActual}`;
+  const precio = parsePrecio(card.querySelector('.inline-block.bg-white')?.textContent);
+  const estado = estadoCajas[cajaActual];
 
-  // Muestra el popup de confirmación
-  document.getElementById('dlg-resumen').showModal();
+  const item = {
+    tipo: 'caja',
+    nombre: nombre,
+    precio: isNaN(precio) ? 0 : precio,
+    variedad: estado.variedad,
+    preferencias: { like: [...estado.like], dislike: [...estado.dislike] },
+    cantidad: 1
+  };
+  
+  // 3. Llama a la lógica para agregar al carrito
+  agregarAlCarrito(item);
+
+  // 4. Oculta la sección de configuración y vuelve a la sección de cajas
+  document.getElementById('configurar-caja').classList.add('hidden');
+  document.querySelector('#cajas')?.scrollIntoView({ behavior: 'smooth' });
 }
 
 /* ----------  NOTIFICACIONES ---------- */
@@ -1101,3 +1068,113 @@ function handleContinuarPedido() {
   window.estadoFlujoCarrito = 'formulario';
   mostrarFormularioPedido();
 }
+
+// NUEVA FUNCIÓN: Se activa al hacer clic en un botón de variedad.
+function iniciarConfiguracionCaja(btn) {
+    playWaterDrop();
+    const boxId = btn.dataset.box;
+    const variedad = btn.dataset.variedad;
+
+    // Resetea otras cajas para evitar confusiones
+    resetearCajasExcepto(boxId);
+
+    // Crea el estado si no existe
+    if (!estadoCajas[boxId]) {
+        estadoCajas[boxId] = { variedad: null, like: [], dislike: [], ok: false };
+    }
+
+    // Guarda la variedad y abre la sección de configuración
+    estadoCajas[boxId].variedad = variedad;
+    cajaActual = boxId;
+    
+    // Actualiza el estilo de los botones de esa tarjeta
+    const card = btn.closest('.caja-hover');
+    card.querySelectorAll('.variedad-btn').forEach(b => {
+        b.classList.remove('selected', 'bg-green-600', 'text-white');
+        b.classList.add('bg-green-100', 'text-green-800');
+    });
+    btn.classList.add('selected', 'bg-green-600', 'text-white');
+
+    // Abre la sección de configuración
+    abrirConfig(boxId);
+}
+
+// NUEVA FUNCIÓN CENTRALIZADA para agregar items al carrito
+function agregarAlCarrito(item) {
+    // Limpiar el carrito al iniciar si no existe
+    if (!localStorage.getItem('carrito')) {
+        localStorage.setItem('carrito', '[]');
+    }
+
+    let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+    if (!Array.isArray(carrito)) carrito = [];
+
+    // Buscar si ya existe un item idéntico
+    const itemExistente = carrito.find(i => 
+        i.nombre === item.nombre && 
+        i.variedad === item.variedad && 
+        i.autoMode === item.autoMode
+    );
+
+    if (itemExistente) {
+        // Si existe, solo actualizar la cantidad
+        itemExistente.cantidad = (itemExistente.cantidad || 1) + 1;
+        mostrarNotificacion('Cantidad actualizada en el carrito');
+    } else {
+        // Si no existe, agregar como nuevo item
+        item.cantidad = 1;
+        carrito.push(item);
+        mostrarNotificacion(item.tipo === 'caja' ? 'Caja agregada al carrito' : 'Producto agregado al carrito');
+    }
+
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+    renderCarrito();
+}
+
+// Función para limpiar el carrito al iniciar la página
+function limpiarCarritoAlIniciar() {
+    localStorage.removeItem('carrito');
+    localStorage.setItem('carrito', '[]');
+}
+
+/* ----------  AUTO-MODE ---------- */
+function agregarCajaAutoMode() {
+  playWaterDrop();
+  if (!cajaActual) {
+    alert('Error: No se ha seleccionado ninguna caja.');
+    return;
+  }
+
+  // Obtiene los datos de la tarjeta HTML para crear el item del carrito
+  const card = document.querySelector(`.caja-hover[data-box="box${cajaActual}"]`);
+  if (!card) {
+    alert('Error: No se encontró la tarjeta de la caja.');
+    return;
+  }
+
+  const nombre = card.querySelector('.text-3xl, .text-4xl')?.textContent.trim() || `Caja ${cajaActual}`;
+  const precio = parsePrecio(card.querySelector('.inline-block.bg-white')?.textContent);
+  const variedad = card.querySelector('.variedad-btn.selected')?.textContent.trim() || 'Mix';
+
+  const item = {
+    tipo: 'caja',
+    nombre: nombre,
+    precio: isNaN(precio) ? 0 : precio,
+    variedad: variedad,
+    preferencias: { like: [], dislike: [] },
+    cantidad: 1,
+    autoMode: true
+  };
+  
+  // Agrega al carrito
+  agregarAlCarrito(item);
+
+  // Oculta la sección de configuración y vuelve a la sección de cajas
+  document.getElementById('configurar-caja').classList.add('hidden');
+  document.querySelector('#cajas')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Agregar el evento al botón AUTO-MODE
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btn-auto-mode')?.addEventListener('click', agregarCajaAutoMode);
+});
