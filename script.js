@@ -103,7 +103,8 @@ function renderCarrito() {
   if (carrito.length === 0) {
     html = `
       <div class="text-center text-gray-500 my-8">
-        ${lang === 'es' ? 'El carrito está vacío' : 'The cart is empty'}
+        <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">El carrito está vacío</span>
+        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">The cart is empty</span>
       </div>
     `;
     cont.innerHTML = html;
@@ -119,20 +120,26 @@ function renderCarrito() {
           <div>
             <div class="font-bold text-green-800 text-lg">${item.nombre}</div>
             ${item.variedad ? `<div class="text-sm text-gray-600">
-              ${lang === 'es' ? 'Variedad:' : 'Variety:'} ${item.variedad}
+              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Variedad:</span>
+              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Variety:</span>
+              ${item.variedad}
             </div>` : ''}
             ${item.preferencias ? `
               <div class="ml-2 text-sm bg-green-50 rounded-lg p-2">
                 <div>
                   <b>👍</b> 
-                  ${lang === 'es' ? 'Me gusta:' : 'Likes:'} ${item.preferencias.like.map(n => {
+                  <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Me gusta:</span>
+                  <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Likes:</span>
+                  ${item.preferencias.like.map(n => {
                     const en = PRODUCTOS_TRADUCCIONES[n] || n;
                     return lang === 'es' ? n : en;
                   }).join(', ') || '-'}
                 </div>
                 <div>
                   <b>👎</b> 
-                  ${lang === 'es' ? 'No me gusta:' : 'Dislikes:'} ${item.preferencias.dislike.map(n => {
+                  <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">No me gusta:</span>
+                  <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Dislikes:</span>
+                  ${item.preferencias.dislike.map(n => {
                     const en = PRODUCTOS_TRADUCCIONES[n] || n;
                     return lang === 'es' ? n : en;
                   }).join(', ') || '-'}
@@ -153,7 +160,8 @@ function renderCarrito() {
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              ${lang === 'es' ? 'Eliminar' : 'Remove'}
+              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Eliminar</span>
+              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Remove</span>
             </button>
           </div>
         </div>
@@ -165,13 +173,15 @@ function renderCarrito() {
     <div class="mt-6 p-6 bg-green-50 rounded-lg">
       <div class="flex justify-between items-center mb-6">
         <span class="text-xl font-bold text-green-800">
-          ${lang === 'es' ? 'Total:' : 'Total:'}
+          <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Total:</span>
+          <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Total:</span>
         </span>
         <span class="text-xl font-bold text-green-800">DOP ${total.toFixed(2)}</span>
       </div>
       <button id="btn-continuar-pedido" 
               class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold">
-        ${lang === 'es' ? 'Continuar con el pedido' : 'Continue with order'}
+        <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Continuar con el pedido</span>
+        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Continue with order</span>
       </button>
     </div>`;
 
@@ -752,91 +762,113 @@ function mostrarFormularioPedido() {
   }
   const dialog = document.getElementById('dlg-carrito');
   const lang = document.documentElement.lang || 'es';
-  dialog.innerHTML = `
-    <div class="p-6">
-      <h3 class="text-xl font-bold text-green-800 mb-6 text-center">
-        ${lang === 'es' ? 'Completar pedido' : 'Complete order'}
-      </h3>
-      
-      <form id="form-pedido" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            ${lang === 'es' ? 'Nombre' : 'Name'}
-          </label>
-          <input type="text" name="nombre" required
-                 placeholder="${lang === 'en' ? 'Your name' : 'Tu nombre'}"
-                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-        </div>
+  dialog.innerHTML = /* html */`
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-green-800">
+              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Completar pedido</span>
+              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Complete order</span>
+            </h2>
+            <button onclick="this.closest('dialog').close()" class="text-gray-500 hover:text-gray-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <form id="form-pedido" class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span class="lang-es">Nombre</span>
+                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Name</span>
+              </label>
+              <input type="text" name="nombre" required
+                     placeholder="${lang === 'en' ? 'Your name' : 'Tu nombre'}"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            WhatsApp
-          </label>
-          <input type="tel" name="whatsapp" required
-                 placeholder="${lang === 'en' ? 'Your WhatsApp number' : 'Tu número de WhatsApp'}"
-                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-        </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span class="lang-es">WhatsApp</span>
+                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">WhatsApp</span>
+              </label>
+              <input type="tel" name="whatsapp" required
+                     placeholder="${lang === 'en' ? 'Your WhatsApp number' : 'Tu número de WhatsApp'}"
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            ${lang === 'es' ? 'Día de entrega' : 'Delivery day'}
-          </label>
-          <select name="dia" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-            <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
-            <option value="Lunes">${lang === 'en' ? 'Monday (12:30-20:00) - Free' : 'Lunes (12:30-20:00) - Gratis'}</option>
-            <option value="Martes">${lang === 'en' ? 'Tuesday (12:30-20:00) - DOP 100' : 'Martes (12:30-20:00) - DOP 100'}</option>
-            <option value="Miércoles">${lang === 'en' ? 'Wednesday (12:30-20:00) - Free' : 'Miércoles (12:30-20:00) - Gratis'}</option>
-            <option value="Jueves">${lang === 'en' ? 'Thursday (12:30-20:00) - DOP 100' : 'Jueves (12:30-20:00) - DOP 100'}</option>
-            <option value="Viernes">${lang === 'en' ? 'Friday (12:30-20:00) - Free' : 'Viernes (12:30-20:00) - Gratis'}</option>
-            <option value="Sábado">${lang === 'en' ? 'Saturday (12:30-20:00) - DOP 100' : 'Sábado (12:30-20:00) - DOP 100'}</option>
-          </select>
-        </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span class="lang-es">Día de entrega</span>
+                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery day</span>
+              </label>
+              <select name="dia" required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
+                <option value="Lunes">${lang === 'en' ? 'Monday (12:30-20:00) - Free' : 'Lunes (12:30-20:00) - Gratis'}</option>
+                <option value="Martes">${lang === 'en' ? 'Tuesday (12:30-20:00) - DOP 100' : 'Martes (12:30-20:00) - DOP 100'}</option>
+                <option value="Miércoles">${lang === 'en' ? 'Wednesday (12:30-20:00) - Free' : 'Miércoles (12:30-20:00) - Gratis'}</option>
+                <option value="Jueves">${lang === 'en' ? 'Thursday (12:30-20:00) - DOP 100' : 'Jueves (12:30-20:00) - DOP 100'}</option>
+                <option value="Viernes">${lang === 'en' ? 'Friday (12:30-20:00) - Free' : 'Viernes (12:30-20:00) - Gratis'}</option>
+                <option value="Sábado">${lang === 'en' ? 'Saturday (12:30-20:00) - DOP 100' : 'Sábado (12:30-20:00) - DOP 100'}</option>
+              </select>
+            </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            ${lang === 'es' ? 'Dirección de entrega' : 'Delivery address'}
-          </label>
-          <textarea name="direccion" required rows="3"
-                    placeholder="${lang === 'en' ? 'Delivery address' : 'Dirección de entrega'}"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
-        </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span class="lang-es">Dirección de entrega</span>
+                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery address</span>
+              </label>
+              <textarea name="direccion" required rows="3"
+                        placeholder="${lang === 'en' ? 'Delivery address' : 'Dirección de entrega'}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+            </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            ${lang === 'es' ? 'Observaciones (opcional)' : 'Notes (optional)'}
-          </label>
-          <textarea name="observaciones" rows="2"
-                    placeholder="${lang === 'en' ? 'Notes (optional)' : 'Observaciones (opcional)'}"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
-        </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span class="lang-es">Observaciones (opcional)</span>
+                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Notes (optional)</span>
+              </label>
+              <textarea name="observaciones" rows="2"
+                        placeholder="${lang === 'en' ? 'Notes (optional)' : 'Observaciones (opcional)'}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+            </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            ${lang === 'es' ? 'Modo de pago' : 'Payment method'}
-          </label>
-          <select name="pago" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-            <option value="">${lang === 'en' ? 'Select method' : 'Seleccionar método'}</option>
-            <option value="Cash">${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
-            <option value="Transferencia">${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
-            <option value="PayPal">PayPal (+10%)</option>
-          </select>
-        </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <span class="lang-es">Modo de pago</span>
+                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Payment method</span>
+              </label>
+              <select name="pago" required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="">${lang === 'en' ? 'Select method' : 'Seleccionar método'}</option>
+                <option value="Cash">${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
+                <option value="Transferencia">${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
+                <option value="PayPal">PayPal (+10%)</option>
+              </select>
+            </div>
 
-        <div class="flex justify-end gap-4 mt-6">
-          <button type="button" onclick="resetCarritoDialog(); document.getElementById('dlg-carrito').close(); window.estadoFlujoCarrito = 'lista'; renderCarrito();"
-                  class="px-4 py-2 text-gray-600 hover:text-gray-800">
-            ${lang === 'es' ? 'Cancelar' : 'Cancel'}
-          </button>
-          <button type="submit"
-                  class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            ${lang === 'es' ? 'Enviar pedido' : 'Send order'}
-          </button>
+            <div class="flex justify-end gap-4 mt-6">
+              <button type="button" onclick="resetCarritoDialog(); document.getElementById('dlg-carrito').close(); window.estadoFlujoCarrito = 'lista'; renderCarrito();"
+                      class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                <span class="lang-es">Cancelar</span>
+                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Cancel</span>
+              </button>
+              <button type="submit"
+                      class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <span class="lang-es">Enviar pedido</span>
+                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Send order</span>
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   `;
+
+  setLanguage(lang);   // actualiza visibilidad de .lang-es / .lang-en
+
   document.getElementById('form-pedido')?.addEventListener('submit', enviarPedido);
 }
 
@@ -885,16 +917,20 @@ function enviarPedido(event) {
   });
 
   // Calcular totales
-  let subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
-  let total = subtotal;
-  
-  mensaje += lang === 'en' ? `\n*Cost summary:*\n` : `\n*Resumen de costos:*\n`;
-  mensaje += lang === 'en' ? `Products subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal productos: DOP ${subtotal.toFixed(2)}\n`;
-  
-  // Agregar costo de delivery si aplica
-  if ([lang === 'en' ? 'Tuesday' : 'Martes', lang === 'en' ? 'Thursday' : 'Jueves', lang === 'en' ? 'Saturday' : 'Sábado'].includes(formData.get('dia'))) {
+  const subtotal = carrito.reduce(
+    (sum, item) => sum + item.precio * (item.cantidad || 1),
+    0
+  );
+
+  let   total    = subtotal;
+
+  // Delivery
+  const diasConCargo = ['Martes', 'Tuesday', 'Jueves', 'Thursday', 'Sábado', 'Saturday'];
+  if (diasConCargo.includes(formData.get('dia'))) {
     total += 100;
-    mensaje += lang === 'en' ? `Delivery cost: DOP 100.00\n` : `Costo de delivery: DOP 100.00\n`;
+    mensaje += lang === 'en'
+      ? 'Delivery cost: DOP 100.00\n'
+      : 'Costo de delivery: DOP 100.00\n';
   }
   
   // Agregar comisión PayPal si aplica
@@ -936,6 +972,7 @@ function enviarPedido(event) {
   `;
 
   document.body.appendChild(dialogConfirm);
+  setLanguage(lang);   // oculta duplicados en modo EN
   dialogConfirm.showModal();
 }
 
@@ -965,9 +1002,35 @@ function enviarPedidoWhatsApp(dialog) {
     mensaje += `   DOP ${(item.precio * (item.cantidad || 1)).toFixed(2)}\n\n`;
   });
 
-  // Agregar total
-  const total = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
-  mensaje += lang === 'en' ? `Total: DOP ${total.toFixed(2)}\n\n` : `Total: DOP ${total.toFixed(2)}\n\n`;
+  // Calcular totales
+  const subtotal = carrito.reduce(
+    (sum, item) => sum + item.precio * (item.cantidad || 1),
+    0
+  );
+
+  let   total    = subtotal;
+
+  // Delivery
+  const diasConCargo = ['Martes', 'Tuesday', 'Jueves', 'Thursday', 'Sábado', 'Saturday'];
+  if (diasConCargo.includes(formData.get('dia'))) {
+    total += 100;
+    mensaje += lang === 'en'
+      ? 'Delivery cost: DOP 100.00\n'
+      : 'Costo de delivery: DOP 100.00\n';
+  }
+
+  // Agregar resumen de costos
+  mensaje += lang === 'en' ? `Cost summary:\n` : `Resumen de costos:\n`;
+  mensaje += lang === 'en' ? `Products subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal productos: DOP ${subtotal.toFixed(2)}\n`;
+  
+  // Agregar comisión PayPal si aplica
+  if (formData.get('pago') === 'PayPal') {
+    const comisionPayPal = total * 0.1;
+    total += comisionPayPal;
+    mensaje += lang === 'en' ? `PayPal fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
+  }
+
+  mensaje += lang === 'en' ? `Final total: DOP ${total.toFixed(2)}\n\n` : `Total final: DOP ${total.toFixed(2)}\n\n`;
 
   // Agregar datos de entrega
   mensaje += lang === 'en' ? 'Delivery Information:\n' : 'Datos de entrega:\n';
