@@ -757,16 +757,6 @@ function mostrarFormularioPedido() {
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">WhatsApp</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">WhatsApp</span>
-              </label>
-              <input type="tel" name="whatsapp" required
-                     placeholder="${lang === 'en' ? 'Your WhatsApp number' : 'Tu número de WhatsApp'}"
-                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
                 <span class="lang-es">Día de entrega</span>
                 <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery day</span>
               </label>
@@ -855,7 +845,6 @@ function enviarPedido(event) {
   // Construir el mensaje usando el mismo formato que se muestra en el checkout
   let mensaje = lang === 'en' ? `*New GreenDolio Order*\n\n` : `*Nuevo Pedido GreenDolio*\n\n`;
   mensaje += lang === 'en' ? `*Customer:* ${formData.get('nombre')}\n` : `*Cliente:* ${formData.get('nombre')}\n`;
-  mensaje += `*WhatsApp:* ${formData.get('whatsapp')}\n`;
   mensaje += lang === 'en' ? `*Delivery day:* ${formData.get('dia')}\n` : `*Día de entrega:* ${formData.get('dia')}\n`;
   mensaje += lang === 'en' ? `*Address:* ${formData.get('direccion')}\n` : `*Dirección:* ${formData.get('direccion')}\n`;
   if (formData.get('observaciones')) {
@@ -1002,7 +991,6 @@ function enviarPedidoWhatsApp(dialog) {
   // Agregar datos de entrega
   mensaje += lang === 'en' ? 'Delivery Information:\n' : 'Datos de entrega:\n';
   mensaje += lang === 'en' ? `Name: ${formData.get('nombre')}\n` : `Nombre: ${formData.get('nombre')}\n`;
-  mensaje += `WhatsApp: ${formData.get('whatsapp')}\n`;
   mensaje += lang === 'en' ? `Address: ${formData.get('direccion')}\n` : `Dirección: ${formData.get('direccion')}\n`;
   mensaje += lang === 'en' ? `Delivery day: ${formData.get('dia')}\n` : `Día de entrega: ${formData.get('dia')}\n`;
   mensaje += lang === 'en' ? `Payment method: ${formData.get('pago')}\n` : `Método de pago: ${formData.get('pago')}\n`;
