@@ -835,10 +835,30 @@ function enviarPedido(event) {
   const form = event.target;
   const formData = new FormData(form);
   const lang = document.documentElement.lang || 'es';
+  
   // Obtener el carrito actual
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   if (!Array.isArray(carrito) || carrito.length === 0) {
     alert(lang === 'en' ? 'The cart is empty' : 'El carrito está vacío');
+    return;
+  }
+
+  // Verificar si hay cajas en el carrito
+  const tieneCajas = carrito.some(item => item.tipo === 'caja');
+  
+  // Calcular subtotal
+  const subtotal = carrito.reduce(
+    (sum, item) => sum + item.precio * (item.cantidad || 1),
+    0
+  );
+
+  // Verificar pedido mínimo si no hay cajas
+  if (!tieneCajas && subtotal < 500) {
+    const faltante = 500 - subtotal;
+    alert(lang === 'en' 
+      ? `Minimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
+      : `Pedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`
+    );
     return;
   }
 
@@ -873,16 +893,10 @@ function enviarPedido(event) {
   });
 
   // Calcular totales
-  const subtotal = carrito.reduce(
-    (sum, item) => sum + item.precio * (item.cantidad || 1),
-    0
-  );
+  let total = subtotal;
 
-  let   total    = subtotal;
-
-  // Delivery
-  const diasConCargo = ['Martes', 'Tuesday', 'Jueves', 'Thursday', 'Sábado', 'Saturday'];
-  if (diasConCargo.includes(formData.get('dia'))) {
+  // Agregar costo de delivery si no hay cajas
+  if (!tieneCajas) {
     total += 100;
     mensaje += lang === 'en'
       ? 'Delivery cost: DOP 100.00\n'
@@ -1053,6 +1067,19 @@ function actualizarBotonesAgregar() {
 
 // Refuerzo: Solo abrir el formulario si el usuario presiona continuar
 function handleContinuarPedido() {
+  // Validación de pedido mínimo antes de mostrar el formulario
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  const lang = document.documentElement.lang || 'es';
+  const tieneCajas = carrito.some(item => item.tipo === 'caja');
+  const subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
+  if (!tieneCajas && subtotal < 500) {
+    const faltante = 500 - subtotal;
+    alert(lang === 'en' 
+      ? `Minimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
+      : `Pedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`
+    );
+    return;
+  }
   window.estadoFlujoCarrito = 'formulario';
   mostrarFormularioPedido();
 }
@@ -1166,3 +1193,75 @@ function agregarCajaAutoMode() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-auto-mode')?.addEventListener('click', agregarCajaAutoMode);
 });
+
+function actualizarCarrito() {
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  const contador = document.getElementById('contador-carrito');
+  const total = document.getElementById('total-carrito');
+  const lista = document.getElementById('lista-carrito');
+  const btnContinuar = document.getElementById('btn-continuar');
+  const btnVaciar = document.getElementById('btn-vaciar');
+  const lang = document.documentElement.lang || 'es';
+
+  // Verificar si hay cajas en el carrito
+  const tieneCajas = carrito.some(item => item.tipo === 'caja');
+  
+  // Calcular subtotal
+  const subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
+  
+  // Calcular total con delivery si no hay cajas
+  let totalConDelivery = subtotal;
+  let mensajeDelivery = '';
+  
+  if (!tieneCajas) {
+    if (subtotal < 500) {
+      const faltante = 500 - subtotal;
+      mensajeDelivery = lang === 'en' 
+        ? `\nMinimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
+        : `\nPedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`;
+    } else {
+      totalConDelivery += 100;
+      mensajeDelivery = lang === 'en'
+        ? '\nDelivery fee: DOP 100.00'
+        : '\nCosto de delivery: DOP 100.00';
+    }
+  }
+
+  // Actualizar contador
+  contador.textContent = carrito.length;
+  contador.style.display = carrito.length > 0 ? 'block' : 'none';
+
+  // Actualizar total
+  total.textContent = `DOP ${totalConDelivery.toFixed(2)}`;
+  if (mensajeDelivery) {
+    total.innerHTML += `<span class="text-sm text-red-600">${mensajeDelivery}</span>`;
+  }
+
+  // Actualizar lista
+  lista.innerHTML = carrito.map((item, index) => `
+    <div class="flex items-center justify-between py-2">
+      <div class="flex-1">
+        <span class="font-medium">${item.nombre}</span>
+        ${item.variedad ? `<br><span class="text-sm text-gray-600">${item.variedad}</span>` : ''}
+        ${item.preferencias ? `
+          <br>
+          ${item.preferencias.like.length > 0 ? `<span class="text-sm text-green-600">👍 ${item.preferencias.like.join(', ')}</span>` : ''}
+          ${item.preferencias.dislike.length > 0 ? `<span class="text-sm text-red-600">👎 ${item.preferencias.dislike.join(', ')}</span>` : ''}
+        ` : ''}
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="cambiarCantidad(${index}, -1)" class="text-gray-500 hover:text-gray-700">-</button>
+        <span>${item.cantidad || 1}</span>
+        <button onclick="cambiarCantidad(${index}, 1)" class="text-gray-500 hover:text-gray-700">+</button>
+        <span class="ml-4">DOP ${(item.precio * (item.cantidad || 1)).toFixed(2)}</span>
+        <button onclick="eliminarDelCarrito(${index})" class="ml-2 text-red-500 hover:text-red-700">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  // Actualizar botones
+  btnContinuar.disabled = carrito.length === 0 || (!tieneCajas && subtotal < 500);
+  btnVaciar.disabled = carrito.length === 0;
+}
