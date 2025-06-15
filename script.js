@@ -86,22 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Asignar eventos a los botones
   btnLogin.addEventListener('click', login);
   btnLogout.addEventListener('click', logout);
-
-  // Lógica para el botón de cerrar del formulario de perfil
-  const btnCerrarProfile = document.getElementById('cerrar-profile-setup');
-  if (btnCerrarProfile) {
-    btnCerrarProfile.addEventListener('click', function() {
-      document.getElementById('profile-setup').classList.add('hidden');
-      localStorage.setItem('profileSetupClosed', '1');
-      // Cerrar sesión automáticamente
-      firebase.auth().signOut().then(() => {
-        // Limpiar el estado de cierre para permitir reintentar login y mostrar el formulario
-        setTimeout(() => {
-          localStorage.removeItem('profileSetupClosed');
-        }, 300);
-      });
-    });
-  }
 });
 
 /* ====== preferencias de la caja (global) ====== */
@@ -1240,7 +1224,6 @@ function guardarPerfilDeUsuario(user) {
   const seccionFormulario = document.getElementById('profile-setup');
   const formulario = document.getElementById('profile-form');
 
-  // Mostrar siempre el formulario si el usuario es nuevo
   seccionFormulario.classList.remove('hidden');
   document.getElementById('nombre').value = user.displayName;
 
@@ -1271,7 +1254,7 @@ function guardarPerfilDeUsuario(user) {
       console.log("¡Perfil guardado con éxito!");
       seccionFormulario.classList.add('hidden');
       mostrarNotificacion("¡Gracias! Tu perfil ha sido guardado.");
-      localStorage.removeItem('profileSetupClosed'); // Permitir mostrar de nuevo si es necesario
+      
       window.userProfile = {
           displayName: user.displayName,
           email: user.email,
