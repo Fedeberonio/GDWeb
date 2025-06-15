@@ -1,85 +1,3 @@
-/* ====== Autenticación con Google ====== */
-document.addEventListener('DOMContentLoaded', () => {
-  const auth = firebase.auth();
-  const provider = new firebase.auth.GoogleAuthProvider();
-
-  const btnLogin = document.getElementById('btn-login');
-  const btnLogout = document.getElementById('btn-logout');
-  const userInfoContainer = document.getElementById('user-info');
-  const userPic = document.getElementById('user-pic');
-  const userName = document.getElementById('user-name');
-
-  // Variable global para guardar los datos del perfil
-  window.userProfile = null;
-
-  // Función para Iniciar Sesión
-  const login = () => {
-    auth.signInWithPopup(provider)
-      .then((result) => {
-        console.log("¡Inicio de sesión exitoso!", result.user);
-        mostrarNotificacion('¡Bienvenid@ de vuelta!');
-      })
-      .catch((error) => {
-        console.error("Error en el inicio de sesión:", error);
-        mostrarNotificacion('Error al iniciar sesión. Por favor, intenta de nuevo.');
-      });
-  };
-
-  // Función para Cerrar Sesión
-  const logout = () => {
-    auth.signOut()
-      .then(() => {
-        console.log("Sesión cerrada.");
-        mostrarNotificacion('Has cerrado sesión. ¡Vuelve pronto!');
-      })
-      .catch((error) => {
-        console.error("Error al cerrar sesión:", error);
-        mostrarNotificacion('Error al cerrar sesión. Por favor, intenta de nuevo.');
-      });
-  };
-
-  // Escuchar cambios en el estado de autenticación
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      // Usuario ha iniciado sesión
-      const db = firebase.firestore();
-      const userRef = db.collection("users").doc(user.uid);
-
-      userRef.get().then((doc) => {
-        if (doc.exists) {
-          // Si el documento existe, el usuario es recurrente.
-          console.log("Usuario recurrente, cargando perfil...");
-          window.userProfile = doc.data(); // Guardamos los datos en la variable global
-        } else {
-          // Si el documento NO existe, es un usuario nuevo.
-          console.log("¡Hola, usuario nuevo! Mostrando formulario de perfil.");
-          guardarPerfilDeUsuario(user);
-        }
-      }).catch((error) => {
-        console.error("Error al obtener el documento del usuario:", error);
-      });
-
-      // --- Esto es el código que ya tenías para cambiar la interfaz ---
-      btnLogin.style.display = 'none';
-      userInfoContainer.style.display = 'flex';
-      userPic.src = user.photoURL;
-      userName.textContent = user.displayName;
-
-    } else {
-      // Usuario ha cerrado sesión
-      window.userProfile = null; // Limpiamos el perfil al cerrar sesión
-      btnLogin.style.display = 'block';
-      userInfoContainer.style.display = 'none';
-      userPic.src = '';
-      userName.textContent = '';
-    }
-  });
-
-  // Asignar eventos a los botones
-  btnLogin.addEventListener('click', login);
-  btnLogout.addEventListener('click', logout);
-});
-
 /* ====== preferencias de la caja (global) ====== */
 window.preferenciasCaja = { like: [], dislike: [] };
 const estadoCajas = {};   /* boxId -> { variedad:null, like:[], dislike:[], ok:false } */
@@ -87,26 +5,6 @@ let cajaActual = null;
 window.carrito = window.carrito || [];
 // ====== Estado del flujo del carrito ====== //
 window.estadoFlujoCarrito = "lista";
-
-/* ----------  PLANTILLA ORIGINAL DEL DIÁLOGO  ---------- */
-document.addEventListener('DOMContentLoaded', () => {
-  const dlgCarrito = document.getElementById('dlg-carrito');
-  if (!dlgCarrito) return;
-  const plantillaCarrito = dlgCarrito.innerHTML;
-
-  /*  NUEVO  ➜  restaura + re-engancha el botón "X"  */
-  window.resetCarritoDialog = () => {
-    dlgCarrito.innerHTML = plantillaCarrito;             // 1°  clona HTML
-
-    // 2°  vuelve a conectar el botón "X" recién clonado
-    dlgCarrito.querySelector('#dlg-carrito-cerrar')
-              ?.addEventListener('click', () => {
-        dlgCarrito.close();
-        window.estadoFlujoCarrito = 'lista';
-        renderCarrito();
-    });
-  };
-});
 
 /* ====== Contenido estático de las cajas ====== */
 const BOX_CONTENT = {
@@ -135,10 +33,10 @@ function mostrarContenidoCaja(boxId) {
   }
 }
 
-// Extrae el número del texto de precio, manejando comas
+// Extrae sólo el primer número del texto de precio
 function parsePrecio(txt){
-  const m = (txt||'').match(/\d+(?:,\d+)?/);
-  return m ? parseFloat(m[0].replace(',', '')) : 0;
+  const m = (txt||'').match(/\d+(?:\.\d+)?/);
+  return m ? parseFloat(m[0]) : 0;
 }
 
 // Función para reproducir el sonido de gota
@@ -229,22 +127,12 @@ function renderCarrito() {
               </div>` : ''}
           </div>
           <div class="text-right">
-            <div class="flex items-center gap-2">
-              <button onclick="cambiarCantidad(${index}, -1)"
-                      class="w-7 h-7 bg-red-500 text-white rounded-full text-lg leading-none flex items-center justify-center">−</button>
-              <span class="min-w-[32px] text-center font-semibold">${item.cantidad || 1}</span>
-              <button onclick="cambiarCantidad(${index},  1)"
-                      class="w-7 h-7 bg-green-600 text-white rounded-full text-lg leading-none flex items-center justify-center">+</button>
-            </div>
+            <p class="text-sm text-gray-600">
+              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Cantidad:</span>
+              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Quantity:</span>
+              ${item.cantidad || 1}
+            </p>
             <p class="text-sm font-semibold text-green-800">DOP ${subtotal.toFixed(2)}</p>
-            <button onclick="eliminarDelCarrito(${index})"
-                    class="mt-2 text-red-500 hover:text-red-700 text-sm font-medium flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Eliminar</span>
-              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Remove</span>
-            </button>
           </div>
         </div>
       </div>`;
@@ -290,49 +178,36 @@ function eliminarDelCarrito(index) {
   mostrarNotificacion('Producto eliminado del carrito');
 }
 
-function cambiarCantidad(index, delta) {
-  playWaterDrop();
-  let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-  if (!Array.isArray(carrito) || !carrito[index]) return;
-
-  carrito[index].cantidad = (carrito[index].cantidad || 1) + delta;
-  if (carrito[index].cantidad < 1) carrito[index].cantidad = 1; // nunca < 1
-  localStorage.setItem('carrito', JSON.stringify(carrito));
-  renderCarrito();
-}
-
 /* ----------  CONFIGURAR CAJA ---------- */
-function abrirConfig(boxId) {
-  preferenciasCaja.like = [...(estadoCajas[boxId]?.like || [])];
-  preferenciasCaja.dislike = [...(estadoCajas[boxId]?.dislike || [])];
+function abrirConfig(btn) {
+  playWaterDrop();
+  const boxId = btn.dataset.box;
+  cajaActual = boxId;
+  if (!estadoCajas[boxId]) estadoCajas[boxId] = { variedad: null, like: [], dislike: [], ok: false };
+
+  preferenciasCaja.like = [...estadoCajas[boxId].like];
+  preferenciasCaja.dislike = [...estadoCajas[boxId].dislike];
 
   clonarProductosSiHaceFalta();
   setLanguage(localStorage.getItem('lang') || 'es');
-  
-  const configSection = document.getElementById('configurar-caja');
-  configSection.classList.remove('hidden');
+  document.getElementById('configurar-caja').classList.remove('hidden');
   requestAnimationFrame(() =>
-    configSection.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById('configurar-caja').scrollIntoView({ behavior: 'smooth' })
   );
-  
   refrescarPreferenciasUI();
 
   const btnSave = document.getElementById('btn-guardar-preferencias');
-  if (btnSave) {
-    btnSave.classList.remove('hidden');
-    btnSave.style.display = '';
-    btnSave.disabled = true; // Se activa al marcar una preferencia
-  }
+  if (btnSave) { btnSave.classList.remove('hidden'); btnSave.disabled = true; }
 
-  // Oculta la lista de resumen hasta que el usuario marque algo
-  document.getElementById('lista-preferencias')?.classList.add('hidden');
-
-  // Resalta las selecciones previas para esta caja
-  document.querySelectorAll('#configurar-caja .producto-hover').forEach(card => {
-    const n = card.dataset.nombre;
-    card.classList.remove('ring-4', 'ring-green-400', 'ring-red-400');
-    if (estadoCajas[boxId]?.like.includes(n)) card.classList.add('ring-4', 'ring-green-400');
-    else if (estadoCajas[boxId]?.dislike.includes(n)) card.classList.add('ring-4', 'ring-red-400');
+  /* Borde de selección previo */
+  const categorias = ['config-productos-frutas', 'config-productos-vegetales', 'config-productos-hierbas'];
+  categorias.forEach(categoria => {
+    document.querySelectorAll(`#${categoria} .producto-hover`).forEach(card => {
+      const n = card.dataset.nombre;
+      card.classList.remove('ring-4', 'ring-green-400', 'ring-red-400');
+      if (estadoCajas[cajaActual].like.includes(n)) card.classList.add('ring-4', 'ring-green-400');
+      else if (estadoCajas[cajaActual].dislike.includes(n)) card.classList.add('ring-4', 'ring-red-400');
+    });
   });
 }
 
@@ -370,8 +245,7 @@ const PRODUCTOS_TRADUCCIONES = {
   'Maíz': 'Corn',
   'Limón': 'Lemon',
   'Cebolla morada': 'Red Onion',
-  'Ajo': 'Garlic',
-  'Uvas moradas': 'Purple Grapes'
+  'Ajo': 'Garlic'
 };
 
 function clonarProductosSiHaceFalta() {
@@ -382,44 +256,8 @@ function clonarProductosSiHaceFalta() {
   if (gridFrutas.dataset.ready) return;
 
   // Definir categorías
-  const frutas = [
-    // Frutas tropicales
-    'Banana', 'Piña', 'Mango', 'Lechosa', 'Pitahaya', 'Carambola',
-    // Frutas cítricas
-    'Naranjas', 'Limón', 'Mandarinas',
-    // Frutas de temporada
-    'Fresas', 'Cerezas', 'Manzanas', 'Sandía', 'Melón', 'Melón Francés',
-    // Frutas secas
-    'Uvas blancas', 'Uvas moradas',
-    // Otras frutas
-    'Coco', 'Aguacates'
-  ];
-
-  const vegetales = [
-    // Tubérculos y raíces
-    'Yuca', 'Ñame', 'Batata',
-    // Verduras de hoja
-    'Repollo blanco', 'Lechuga',
-    // Verduras crucíferas
-    'Coliflor', 'Brocoli',
-    // Verduras de bulbo
-    'Cebolla amarilla', 'Cebolla morada', 'Ajo',
-    // Verduras de fruto
-    'Tomate bugalú', 'Tomate redondo', 'Pepino', 'Calabaza', 'Maíz',
-    // Legumbres
-    'Lentejas', 'Habichuelas rojas', 'Habichuelas negras',
-    // Granos
-    'Quinoa', 'Arroz blanco', 'Arroz integral'
-  ];
-
-  const hierbas = [
-    // Hierbas aromáticas
-    'Cilantro', 'Perejil', 'Romero', 'Orégano',
-    // Hierbas medicinales
-    'Genjibre',
-    // Hierbas de cocina
-    'Cebollín'
-  ];
+  const frutas = ['Banana', 'Piña', 'Fresas', 'Lechosa', 'Cerezas', 'Manzanas', 'Sandía', 'Melón', 'Melón Francés', 'Pitahaya', 'Naranjas', 'Carambola'];
+  const hierbas = ['Cilantro', 'Genjibre', 'Orégano', 'Perejil', 'Romero', 'Cebollín'];
 
   document.querySelectorAll('#alacarta .producto-hover').forEach(card => {
     const clon = card.cloneNode(true);
@@ -509,22 +347,55 @@ function refrescarPreferenciasUI() {
 /* ----------  AGREGAR AL CARRITO ---------- */
 function agregarAlCarritoDesdeTarjeta(btn) {
   playWaterDrop();
-  const card = btn.closest('.paso-card');
+  if (btn.disabled) return;
+  const card = btn.closest('.caja-hover, .paso-card');
   if (!card) return;
 
-  // Esta función ahora solo maneja productos simples, no cajas.
-  const nombre = card.querySelector('.font-bold')?.textContent.trim() || 'Producto';
-  const precioText = card.querySelector('.text-green-800')?.textContent;
-  const precio = parsePrecio(precioText);
+  const tipo = btn.dataset.tipo;
+  let item;
 
-  const item = {
-    tipo: 'producto',
-    nombre: nombre,
-    precio: isNaN(precio) ? 0 : precio,
-    cantidad: 1
-  };
-  
-  agregarAlCarrito(item);
+  if (tipo === 'caja') {
+    const boxId = card.dataset.box;
+    const estado = estadoCajas[boxId];
+    if (!estado || !estado.ok) { alert('Falta configurar la caja'); return; }
+
+    const nombre = card.querySelector('.text-3xl, .text-4xl')?.textContent.trim() || 'Caja';
+    const precio = parsePrecio(card.querySelector('.inline-block.bg-white')?.textContent);
+
+    item = { tipo: 'caja', nombre, precio: isNaN(precio) ? 0 : precio,
+             variedad: estado.variedad,
+             preferencias: { like: [...estado.like], dislike: [...estado.dislike] },
+             cantidad: 1 };
+  } else {
+    const nombre = card.querySelector('.font-bold, span')?.textContent.trim() || 'Producto';
+    const precio = parsePrecio(card.querySelector('.text-green-800')?.textContent);
+    item = { tipo: 'producto', nombre, precio: isNaN(precio) ? 0 : precio, cantidad: 1 };
+  }
+
+  let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+  if (!Array.isArray(carrito)) carrito = [];
+
+  // Buscar si el item ya existe en el carrito
+  const itemExistente = carrito.find(i => 
+    i.tipo === item.tipo && 
+    i.nombre === item.nombre && 
+    JSON.stringify(i.variedad || {}) === JSON.stringify(item.variedad || {}) &&
+    JSON.stringify(i.preferencias || {}) === JSON.stringify(item.preferencias || {})
+  );
+
+  if (itemExistente) {
+    // Si ya existe, incrementa la cantidad
+    itemExistente.cantidad = (itemExistente.cantidad || 1) + 1;
+    mostrarNotificacion('Cantidad actualizada en el carrito');
+  } else {
+    // Si no existe, lo agrega al carrito con cantidad 1
+    item.cantidad = 1;
+    carrito.push(item);
+    mostrarNotificacion('Producto agregado al carrito');
+  }
+
+  localStorage.setItem('carrito', JSON.stringify(carrito));
+  renderCarrito();
 }
 
 /* ----------  INICIALIZACIÓN ---------- */
@@ -551,12 +422,11 @@ document.addEventListener('DOMContentLoaded', () => {
           });
 
   document.getElementById('carrito-header-btn')
-          ?.addEventListener('click', () => {
+          ?.addEventListener('click', () => { 
             playWaterDrop();
-            resetCarritoDialog();
-            window.estadoFlujoCarrito = "lista";
-            renderCarrito();
-            document.getElementById('dlg-carrito').showModal();
+            window.estadoFlujoCarrito = "lista"; // Siempre mostrar la lista al abrir
+            renderCarrito(); 
+            document.getElementById('dlg-carrito').showModal(); 
           });
           
   document.getElementById('dlg-carrito-cerrar')
@@ -635,8 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-back').onclick = () => history.back();
   document.getElementById('btn-cart').onclick = () => {
     playWaterDrop();
-    resetCarritoDialog();
-    window.estadoFlujoCarrito = "lista";
+    window.estadoFlujoCarrito = "lista"; // Siempre mostrar la lista al abrir
     renderCarrito();
     document.getElementById('dlg-carrito').showModal();
   };
@@ -663,28 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   actualizarBotonesAgregar();
-
-  limpiarCarritoAlIniciar();
 });
-
-/* ----------  RESETEAR OTRAS CAJAS (al cambiar de variedad) ---------- */
-function resetearCajasExcepto(boxIdKeep) {
-  Object.keys(estadoCajas).forEach(boxId => {
-    if (boxId !== boxIdKeep) {
-      estadoCajas[boxId] = { variedad: null, like: [], dislike: [], ok: false };
-      actualizarBotonAgregar(boxId);
-    }
-  });
-
-  /* 4‒ Quita marcas visuales de productos */
-  document.querySelectorAll('#configurar-caja .producto-hover')
-          .forEach(card => {
-            card.classList.remove(
-              'seleccion-like','seleccion-dislike',
-              'ring-4','ring-green-400','ring-red-400'
-            );
-          });
-}
 
 /* ----------  SELECCIONAR VARIEDAD ---------- */
 function seleccionarVariedad(btn) {
@@ -692,8 +540,6 @@ function seleccionarVariedad(btn) {
   const card  = btn.closest('.caja-hover');
   if (!card) return;
   const boxId = card.dataset.box;
-
-  resetearCajasExcepto(boxId);
 
   // crea estado si no existe
   if (!estadoCajas[boxId])
@@ -731,40 +577,37 @@ function actualizarBotonAgregar(boxId) {
 function guardarPreferencias() {
   playWaterDrop();
   if (!cajaActual || !estadoCajas[cajaActual]) {
-    alert('Error: No se ha seleccionado ninguna caja.');
-    return;
+    alert('Elegí la caja primero'); return;
   }
 
-  // 1. Guarda las preferencias en el estado de la caja
-  estadoCajas[cajaActual].like = [...preferenciasCaja.like];
+  // Copia la selección actual al estado de la caja
+  estadoCajas[cajaActual].like    = [...preferenciasCaja.like];
   estadoCajas[cajaActual].dislike = [...preferenciasCaja.dislike];
-  estadoCajas[cajaActual].ok = true;
+  estadoCajas[cajaActual].ok      = true;
 
-  // 2. Obtiene los datos de la tarjeta HTML para crear el item del carrito
-  const card = document.querySelector(`.caja-hover[data-box="box${cajaActual}"]`);
-  if (!card) {
-    alert('Error: No se encontró la tarjeta de la caja.');
-    return;
+  // Resumen en el diálogo
+  const div = document.getElementById('resumen-contenido');
+  const likes = estadoCajas[cajaActual].like.map(n => {
+    const en = PRODUCTOS_TRADUCCIONES[n] || n;
+    return `👍 ${n} / ${en}`;
+  }).join('<br>');
+  const dislikes = estadoCajas[cajaActual].dislike.map(n => {
+    const en = PRODUCTOS_TRADUCCIONES[n] || n;
+    return `👎 ${n} / ${en}`;
+  }).join('<br>');
+  div.innerHTML = (likes || dislikes) ? `${likes}<br>${dislikes}` : '<i>Sin preferencias</i>';
+
+  // Habilita el botón "Agregar" de esa caja
+  actualizarBotonAgregar(cajaActual);
+
+  // Oculta el botón de guardar preferencias
+  const btnSave = document.getElementById('btn-guardar-preferencias');
+  if (btnSave) {
+    btnSave.style.display = 'none';
   }
-  const nombre = card.querySelector('.text-3xl, .text-4xl')?.textContent.trim() || `Caja ${cajaActual}`;
-  const precio = parsePrecio(card.querySelector('.inline-block.bg-white')?.textContent);
-  const estado = estadoCajas[cajaActual];
 
-  const item = {
-    tipo: 'caja',
-    nombre: nombre,
-    precio: isNaN(precio) ? 0 : precio,
-    variedad: estado.variedad,
-    preferencias: { like: [...estado.like], dislike: [...estado.dislike] },
-    cantidad: 1
-  };
-  
-  // 3. Llama a la lógica para agregar al carrito
-  agregarAlCarrito(item);
-
-  // 4. Oculta la sección de configuración y vuelve a la sección de cajas
-  document.getElementById('configurar-caja').classList.add('hidden');
-  document.querySelector('#cajas')?.scrollIntoView({ behavior: 'smooth' });
+  // Muestra el popup de confirmación
+  document.getElementById('dlg-resumen').showModal();
 }
 
 /* ----------  NOTIFICACIONES ---------- */
@@ -802,138 +645,109 @@ function mostrarNotificacion(mensaje) {
 
 // Función para mostrar el formulario de pedido
 function mostrarFormularioPedido() {
+  // Solo permitir mostrar el formulario si el flujo fue iniciado por el botón de continuar
   if (window.estadoFlujoCarrito !== 'formulario') {
+    // Si no fue iniciado correctamente, forzar la lista
     window.estadoFlujoCarrito = 'lista';
     renderCarrito();
     return;
   }
   const dialog = document.getElementById('dlg-carrito');
   const lang = document.documentElement.lang || 'es';
-
-  const user = firebase.auth().currentUser;
-  const profile = window.userProfile || {};
-
-  const nombre = user ? user.displayName : '';
-  const telefono = profile.telefono || '';
-  const direccion = profile.direccion || '';
-
-  // 1. Obtenemos el método de pago preferido
-  const pagoPreferido = profile.pagoPreferido || '';
-
-  // 2. Creamos el texto para las notas a partir de las preferencias
-  let notasPreferidas = '';
-  if (profile.likes || profile.dislikes) {
-    let notasArray = [];
-    if (profile.likes) {
-      notasArray.push(`👍 Preferencias: ${profile.likes}`);
-    }
-    if (profile.dislikes) {
-      notasArray.push(`👎 Evitar: ${profile.dislikes}`);
-    }
-    notasPreferidas = notasArray.join('\n');
-  }
-
-  dialog.innerHTML = /* html */`
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-green-800">
-              <span class="lang-es" style="display:${lang === 'es' ? '' : 'none'};">Completar pedido</span>
-              <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Complete order</span>
-            </h2>
-            <button onclick="this.closest('dialog').close()" class="text-gray-500 hover:text-gray-700">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <form id="form-pedido" class="space-y-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Nombre</span><span class="lang-en" style="display:none;">Name</span>
-              </label>
-              <input type="text" name="nombre" required
-                     placeholder="${lang === 'en' ? 'Your name' : 'Tu nombre'}"
-                     value="${nombre}"  
-                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Teléfono</span><span class="lang-en" style="display:none;">Phone</span>
-              </label>
-              <input type="tel" name="telefono" required
-                     placeholder="${lang === 'en' ? 'Your phone number' : 'Tu número de teléfono'}"
-                     value="${telefono}" 
-                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Día de entrega</label>
-                <select name="dia" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                    <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
-                    <option value="Lunes">Lunes (12:30-20:00) - Gratis</option>
-                    <option value="Martes">Martes (12:30-20:00) - DOP 100</option>
-                    <option value="Miércoles">Miércoles (12:30-20:00) - Gratis</option>
-                    <option value="Jueves">Jueves (12:30-20:00) - DOP 100</option>
-                    <option value="Viernes">Viernes (12:30-20:00) - Gratis</option>
-                    <option value="Sábado">Sábado (12:30-20:00) - DOP 100</option>
-                </select>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Dirección de entrega</span><span class="lang-en" style="display:none;">Delivery address</span>
-              </label>
-              <textarea name="direccion" required rows="3"
-                        placeholder="${lang === 'en' ? 'Delivery address' : 'Dirección de entrega'}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">${direccion}</textarea>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Observaciones (opcional)</span>
-                <span class="lang-en" style="display:none;">Notes (optional)</span>
-              </label>
-              <textarea name="observaciones" rows="3"
-                        placeholder="${lang === 'en' ? 'Notes (optional)' : 'Observaciones (opcional)'}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">${notasPreferidas}</textarea>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Modo de pago</span>
-                <span class="lang-en" style="display:none;">Payment method</span>
-              </label>
-              <select name="pago" required
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                <option value="">${lang === 'en' ? 'Select method' : 'Seleccionar método'}</option>
-                <option value="Cash" ${pagoPreferido === 'Cash' ? 'selected' : ''}>${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
-                <option value="Transferencia" ${pagoPreferido === 'Transferencia' ? 'selected' : ''}>${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
-                <option value="PayPal" ${pagoPreferido === 'PayPal' ? 'selected' : ''}>PayPal (+10%)</option>
-              </select>
-            </div>
-
-            <div class="flex justify-end gap-4 mt-6">
-              <button type="button" onclick="resetCarritoDialog(); document.getElementById('dlg-carrito').close(); window.estadoFlujoCarrito = 'lista'; renderCarrito();"
-                      class="px-4 py-2 text-gray-600 hover:text-gray-800">
-                <span class="lang-es">Cancelar</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Cancel</span>
-              </button>
-              <button type="submit"
-                      class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                <span class="lang-es">Enviar pedido</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Send order</span>
-              </button>
-            </div>
-          </form>
+  dialog.innerHTML = `
+    <div class="p-6">
+      <h3 class="text-xl font-bold text-green-800 mb-6 text-center">
+        <span class="lang-es">Completar pedido</span>
+        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Complete order</span>
+      </h3>
+      
+      <form id="form-pedido" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span class="lang-es">Nombre</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Name</span>
+          </label>
+          <input type="text" name="nombre" required
+                 placeholder="${lang === 'en' ? 'Your name' : 'Tu nombre'}"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
         </div>
-      </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span class="lang-es">WhatsApp</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">WhatsApp</span>
+          </label>
+          <input type="tel" name="whatsapp" required
+                 placeholder="${lang === 'en' ? 'Your WhatsApp number' : 'Tu número de WhatsApp'}"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span class="lang-es">Día de entrega</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery day</span>
+          </label>
+          <select name="dia" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
+            <option value="Lunes">${lang === 'en' ? 'Monday (12:30-20:00) - Free' : 'Lunes (12:30-20:00) - Gratis'}</option>
+            <option value="Martes">${lang === 'en' ? 'Tuesday (12:30-20:00) - DOP 100' : 'Martes (12:30-20:00) - DOP 100'}</option>
+            <option value="Miércoles">${lang === 'en' ? 'Wednesday (12:30-20:00) - Free' : 'Miércoles (12:30-20:00) - Gratis'}</option>
+            <option value="Jueves">${lang === 'en' ? 'Thursday (12:30-20:00) - DOP 100' : 'Jueves (12:30-20:00) - DOP 100'}</option>
+            <option value="Viernes">${lang === 'en' ? 'Friday (12:30-20:00) - Free' : 'Viernes (12:30-20:00) - Gratis'}</option>
+            <option value="Sábado">${lang === 'en' ? 'Saturday (12:30-20:00) - DOP 100' : 'Sábado (12:30-20:00) - DOP 100'}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span class="lang-es">Dirección de entrega</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery address</span>
+          </label>
+          <textarea name="direccion" required rows="3"
+                    placeholder="${lang === 'en' ? 'Delivery address' : 'Dirección de entrega'}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span class="lang-es">Observaciones (opcional)</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Notes (optional)</span>
+          </label>
+          <textarea name="observaciones" rows="2"
+                    placeholder="${lang === 'en' ? 'Notes (optional)' : 'Observaciones (opcional)'}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            <span class="lang-es">Modo de pago</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Payment method</span>
+          </label>
+          <select name="pago" required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="">${lang === 'en' ? 'Select method' : 'Seleccionar método'}</option>
+            <option value="Cash">${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
+            <option value="Transferencia">${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
+            <option value="PayPal">PayPal (+10%)</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6">
+          <button type="button" onclick="document.getElementById('dlg-carrito').close(); window.estadoFlujoCarrito = 'lista'; renderCarrito();"
+                  class="px-4 py-2 text-gray-600 hover:text-gray-800">
+            <span class="lang-es">Cancelar</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Cancel</span>
+          </button>
+          <button type="submit"
+                  class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <span class="lang-es">Enviar pedido</span>
+            <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Send order</span>
+          </button>
+        </div>
+      </form>
     </div>
   `;
-
-  setLanguage(lang);
   document.getElementById('form-pedido')?.addEventListener('submit', enviarPedido);
 }
 
@@ -943,34 +757,17 @@ function enviarPedido(event) {
   const form = event.target;
   const formData = new FormData(form);
   const lang = document.documentElement.lang || 'es';
-  
+  // Obtener el carrito actual
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   if (!Array.isArray(carrito) || carrito.length === 0) {
     alert(lang === 'en' ? 'The cart is empty' : 'El carrito está vacío');
     return;
   }
 
-  const tieneCajas = carrito.some(item => item.tipo === 'caja');
-  
-  const subtotalProductos = carrito.reduce(
-    (sum, item) => sum + item.precio * (item.cantidad || 1),
-    0
-  );
-
-  // Pedido mínimo solo aplica si no hay cajas
-  if (!tieneCajas && subtotalProductos < 500) {
-    const faltante = 500 - subtotalProductos;
-    alert(lang === 'en' 
-      ? `Minimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
-      : `Pedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`
-    );
-    return;
-  }
-
-  // ---- Construcción del Mensaje ----
+  // Construir el mensaje usando el mismo formato que se muestra en el checkout
   let mensaje = lang === 'en' ? `*New GreenDolio Order*\n\n` : `*Nuevo Pedido GreenDolio*\n\n`;
   mensaje += lang === 'en' ? `*Customer:* ${formData.get('nombre')}\n` : `*Cliente:* ${formData.get('nombre')}\n`;
-  mensaje += lang === 'en' ? `*Phone:* ${formData.get('telefono')}\n` : `*Teléfono:* ${formData.get('telefono')}\n`;
+  mensaje += `*WhatsApp:* ${formData.get('whatsapp')}\n`;
   mensaje += lang === 'en' ? `*Delivery day:* ${formData.get('dia')}\n` : `*Día de entrega:* ${formData.get('dia')}\n`;
   mensaje += lang === 'en' ? `*Address:* ${formData.get('direccion')}\n` : `*Dirección:* ${formData.get('direccion')}\n`;
   if (formData.get('observaciones')) {
@@ -980,11 +777,11 @@ function enviarPedido(event) {
   
   mensaje += lang === 'en' ? `*Products:*\n` : `*Productos:*\n`;
   carrito.forEach(item => {
-    const subtotalItem = item.precio * (item.cantidad || 1);
+    const subtotal = item.precio * (item.cantidad || 1);
     mensaje += `\n*${item.nombre}*\n`;
     mensaje += lang === 'en' ? `Quantity: ${item.cantidad || 1}\n` : `Cantidad: ${item.cantidad || 1}\n`;
     mensaje += lang === 'en' ? `Unit price: DOP ${item.precio.toFixed(2)}\n` : `Precio unitario: DOP ${item.precio.toFixed(2)}\n`;
-    mensaje += lang === 'en' ? `Subtotal: DOP ${subtotalItem.toFixed(2)}\n` : `Subtotal: DOP ${subtotalItem.toFixed(2)}\n`;
+    mensaje += lang === 'en' ? `Subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal: DOP ${subtotal.toFixed(2)}\n`;
     if (item.variedad) {
       mensaje += lang === 'en' ? `Variety: ${item.variedad}\n` : `Variedad: ${item.variedad}\n`;
     }
@@ -998,35 +795,29 @@ function enviarPedido(event) {
     }
   });
 
-  // ===== LÓGICA DE CÁLCULO CORREGIDA =====
+  // Calcular totales
+  let subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
+  let total = subtotal;
   
-  let total = subtotalProductos;
+  mensaje += lang === 'en' ? `\n*Cost summary:*\n` : `\n*Resumen de costos:*\n`;
+  mensaje += lang === 'en' ? `Products subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal productos: DOP ${subtotal.toFixed(2)}\n`;
   
-  const diaSeleccionado = formData.get('dia');
-  const diasConCargo = ['Martes', 'Jueves', 'Sábado'];
-  const deliveryCost = 100;
-  
-  // Condición corregida: solo se basa en el día
-  if (diasConCargo.includes(diaSeleccionado)) {
-      total += deliveryCost;
-      mensaje += lang === 'en'
-          ? `\nDelivery Cost: DOP ${deliveryCost.toFixed(2)}\n`
-          : `\nCosto de Delivery: DOP ${deliveryCost.toFixed(2)}\n`;
+  // Agregar costo de delivery si aplica
+  if ([lang === 'en' ? 'Tuesday' : 'Martes', lang === 'en' ? 'Thursday' : 'Jueves', lang === 'en' ? 'Saturday' : 'Sábado'].includes(formData.get('dia'))) {
+    total += 100;
+    mensaje += lang === 'en' ? `Delivery cost: DOP 100.00\n` : `Costo de delivery: DOP 100.00\n`;
   }
-
+  
+  // Agregar comisión PayPal si aplica
   if (formData.get('pago') === 'PayPal') {
     const comisionPayPal = total * 0.1;
-    mensaje += lang === 'en' 
-        ? `PayPal Fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` 
-        : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
     total += comisionPayPal;
+    mensaje += lang === 'en' ? `PayPal fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
   }
   
-  mensaje += `\n*${lang === 'en' ? 'Final Total' : 'Total Final'}:* DOP ${total.toFixed(2)}`;
-  
-  // ===== FIN DE LA LÓGICA =====
+  mensaje += lang === 'en' ? `*Final total:* DOP ${total.toFixed(2)}` : `*Total final:* DOP ${total.toFixed(2)}`;
 
-  // ---- Mostrar diálogo de confirmación (sin cambios) ----
+  // Crear y mostrar el diálogo de confirmación
   const dialogConfirm = document.createElement('dialog');
   dialogConfirm.className = 'p-6 rounded-lg shadow-xl max-w-lg w-full';
   dialogConfirm.innerHTML = `
@@ -1056,7 +847,6 @@ function enviarPedido(event) {
   `;
 
   document.body.appendChild(dialogConfirm);
-  setLanguage(lang);
   dialogConfirm.showModal();
 }
 
@@ -1067,6 +857,7 @@ function enviarPedidoWhatsApp(dialog) {
 
   let mensaje = lang === 'en' ? 'Hello! I want to place an order:\n\n' : '¡Hola! Quiero hacer un pedido:\n\n';
 
+  // Agregar items del carrito
   const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   carrito.forEach((item, index) => {
     mensaje += `${index + 1}. ${item.nombre}\n`;
@@ -1085,31 +876,14 @@ function enviarPedidoWhatsApp(dialog) {
     mensaje += `   DOP ${(item.precio * (item.cantidad || 1)).toFixed(2)}\n\n`;
   });
 
-  const subtotal = carrito.reduce(
-    (sum, item) => sum + item.precio * (item.cantidad || 1),
-    0
-  );
+  // Agregar total
+  const total = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
+  mensaje += lang === 'en' ? `Total: DOP ${total.toFixed(2)}\n\n` : `Total: DOP ${total.toFixed(2)}\n\n`;
 
-  let total = subtotal;
-
-  const diasConCargo = ['Martes', 'Jueves', 'Sábado'];
-  if (diasConCargo.includes(formData.get('dia'))) {
-    total += 100;
-    mensaje += lang === 'en'
-      ? 'Delivery cost: DOP 100.00\n'
-      : 'Costo de delivery: DOP 100.00\n';
-  }
-
-  if (formData.get('pago') === 'PayPal') {
-    const comisionPayPal = total * 0.1;
-    total += comisionPayPal;
-    mensaje += lang === 'en' ? `PayPal fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
-  }
-
-  mensaje += lang === 'en' ? `Final total: DOP ${total.toFixed(2)}\n\n` : `Total final: DOP ${total.toFixed(2)}\n\n`;
-
+  // Agregar datos de entrega
   mensaje += lang === 'en' ? 'Delivery Information:\n' : 'Datos de entrega:\n';
   mensaje += lang === 'en' ? `Name: ${formData.get('nombre')}\n` : `Nombre: ${formData.get('nombre')}\n`;
+  mensaje += `WhatsApp: ${formData.get('whatsapp')}\n`;
   mensaje += lang === 'en' ? `Address: ${formData.get('direccion')}\n` : `Dirección: ${formData.get('direccion')}\n`;
   mensaje += lang === 'en' ? `Delivery day: ${formData.get('dia')}\n` : `Día de entrega: ${formData.get('dia')}\n`;
   mensaje += lang === 'en' ? `Payment method: ${formData.get('pago')}\n` : `Método de pago: ${formData.get('pago')}\n`;
@@ -1117,9 +891,11 @@ function enviarPedidoWhatsApp(dialog) {
     mensaje += lang === 'en' ? `Notes: ${formData.get('observaciones')}\n` : `Observaciones: ${formData.get('observaciones')}\n`;
   }
 
+  // Abrir WhatsApp con el mensaje
   const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, '_blank');
 }
+
 
 /* ----------  MULTI‑IDIOMA ---------- */
 function setLanguage(lang){
@@ -1170,256 +946,6 @@ function actualizarBotonesAgregar() {
 
 // Refuerzo: Solo abrir el formulario si el usuario presiona continuar
 function handleContinuarPedido() {
-  // Validación de pedido mínimo antes de mostrar el formulario
-  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-  const lang = document.documentElement.lang || 'es';
-  const tieneCajas = carrito.some(item => item.tipo === 'caja');
-  const subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
-  if (!tieneCajas && subtotal < 500) {
-    const faltante = 500 - subtotal;
-    alert(lang === 'en' 
-      ? `Minimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
-      : `Pedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`
-    );
-    return;
-  }
   window.estadoFlujoCarrito = 'formulario';
   mostrarFormularioPedido();
-}
-
-// NUEVA FUNCIÓN: Se activa al hacer clic en un botón de variedad.
-function iniciarConfiguracionCaja(btn) {
-    playWaterDrop();
-    const boxId = btn.dataset.box;
-    const variedad = btn.dataset.variedad;
-
-    // Resetea otras cajas para evitar confusiones
-    resetearCajasExcepto(boxId);
-
-    // Crea el estado si no existe
-    if (!estadoCajas[boxId]) {
-        estadoCajas[boxId] = { variedad: null, like: [], dislike: [], ok: false };
-    }
-
-    // Guarda la variedad y abre la sección de configuración
-    estadoCajas[boxId].variedad = variedad;
-    cajaActual = boxId;
-    
-    // Actualiza el estilo de los botones de esa tarjeta
-    const card = btn.closest('.caja-hover');
-    card.querySelectorAll('.variedad-btn').forEach(b => {
-        b.classList.remove('selected', 'bg-green-600', 'text-white');
-        b.classList.add('bg-green-100', 'text-green-800');
-    });
-    btn.classList.add('selected', 'bg-green-600', 'text-white');
-
-    // Abre la sección de configuración
-    abrirConfig(boxId);
-}
-
-// NUEVA FUNCIÓN CENTRALIZADA para agregar items al carrito
-function agregarAlCarrito(item) {
-    // Limpiar el carrito al iniciar si no existe
-    if (!localStorage.getItem('carrito')) {
-        localStorage.setItem('carrito', '[]');
-    }
-
-    let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-    if (!Array.isArray(carrito)) carrito = [];
-
-    // Buscar si ya existe un item idéntico
-    const itemExistente = carrito.find(i => 
-        i.nombre === item.nombre && 
-        i.variedad === item.variedad && 
-        i.autoMode === item.autoMode
-    );
-
-    if (itemExistente) {
-        // Si existe, solo actualizar la cantidad
-        itemExistente.cantidad = (itemExistente.cantidad || 1) + 1;
-        mostrarNotificacion('Cantidad actualizada en el carrito');
-    } else {
-        // Si no existe, agregar como nuevo item
-        item.cantidad = 1;
-        carrito.push(item);
-        mostrarNotificacion(item.tipo === 'caja' ? 'Caja agregada al carrito' : 'Producto agregado al carrito');
-    }
-
-    localStorage.setItem('carrito', JSON.stringify(carrito));
-    renderCarrito();
-}
-
-// Función para limpiar el carrito al iniciar la página
-function limpiarCarritoAlIniciar() {
-    localStorage.removeItem('carrito');
-    localStorage.setItem('carrito', '[]');
-}
-
-/* ----------  AUTO-MODE ---------- */
-function agregarCajaAutoMode() {
-  playWaterDrop();
-  if (!cajaActual) {
-    alert('Error: No se ha seleccionado ninguna caja.');
-    return;
-  }
-
-  // Obtiene los datos de la tarjeta HTML para crear el item del carrito
-  const card = document.querySelector(`.caja-hover[data-box="box${cajaActual}"]`);
-  if (!card) {
-    alert('Error: No se encontró la tarjeta de la caja.');
-    return;
-  }
-
-  const nombre = card.querySelector('.text-3xl, .text-4xl')?.textContent.trim() || `Caja ${cajaActual}`;
-  const precio = parsePrecio(card.querySelector('.inline-block.bg-white')?.textContent);
-  const variedad = card.querySelector('.variedad-btn.selected')?.textContent.trim() || 'Mix';
-
-  const item = {
-    tipo: 'caja',
-    nombre: nombre,
-    precio: isNaN(precio) ? 0 : precio,
-    variedad: variedad,
-    preferencias: { like: [], dislike: [] },
-    cantidad: 1,
-    autoMode: true
-  };
-  
-  // Agrega al carrito
-  agregarAlCarrito(item);
-
-  // Oculta la sección de configuración y vuelve a la sección de cajas
-  document.getElementById('configurar-caja').classList.add('hidden');
-  document.querySelector('#cajas')?.scrollIntoView({ behavior: 'smooth' });
-}
-
-// Agregar el evento al botón AUTO-MODE
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('btn-auto-mode')?.addEventListener('click', agregarCajaAutoMode);
-});
-
-function actualizarCarrito() {
-  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-  const contador = document.getElementById('contador-carrito');
-  const total = document.getElementById('total-carrito');
-  const lista = document.getElementById('lista-carrito');
-  const btnContinuar = document.getElementById('btn-continuar');
-  const btnVaciar = document.getElementById('btn-vaciar');
-  const lang = document.documentElement.lang || 'es';
-
-  // Verificar si hay cajas en el carrito
-  const tieneCajas = carrito.some(item => item.tipo === 'caja');
-  
-  // Calcular subtotal
-  const subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
-  
-  // Calcular total con delivery si no hay cajas
-  let totalConDelivery = subtotal;
-  let mensajeDelivery = '';
-  
-  if (!tieneCajas) {
-    if (subtotal < 500) {
-      const faltante = 500 - subtotal;
-      mensajeDelivery = lang === 'en' 
-        ? `\nMinimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
-        : `\nPedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`;
-    } else {
-      totalConDelivery += 100;
-      mensajeDelivery = lang === 'en'
-        ? '\nDelivery fee: DOP 100.00'
-        : '\nCosto de delivery: DOP 100.00';
-    }
-  }
-
-  // Actualizar contador
-  contador.textContent = carrito.length;
-  contador.style.display = carrito.length > 0 ? 'block' : 'none';
-
-  // Actualizar total
-  total.textContent = `DOP ${totalConDelivery.toFixed(2)}`;
-  if (mensajeDelivery) {
-    total.innerHTML += `<span class="text-sm text-red-600">${mensajeDelivery}</span>`;
-  }
-
-  // Actualizar lista
-  lista.innerHTML = carrito.map((item, index) => `
-    <div class="flex items-center justify-between py-2">
-      <div class="flex-1">
-        <span class="font-medium">${item.nombre}</span>
-        ${item.variedad ? `<br><span class="text-sm text-gray-600">${item.variedad}</span>` : ''}
-        ${item.preferencias ? `
-          <br>
-          ${item.preferencias.like.length > 0 ? `<span class="text-sm text-green-600">👍 ${item.preferencias.like.join(', ')}</span>` : ''}
-          ${item.preferencias.dislike.length > 0 ? `<span class="text-sm text-red-600">👎 ${item.preferencias.dislike.join(', ')}</span>` : ''}
-        ` : ''}
-      </div>
-      <div class="flex items-center gap-2">
-        <button onclick="cambiarCantidad(${index}, -1)" class="text-gray-500 hover:text-gray-700">-</button>
-        <span>${item.cantidad || 1}</span>
-        <button onclick="cambiarCantidad(${index}, 1)" class="text-gray-500 hover:text-gray-700">+</button>
-        <span class="ml-4">DOP ${(item.precio * (item.cantidad || 1)).toFixed(2)}</span>
-        <button onclick="eliminarDelCarrito(${index})" class="ml-2 text-red-500 hover:text-red-700">
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>
-    </div>
-  `).join('');
-
-  // Actualizar botones
-  btnContinuar.disabled = carrito.length === 0 || (!tieneCajas && subtotal < 500);
-  btnVaciar.disabled = carrito.length === 0;
-}
-
-/* ----------  PERFIL DE USUARIO ---------- */
-function guardarPerfilDeUsuario(user) {
-  const seccionFormulario = document.getElementById('profile-setup');
-  const formulario = document.getElementById('profile-form');
-
-  seccionFormulario.classList.remove('hidden');
-  document.getElementById('nombre').value = user.displayName;
-
-  formulario.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const telefono = document.getElementById('telefono').value;
-    const direccion = document.getElementById('direccion').value;
-    const pagoPreferido = document.getElementById('pago-preferido').value;
-    const likes = document.getElementById('likes').value;
-    const dislikes = document.getElementById('dislikes').value;
-    const comoNosConocio = document.getElementById('como-nos-conocio').value;
-
-    const db = firebase.firestore();
-
-    db.collection("users").doc(user.uid).set({
-      displayName: user.displayName,
-      email: user.email,
-      telefono: telefono,
-      direccion: direccion,
-      pagoPreferido: pagoPreferido,
-      likes: likes,
-      dislikes: dislikes,
-      comoNosConocio: comoNosConocio,
-      fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      console.log("¡Perfil guardado con éxito!");
-      seccionFormulario.classList.add('hidden');
-      mostrarNotificacion("¡Gracias! Tu perfil ha sido guardado.");
-      
-      window.userProfile = {
-          displayName: user.displayName,
-          email: user.email,
-          telefono: telefono,
-          direccion: direccion,
-          pagoPreferido: pagoPreferido,
-          likes: likes,
-          dislikes: dislikes,
-          comoNosConocio: comoNosConocio
-      };
-
-    })
-    .catch((error) => {
-      console.error("Error al guardar el perfil: ", error);
-      mostrarNotificacion("Hubo un error al guardar tu perfil. Por favor, intenta de nuevo.");
-    });
-  });
 }
