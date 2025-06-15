@@ -50,6 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
           // Si el documento existe, el usuario es recurrente.
           console.log("Usuario recurrente, cargando perfil...");
           window.userProfile = doc.data(); // Guardamos los datos en la variable global
+
+          // INICIO DE LA MODIFICACIÓN: Cargar carrito desde Firebase
+          if (window.userProfile.carrito) {
+            localStorage.setItem('carrito', JSON.stringify(window.userProfile.carrito));
+            renderCarrito(); // Actualizamos la interfaz del carrito con los datos de la nube
+          }
+          // FIN DE LA MODIFICACIÓN
+
         } else {
           // Si el documento NO existe, es un usuario nuevo.
           console.log("¡Hola, usuario nuevo! Mostrando formulario de perfil.");
@@ -287,6 +295,7 @@ function eliminarDelCarrito(index) {
   carrito.splice(index, 1);
   localStorage.setItem('carrito', JSON.stringify(carrito));
   renderCarrito();
+  guardarCarritoEnFirebase();
   mostrarNotificacion('Producto eliminado del carrito');
 }
 
@@ -299,6 +308,7 @@ function cambiarCantidad(index, delta) {
   if (carrito[index].cantidad < 1) carrito[index].cantidad = 1; // nunca < 1
   localStorage.setItem('carrito', JSON.stringify(carrito));
   renderCarrito();
+  guardarCarritoEnFirebase();
 }
 
 /* ----------  CONFIGURAR CAJA ---------- */
@@ -1145,12 +1155,26 @@ function agregarAlCarrito(item) {
 
     localStorage.setItem('carrito', JSON.stringify(carrito));
     renderCarrito();
+    guardarCarritoEnFirebase();
 }
 
 // Función para limpiar el carrito al iniciar la página
 function limpiarCarritoAlIniciar() {
     localStorage.removeItem('carrito');
     localStorage.setItem('carrito', '[]');
+}
+
+function guardarCarritoEnFirebase() {
+    const user = firebase.auth().currentUser;
+    if (user) { // Solo intentamos guardar si el usuario está autenticado
+        const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+        const db = firebase.firestore();
+        db.collection("users").doc(user.uid).update({
+            carrito: carrito
+        }).catch((error) => {
+            console.error("Error al sincronizar el carrito con Firebase: ", error);
+        });
+    }
 }
 
 /* ----------  AUTO-MODE ---------- */

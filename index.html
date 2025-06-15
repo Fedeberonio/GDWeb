@@ -179,6 +179,10 @@
                   <i class="fas fa-shopping-cart text-green-700" style="font-size:1.2em;"></i>
                   <span id="carrito-cantidad-header" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">0</span>
                 </button>
+                <!-- Botón Historial -->
+                <button id="btn-history" class="relative flex items-center justify-center rounded-full border border-blue-200 bg-white shadow-sm focus:outline-none hover:bg-blue-100 transition-all" style="height:44px;width:44px;font-size:1.2em;padding:0; margin-left:8px;">
+                  <i class="fas fa-history text-blue-700" style="font-size:1.2em;"></i>
+                </button>
                 <button id="menu-toggle" class="flex items-center justify-center rounded-full border border-green-200 bg-white shadow-sm focus:outline-none" style="height:44px;width:44px;font-size:1.35em;padding:0;" onclick="toggleMobileMenu()">
                     <i class="fas fa-bars" style="font-size:1.35em;"></i>
                 </button>
@@ -212,32 +216,89 @@
     <!-- Scripts de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase.js"></script>
 
     <script>
-        // Configuración de Firebase
-              const firebaseConfig = {
-                apiKey: "AIzaSyCjvz1uxCVR5xVxaNt3qushp1se1Ep8glY",
-                authDomain: "greendolio-tienda.firebaseapp.com",
-                projectId: "greendolio-tienda",
-                storageBucket: "greendolio-tienda.appspot.com",
-                messagingSenderId: "64271997064",
-                appId: "1:64271997064:web:8001973cad419458fd379f",
-                measurementId: "G-H9F4SXPJPA"
-              };
+    // Order-history script loaded log
+    console.log('Order-history script loaded');
+    // Initialize Firebase Auth
+    const auth = firebase.auth();
+    /**
+     * Fetch order history for logged-in user
+     * @param {string} uid - Firebase Auth user ID
+     */
+    function fetchOrderHistory(uid) {
+      console.log('fetchOrderHistory called for user:', uid);
+      const db = firebase.firestore();
+      db.collection('orders')
+        .where('userId', '==', uid)
+        .orderBy('createdAt', 'desc')
+        .get()
+        .then(snapshot => {
+          const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          console.log('Order history data:', history);
+          renderHistory(history);
+        })
+        .catch(err => console.error('Error al cargar historial:', err));
+    }
 
-      // Inicializar Firebase
-      firebase.initializeApp(firebaseConfig);
-      firebase.analytics();
+    /**
+     * Render the history into the page
+     * @param {Array} history - Array of order objects
+     */
+    function renderHistory(history) {
+      const container = document.getElementById('order-history-content');
+      if (!container) return;
+      container.innerHTML = history
+        .map(o => `<div class="p-4 border rounded-lg">
+          <strong>ID:</strong> ${o.id}<br>
+          <strong>Fecha:</strong> ${new Date(o.createdAt).toLocaleString()}<br>
+          <strong>Items:</strong> ${o.items?.length || 0}
+        </div>`)
+        .join('');
+    }
+
+    // ... (rest of your script, including auth and DOMContentLoaded)
+    // Listener de auth para cargar historial después de renderCarrito
+    auth.onAuthStateChanged((user) => {
+      console.log('onAuthStateChanged, user:', user ? user.uid : 'no user');
+      if (user) {
+        console.log('About to call fetchOrderHistory');
+        renderCarrito();
+        fetchOrderHistory(user.uid);
+      } else {
+        // ... lógica para usuario no autenticado
+      }
+    });
+
+    // Al final del DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // ...otros event listeners...
+      document.getElementById('btn-history')?.addEventListener('click', () => {
+        const section = document.getElementById('order-history');
+        section.classList.toggle('hidden');
+        if (!section.classList.contains('hidden')) {
+          window.location.hash = '#order-history';
+        }
+      });
+    });
     </script>
+
+    <!-- Sección Historial de Pedidos -->
+    <section id="order-history" class="hidden py-16 bg-white">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold text-green-800 mb-4 text-center">Tu Historial de Pedidos</h2>
+        <div id="order-history-content" class="space-y-4 text-green-900"></div>
+      </div>
+    </section>
 
     <!-- Hero / Banner -->
     <section id="inicio" class="w-full min-h-[60vh] flex flex-col items-center justify-center bg-greendolio relative pt-2 pb-2">
         <!-- Banner español -->
-        <img src="assets/images/banners/portadaSPA.jpg" alt="Banner Green Dolio" class="banner-img mx-auto block banner-animado-zoom parallax-banner shadow-2xl shadow-green-900/30 relative z-10 lang-es" style="background-color: transparent;">
+        <img src="assets/images/banners/portadaSPA.jpg" alt="Banner Green Dolio" loading="lazy" class="banner-img mx-auto block banner-animado-zoom parallax-banner shadow-2xl shadow-green-900/30 relative z-10 lang-es" style="background-color: transparent;">
         <!-- Banner inglés -->
-        <img src="assets/images/banners/portadaENG.png" alt="Green Dolio Banner English" class="banner-img mx-auto block banner-animado-zoom parallax-banner shadow-2xl shadow-green-900/30 relative z-10 lang-en" style="background-color: transparent;">
+        <img src="assets/images/banners/portadaENG.png" alt="Green Dolio Banner English" loading="lazy" class="banner-img mx-auto block banner-animado-zoom parallax-banner shadow-2xl shadow-green-900/30 relative z-10 lang-en" style="background-color: transparent;">
         <div class="relative z-20 flex flex-col items-center justify-center w-full px-2 mt-0">
         </div>
     </section>
@@ -697,7 +758,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <!-- Baba Ganoush -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Baba Ganoush.jpg" alt="Baba Ganoush" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Baba Ganoush.jpg" alt="Baba Ganoush" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Baba Ganoush</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Baba Ganoush</span>
                   <p class="text-green-800 text-center lang-es">DOP 500 (16 oz)</p>
@@ -708,7 +769,7 @@
                 </div>
                 <!-- Hummus -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Hummus.jpg" alt="Hummus" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Hummus.jpg" alt="Hummus" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Hummus</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Hummus</span>
                   <p class="text-green-800 text-center lang-es">DOP 500 (16 oz)</p>
@@ -719,7 +780,7 @@
                 </div>
                 <!-- Guacamole -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Guacamole.jpg" alt="Guacamole" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Guacamole.jpg" alt="Guacamole" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Guacamole</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Guacamole</span>
                   <p class="text-green-800 text-center lang-es">DOP 500 (16 oz)</p>
@@ -730,7 +791,7 @@
                 </div>
                 <!-- Chimi Churri -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Chimichurri.jpg" alt="Chimi Churri" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Chimichurri.jpg" alt="Chimi Churri" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Chimi Churri</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Chimichurri</span>
                   <p class="text-green-800 text-center lang-es">DOP 350 (9.5 oz)</p>
@@ -754,7 +815,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <!-- Pepinada -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/PepinadaOKLow.jpg" alt="Pepinada" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/PepinadaOKLow.jpg" alt="Pepinada" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Pepinada</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Pepinada</span>
                   <p class="precio-producto inline-block bg-white text-green-800 font-extrabold text-xl md:text-2xl px-4 py-1 rounded-full shadow border-2 border-green-800 mb-2 text-center lang-es">DOP 175</p>
@@ -767,7 +828,7 @@
                 </div>
                 <!-- Tropicalote -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/TropicalotOKlow.jpg" alt="Tropicalote" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/TropicalotOKlow.jpg" alt="Tropicalote" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Tropicalote</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Tropicalote</span>
                   <p class="precio-producto inline-block bg-white text-green-800 font-extrabold text-xl md:text-2xl px-4 py-1 rounded-full shadow border-2 border-green-800 mb-2 text-center lang-es">DOP 175</p>
@@ -780,7 +841,7 @@
                 </div>
                 <!-- Rosa Maravillosa -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/RosaOKlow.jpg" alt="Rosa Maravillosa" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/RosaOKlow.jpg" alt="Rosa Maravillosa" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Rosa Maravillosa</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Wonderful Rose</span>
                   <p class="precio-producto inline-block bg-white text-green-800 font-extrabold text-xl md:text-2xl px-4 py-1 rounded-full shadow border-2 border-green-800 mb-2 text-center lang-es">DOP 175</p>
@@ -793,7 +854,7 @@
                 </div>
                 <!-- Cina Chinola -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/ChinaOKweb.jpg" alt="China Chinola" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/ChinaOKweb.jpg" alt="China Chinola" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">China Chinola</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">China Chinola</span>
                   <p class="precio-producto inline-block bg-white text-green-800 font-extrabold text-xl md:text-2xl px-4 py-1 rounded-full shadow border-2 border-green-800 mb-2 text-center lang-es">DOP 175</p>
@@ -815,7 +876,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <!-- Huevos Blancos -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Huevos blancos.jpg" alt="Huevos Blancos" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Huevos blancos.jpg" alt="Huevos Blancos" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Huevos Blancos</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">White Eggs</span>
                   <p class="text-green-800 text-center lang-es">DOP 150.- (12u)</p>
@@ -826,7 +887,7 @@
                 </div>
                 <!-- Huevos de color -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Huevos marrones.jpg" alt="Huevos de color" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Huevos marrones.jpg" alt="Huevos de color" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Huevos de color</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Colored Eggs</span>
                   <p class="text-green-800 text-center lang-es">DOP 190.- (12u)</p>
@@ -837,7 +898,7 @@
                 </div>
                 <!-- Huevos de campo orgánicos -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Huevos de campo.jpg" alt="Huevos de campo orgánicos" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Huevos de campo.jpg" alt="Huevos de campo orgánicos" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Huevos de campo orgánicos</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Organic Free-range Eggs</span>
                   <p class="text-green-800 text-center lang-es">DOP 380.- (12u)</p>
@@ -848,7 +909,7 @@
                 </div>
                 <!-- Miel pura de abejas -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Miel de abejas.jpg" alt="Miel pura de abejas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Miel de abejas.jpg" alt="Miel pura de abejas" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Miel pura de abejas</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Pure Honey</span>
                   <p class="text-green-800 text-center lang-es">DOP 250 (6.5 oz)</p>
@@ -859,7 +920,7 @@
                 </div>
                 <!-- Miel de abejas orgánica con panal -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Miel-con-panal_optimized.jpg" alt="Miel de abejas orgánica con panal" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Miel-con-panal_optimized.jpg" alt="Miel de abejas orgánica con panal" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Miel de abejas orgánica con panal</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Organic Honey with Comb</span>
                   <p class="text-green-800 text-center lang-es">DOP 500 (12 oz)</p>
@@ -879,7 +940,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 <!-- Aceite de oliva sabor ajo -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Aceite de oliva.jpg" alt="Aceite de oliva sabor ajo" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Aceite de oliva.jpg" alt="Aceite de oliva sabor ajo" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Aceite de oliva sabor ajo</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Garlic Flavored Olive Oil</span>
                   <p class="text-green-800 text-center lang-es">DOP 390 (400 cc)</p>
@@ -890,7 +951,7 @@
                 </div>
                 <!-- Aceite de oliva extra virgen importado -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Aceite de oliva 3litros.jpg" alt="Aceite de oliva extra virgen importado" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Aceite de oliva 3litros.jpg" alt="Aceite de oliva extra virgen importado" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Aceite de oliva extra virgen importado</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Imported Extra Virgin Olive Oil</span>
                   <p class="text-green-800 text-center lang-es">DOP 2900 (3 litros)</p>
@@ -901,7 +962,7 @@
                 </div>
                 <!-- Quinoa -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Quinoa.jpg" alt="Quinoa" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Quinoa.jpg" alt="Quinoa" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Quinoa</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Quinoa</span>
                   <p class="text-green-800 text-center lang-es">DOP 450 x 16oz</p>
@@ -912,7 +973,7 @@
                 </div>
                 <!-- Arroz blanco -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Arroz blanco.jpg" alt="Arroz blanco" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Arroz blanco.jpg" alt="Arroz blanco" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Arroz blanco</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">White Rice</span>
                   <p class="text-green-800 text-center lang-es">DOP 100 - 400 gr</p>
@@ -923,7 +984,7 @@
                 </div>
                 <!-- Arroz integral -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Arroz integral.jpg" alt="Arroz integral" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Arroz integral.jpg" alt="Arroz integral" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Arroz integral</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Brown Rice</span>
                   <p class="text-green-800 text-center lang-es">DOP 100 - libra</p>
@@ -934,7 +995,7 @@
                 </div>
                 <!-- Lentejas -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Lentejas.jpg" alt="Lentejas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Lentejas.jpg" alt="Lentejas" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Lentejas</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Lentils</span>
                   <p class="text-green-800 text-center lang-es">DOP 175 - 400 gr</p>
@@ -945,7 +1006,7 @@
                 </div>
                 <!-- Habichuelas rojas -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Frijoles rojos.jpg" alt="Habichuelas rojas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Frijoles rojos.jpg" alt="Habichuelas rojas" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Habichuelas rojas</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Red Beans</span>
                   <p class="text-green-800 text-center lang-es">DOP 100 - 400 gr</p>
@@ -956,7 +1017,7 @@
                 </div>
                 <!-- Habichuelas negras -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Frijoles negros.jpg" alt="Habichuelas negras" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Frijoles negros.jpg" alt="Habichuelas negras" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Habichuelas negras</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Black Beans</span>
                   <p class="text-green-800 text-center lang-es">DOP 100 - 400 gr</p>
@@ -967,7 +1028,7 @@
                 </div>
                 <!-- Habichuelas blancas -->
                 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                  <img src="assets/images/products/Frijoles blancos.jpg" alt="Habichuelas blancas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                  <img src="assets/images/products/Frijoles blancos.jpg" alt="Habichuelas blancas" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                   <span class="font-bold text-lg mb-2 text-green-900 lang-es">Habichuelas blancas</span>
                   <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">White Beans</span>
                   <p class="text-green-800 text-center lang-es">DOP 100 - 400 gr</p>
@@ -1012,7 +1073,7 @@
                         </summary>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                             <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                                <img src="assets/images/products/Aguacate.jpg" alt="Aguacates" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                                <img src="assets/images/products/Aguacate.jpg" alt="Aguacates" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                                 <span class="font-bold text-lg mb-2 text-green-900 lang-es">Aguacates</span>
                                 <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Avocados</span>
                                 <p class="text-green-800 text-center lang-es">DOP 100</p>
@@ -1020,7 +1081,7 @@
                                 <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
                             </div>
                             <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-                                <img src="assets/images/products/Mandarinas.jpg" alt="Mandarinas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
+                                <img src="assets/images/products/Mandarinas.jpg" alt="Mandarinas" loading="lazy" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
                                 <span class="font-bold text-lg mb-2 text-green-900 lang-es">Mandarinas</span>
                                 <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Tangerines</span>
                                 <p class="text-green-800 text-center lang-es">DOP 39</p>
