@@ -70,7 +70,8 @@
 </head>
 <body class="bg-greendolio">
 <!-- Formulario de perfil de usuario (solo visible para usuarios nuevos) -->
-<div id="profile-setup" class="hidden" style="max-width:400px;margin:40px auto;padding:32px;background:#fff;border-radius:16px;box-shadow:0 2px 16px #0002;">
+<div id="profile-setup" class="hidden" style="max-width:400px;margin:40px auto;padding:32px;background:#fff;border-radius:16px;box-shadow:0 2px 16px #0002; position:relative;">
+  <button id="cerrar-profile-setup" style="position:absolute;top:12px;right:12px;font-size:1.7rem;color:#888;background:none;border:none;cursor:pointer;z-index:10;" aria-label="Cerrar">&times;</button>
   
   <div class="text-center mb-6">
     <h2 class="text-3xl font-bold text-green-800" style="font-family:'Poppins', sans-serif;">¡Bienvenid@ a la familia GreenDolio!</h2>
@@ -179,8 +180,8 @@
                   <i class="fas fa-shopping-cart text-green-700" style="font-size:1.2em;"></i>
                   <span id="carrito-cantidad-header" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">0</span>
                 </button>
-                <!-- Botón Historial -->
-                <button id="btn-history" class="relative flex items-center justify-center rounded-full border border-blue-200 bg-white shadow-sm focus:outline-none hover:bg-blue-100 transition-all" style="height:44px;width:44px;font-size:1.2em;padding:0; margin-left:8px;">
+                <!-- Botón Historial (temporalmente oculto) -->
+                <button id="btn-history" class="hidden relative flex items-center justify-center rounded-full border border-blue-200 bg-white shadow-sm focus:outline-none hover:bg-blue-100 transition-all" style="height:44px;width:44px;font-size:1.2em;padding:0; margin-left:8px;">
                   <i class="fas fa-history text-blue-700" style="font-size:1.2em;"></i>
                 </button>
                 <button id="menu-toggle" class="flex items-center justify-center rounded-full border border-green-200 bg-white shadow-sm focus:outline-none" style="height:44px;width:44px;font-size:1.35em;padding:0;" onclick="toggleMobileMenu()">
@@ -381,8 +382,8 @@
       </a>
       <a href="#alacarta" class="transition-all flex-1 max-w-xs text-center py-2 px-4 rounded-xl font-bold text-base shadow-md bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 flex items-center justify-center gap-2" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px; min-width:110px;">
         <i class="fas fa-shopping-basket text-green-500"></i>
-        <span class="lang-es">X Unidad</span>
-        <span class="lang-en" style="display:none;">Shop by Unit</span>
+        <span class="lang-es">Por Unidad</span>
+        <span class="lang-en" style="display:none;">By Unit</span>
         <i class="fas fa-apple-alt text-red-400"></i>
       </a>
     </div>
@@ -1272,7 +1273,7 @@
                                 <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Curly Lettuce</span>
                                 <p class="text-green-800 text-center lang-es">DOP 44</p>
                                 <p class="text-green-800 text-center lang-en" style="display:none;">DOP 44</p>
-                                <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
+                                <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center justify-center hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
                             </div>
                             <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
                                 <img src="assets/images/products/Auyama.jpg" alt="Calabaza" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
@@ -1296,7 +1297,7 @@
                                 <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Iceberg Lettuce</span>
                                 <p class="text-green-800 text-center lang-es">DOP 50</p>
                                 <p class="text-green-800 text-center lang-en" style="display:none;">DOP 50</p>
-                                <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
+                                <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center justify-center hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
                             </div>
                             <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
                                 <img src="assets/images/products/Lechuga romana.jpg" alt="Lechuga romana" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
@@ -1304,7 +1305,7 @@
                                 <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Romaine Lettuce</span>
                                 <p class="text-green-800 text-center lang-es">DOP 63</p>
                                 <p class="text-green-800 text-center lang-en" style="display:none;">DOP 63</p>
-                                <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
+                                <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center justify-center hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
                             </div>
                             <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
                                 <img src="assets/images/products/Rabanitos.jpg" alt="Rabano" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
@@ -1312,7 +1313,7 @@
                                 <span class="font-bold text-lg mb-2 text-green-900 lang-en" style="display:none;">Radish</span>
                                 <p class="text-green-800 text-center lang-es">DOP 69</p>
                                 <p class="text-green-800 text-center lang-en" style="display:none;">DOP 69</p>
-                                <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
+                                <button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center justify-center hover:bg-green-700 transition-colors text-sm" data-tipo="producto"><i class="fas fa-cart-plus"></i> <span class="lang-es">Agregar</span><span class="lang-en" style="display:none;">Add</span></button>
                             </div>
                             <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
                                 <img src="assets/images/products/Pepino.jpg" alt="Pepino" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50">
