@@ -922,18 +922,14 @@ function enviarPedidoWhatsApp(pedidoData, dialog) {
         alert("Error: Debes iniciar sesión para poder registrar tu pedido.");
         return;
     }
-
     const mensajeCompleto = dialog.dataset.fullMessage;
     if (!mensajeCompleto) {
         alert("Error: No se pudo encontrar el resumen del pedido para enviar.");
         return;
     }
-
     const numeroWhatsApp = '18493757338';
     const db = firebase.firestore();
-
     mostrarNotificacion("Procesando tu pedido...");
-
     db.collection("orders").add(pedidoData)
         .then((docRef) => {
             console.log("¡Pedido guardado en Firebase con ID: ", docRef.id);
@@ -941,14 +937,13 @@ function enviarPedidoWhatsApp(pedidoData, dialog) {
             const url = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
             window.open(url, '_blank');
             
-            // Cierra el diálogo de resumen y el del carrito (si sigue abierto)
-            if (dialog && typeof dialog.close === 'function') {
-                dialog.close();
-            } else if (dialog && typeof dialog.classList.add === 'function') {
+            const dlgCarrito = document.getElementById('dlg-carrito');
+            if (dialog && typeof dialog.classList.add === 'function') {
                 dialog.classList.add('hidden');
             }
-            document.getElementById('dlg-carrito').close();
-
+            if(dlgCarrito && dlgCarrito.open) {
+                dlgCarrito.close();
+            }
             localStorage.setItem('carrito', '[]');
             renderCarrito();
             mostrarNotificacion('¡Pedido enviado con éxito!');
@@ -1204,23 +1199,18 @@ function guardarPerfilDeUsuario(user) {
 
 function finalizarPedido(event) {
     event.preventDefault();
-
     const user = firebase.auth().currentUser;
     if (!user) {
         mostrarNotificacion('Debes iniciar sesión para completar el pedido.');
         return;
     }
-
     const form = document.getElementById('form-pedido');
     const formData = new FormData(form);
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-    const lang = document.documentElement.lang || 'es';
-
     if (carrito.length === 0) {
         mostrarNotificacion('Tu carrito está vacío.');
         return;
     }
-
     let detallePedido = carrito.map(item => {
         let linea = `• ${item.nombre} (x${item.cantidad || 1}) - DOP ${((item.precio || 0) * (item.cantidad || 1)).toFixed(2)}`;
         if (item.variedad) {
@@ -1232,19 +1222,15 @@ function finalizarPedido(event) {
         }
         return linea;
     }).join('\n');
-
     const subtotal = carrito.reduce((sum, item) => sum + (item.precio || 0) * (item.cantidad || 1), 0);
-    
     let totalFinal = subtotal;
     let desgloseTotal = `Subtotal: DOP ${subtotal.toFixed(2)}`;
-    
     const diaSeleccionado = formData.get('dia');
     const diasConCargo = ['Martes', 'Jueves', 'Sábado'];
     if (diasConCargo.includes(diaSeleccionado)) {
         totalFinal += 100;
         desgloseTotal += `\nEnvío: DOP 100.00`;
     }
-
     const metodoPago = formData.get('pago');
     if (metodoPago === 'PayPal') {
         const cargoPaypal = totalFinal * 0.10;
@@ -1252,7 +1238,6 @@ function finalizarPedido(event) {
         desgloseTotal += `\nCargo PayPal (10%): DOP ${cargoPaypal.toFixed(2)}`;
     }
     desgloseTotal += `\n*Total a Pagar: DOP ${totalFinal.toFixed(2)}*`;
-
     const mensajeWhatsApp = `\n¡Hola Green Dolio! 👋 Quisiera confirmar mi pedido:\n\n*👤 DATOS DEL CLIENTE:*\n- Nombre: ${formData.get('nombre')}\n- Teléfono: ${formData.get('telefono')}\n- Dirección: ${formData.get('direccion')}\n- Día de entrega: ${diaSeleccionado}\n\n*🛒 RESUMEN DEL PEDIDO:*\n${detallePedido}\n\n*💰 TOTAL:*\n${desgloseTotal}\n\n*💳 MÉTODO DE PAGO:*\n${metodoPago}\n\n*📝 OBSERVACIONES:*\n${formData.get('observaciones') || 'Sin observaciones.'}`.trim();
 
     const pedidoData = {
@@ -1268,20 +1253,16 @@ function finalizarPedido(event) {
         total: totalFinal,
         estado: 'Recibido'
     };
-
     const modalResumen = document.getElementById('modal-resumen');
     document.getElementById('detalle-resumen').innerText = mensajeWhatsApp;
     document.getElementById('total-resumen').innerText = `DOP ${totalFinal.toFixed(2)}`;
     modalResumen.dataset.fullMessage = mensajeWhatsApp;
-    
     document.getElementById('dlg-carrito').close();
     modalResumen.classList.remove('hidden');
-
     document.getElementById('enviar-whatsapp').onclick = () => {
       enviarPedidoWhatsApp(pedidoData, modalResumen);
       modalResumen.classList.add('hidden');
     };
-    
     document.getElementById('cerrar-modal-resumen').onclick = () => {
       modalResumen.classList.add('hidden');
     };
