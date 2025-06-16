@@ -74,78 +74,96 @@
   <button id="cerrar-profile-setup" style="position:absolute;top:12px;right:12px;font-size:1.7rem;color:#888;background:none;border:none;cursor:pointer;z-index:10;" aria-label="Cerrar">&times;</button>
   
   <div class="text-center mb-6">
-    <h2 class="text-3xl font-bold text-green-800" style="font-family:'Poppins', sans-serif;">¡Bienvenid@ a la familia GreenDolio!</h2>
-    <p class="text-gray-600 mt-2">Estás a un solo paso de hacer tus compras mucho más fáciles.</p>
+    <h2 class="text-3xl font-bold text-green-800" style="font-family:'Poppins', sans-serif;">
+      <span class="lang-es">¡Bienvenid@ a la familia GreenDolio!</span>
+      <span class="lang-en" style="display:none;">Welcome to the GreenDolio family!</span>
+    </h2>
+    <p class="text-gray-600 mt-2">
+      <span class="lang-es">Estás a un solo paso de hacer tus compras mucho más fáciles.</span>
+      <span class="lang-en" style="display:none;">You are one step away from making your shopping much easier.</span>
+    </p>
   </div>
   <p class="text-center bg-green-50 p-3 rounded-lg text-green-900 mb-4">
-    Completa tus datos de contacto <strong class="text-green-700">por única vez</strong>. Con esto, tus futuros pedidos serán súper rápidos:
+    <span class="lang-es">Completa tus datos de contacto <strong class="text-green-700">por única vez</strong>. Con esto, tus futuros pedidos serán súper rápidos:</span>
+    <span class="lang-en" style="display:none;">Complete your contact information <strong class="text-green-700">just once</strong>. This will make your future orders super fast:</span>
   </p>
   <ul class="space-y-2 text-left mb-6">
     <li class="flex items-start">
       <span class="text-green-500 mr-2">✅</span>
-      <span><strong>Ahorra tiempo:</strong> Tu dirección y teléfono se rellenarán automáticamente en cada pedido.</span>
+      <span>
+        <strong><span class="lang-es">Ahorra tiempo:</span><span class="lang-en" style="display:none;">Save time:</span></strong>
+        <span class="lang-es"> Tu dirección y teléfono se rellenarán automáticamente en cada pedido.</span>
+        <span class="lang-en" style="display:none;"> Your address and phone will be auto-filled for each order.</span>
+      </span>
     </li>
     <li class="flex items-start">
       <span class="text-green-500 mr-2">⚡</span>
-      <span><strong>Compra en segundos:</strong> Pasa de elegir tus productos a finalizar la compra sin escribir de más.</span>
+      <span>
+        <strong><span class="lang-es">Compra en segundos:</span><span class="lang-en" style="display:none;">Shop in seconds:</span></strong>
+        <span class="lang-es"> Pasa de elegir tus productos a finalizar la compra sin escribir de más.</span>
+        <span class="lang-en" style="display:none;"> Go from choosing products to checkout without extra typing.</span>
+      </span>
     </li>
   </ul>
-  <h2 class="text-2xl font-bold text-green-800 mb-4">Completa tu perfil</h2>
+  <h2 class="text-2xl font-bold text-green-800 mb-4">
+    <span class="lang-es">Completa tu perfil</span>
+    <span class="lang-en" style="display:none;">Complete your profile</span>
+  </h2>
   <form id="profile-form" class="space-y-4">
     
     <div>
-      <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+      <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1"><span class="lang-es">Nombre</span><span class="lang-en" style="display:none;">Name</span></label>
       <input type="text" id="nombre" name="nombre" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none bg-gray-100 cursor-not-allowed">
     </div>
 
     <div>
-      <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+      <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1"><span class="lang-es">Teléfono</span><span class="lang-en" style="display:none;">Phone</span></label>
       <input type="tel" id="telefono" name="telefono" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ej: 809-123-4567">
     </div>
 
     <div>
-      <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-      <textarea id="direccion" name="direccion" required rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Tu dirección completa"></textarea>
+      <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1"><span class="lang-es">Dirección</span><span class="lang-en" style="display:none;">Address</span></label>
+      <textarea id="direccion" name="direccion" required rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Tu dirección completa / Your full address"></textarea>
     </div>
 
     <div>
-      <label for="pago-preferido" class="block text-sm font-medium text-gray-700 mb-1">Método de pago preferido</label>
+      <label for="pago-preferido" class="block text-sm font-medium text-gray-700 mb-1"><span class="lang-es">Método de pago preferido</span><span class="lang-en" style="display:none;">Preferred payment method</span></label>
       <select id="pago-preferido" name="pago-preferido" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-        <option value="">Seleccionar uno...</option>
-        <option value="Cash">Efectivo (Cash)</option>
-        <option value="Transferencia">Transferencia Bancaria</option>
+        <option value="">Seleccionar uno... / Select one...</option>
+        <option value="Cash">Efectivo / Cash</option>
+        <option value="Transferencia">Transferencia Bancaria / Bank Transfer</option>
         <option value="PayPal">PayPal (+10%)</option>
       </select>
     </div>
 
     <div>
-        <label for="como-nos-conocio" class="block text-sm font-medium text-gray-700 mb-1">¿Cómo te enteraste de nosotros? <span class="text-red-500">*</span></label>
+        <label for="como-nos-conocio" class="block text-sm font-medium text-gray-700 mb-1"><span class="lang-es">¿Cómo te enteraste de nosotros?</span><span class="lang-en" style="display:none;">How did you hear about us?</span> <span class="text-red-500">*</span></label>
         <select id="como-nos-conocio" name="como-nos-conocio" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-            <option value="" disabled selected>Elige una opción...</option>
+            <option value="" disabled selected>Elige una opción... / Choose an option...</option>
             <option value="WhatsApp">WhatsApp</option>
-            <option value="Flyer">Flyer (volante)</option>
+            <option value="Flyer">Flyer (volante) / Flyer</option>
             <option value="Instagram">Instagram</option>
             <option value="TikTok">TikTok</option>
             <option value="YouTube">YouTube</option>
-            <option value="Google">Búsqueda de Google</option>
-            <option value="IA">Inteligencia Artificial (Chatbot, etc.)</option>
-            <option value="Recomendacion">Alguien me chismoseó</option>
-            <option value="Sueño">¡Lo soñé!</option>
+            <option value="Google">Búsqueda de Google / Google Search</option>
+            <option value="IA">Inteligencia Artificial (Chatbot, etc.) / AI (Chatbot, etc.)</option>
+            <option value="Recomendacion">Alguien me recomendó / A friend told me</option>
+            <option value="Sueño">¡Lo soñé! / I dreamed it!</option>
         </select>
     </div>
     
     <div>
-      <label for="likes" class="block text-sm font-medium text-gray-700 mb-1">¿Algo que SIEMPRE te gustaría recibir? (Opcional)</label>
-      <textarea id="likes" name="likes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ej: Me encantan los aguacates y el mango"></textarea>
+      <label for="likes" class="block text-sm font-medium text-gray-700 mb-1"><span class="lang-es">¿Algo que SIEMPRE te gustaría recibir? (Opcional)</span><span class="lang-en" style="display:none;">Anything you would ALWAYS like to receive? (Optional)</span></label>
+      <textarea id="likes" name="likes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ej: Me encantan los aguacates / E.g., I love avocados"></textarea>
     </div>
 
     <div>
-      <label for="dislikes" class="block text-sm font-medium text-gray-700 mb-1">¿Algún producto que NUNCA quieras recibir? (Opcional)</label>
-      <textarea id="dislikes" name="dislikes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ej: No me gusta el repollo"></textarea>
+      <label for="dislikes" class="block text-sm font-medium text-gray-700 mb-1"><span class="lang-es">¿Algún producto que NUNCA quieras recibir? (Opcional)</span><span class="lang-en" style="display:none;">Any product you NEVER want to receive? (Optional)</span></label>
+      <textarea id="dislikes" name="dislikes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Ej: No me gusta el repollo / E.g., I don't like cabbage"></textarea>
     </div>
 
     <button type="submit" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold">
-      Guardar Perfil
+      <span class="lang-es">Guardar Perfil</span><span class="lang-en" style="display:none;">Save Profile</span>
     </button>
   </form>
 </div>
@@ -616,17 +634,18 @@
     <!-- Diálogo de confirmación -->
     <dialog id="dlg-configurar" class="rounded-xl p-6 shadow-xl w-full max-w-sm">
       <h3 class="text-xl font-bold text-green-800 mb-4 text-center">
-        ¿Querés personalizar la caja?
+        <span class="lang-es">¿Querés personalizar la caja?</span>
+        <span class="lang-en" style="display:none;">Do you want to customize the box?</span>
       </h3>
 
       <div class="flex justify-center gap-4">
-        <button id="btn-config-si"
-                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-          Sí
+        <button id="btn-config-si" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <span class="lang-es">Sí</span>
+          <span class="lang-en" style="display:none;">Yes</span>
         </button>
-        <button id="btn-config-no"
-                class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">
-          No
+        <button id="btn-config-no" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">
+          <span class="lang-es">No</span>
+          <span class="lang-en" style="display:none;">No</span>
         </button>
       </div>
     </dialog>
@@ -635,7 +654,8 @@
     <section id="configurar-caja" class="hidden py-16 bg-white">
       <div class="container mx-auto px-4">
         <h2 class="text-4xl font-extrabold text-green-800 mb-8 text-center">
-          Configura tu caja
+          <span class="lang-es">Configura tu caja</span>
+          <span class="lang-en" style="display:none;">Set up your box</span>
         </h2>
 
         <!-- Botón AUTO-MODE -->
@@ -1562,162 +1582,98 @@
     <!-- Sección Preguntas -->
     <section id="faq" class="py-16 bg-white">
       <div class="container mx-auto px-4 max-w-3xl">
-        <!-- Título principal FAQ desplegable -->
-        <details id="faq-main" open>
-          <summary class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-es flex items-center justify-center gap-3" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px;">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-extrabold text-green-800 flex items-center justify-center gap-3" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px;">
             <i class="fas fa-question-circle text-green-600"></i>
-            Preguntas frecuentes
-          </summary>
-          <div class="space-y-8 lang-es">
-            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-              <summary class="font-bold text-green-800 cursor-pointer">🛒 Pedidos y Productos</summary>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Cómo hago un pedido?</summary>
-                <p>Puedes hacer tu pedido a través de nuestro formulario online o escribiéndonos directamente por WhatsApp. También puedes seguirnos en Instagram @green_dolio para ver nuestros productos disponibles.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Qué tipos de cajas ofrecen?</summary>
-                <ul class="list-disc ml-6">
-                  <li><b>Caribbean Fresh Pack</b>: $650 (3 días)</li>
-                  <li><b>Island Weekssential</b>: $990 (1 semana)</li>
-                  <li><b>All Green-clusive Mix</b>: $1990 (2 semanas)</li>
-                </ul>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Puedo personalizar mi caja?</summary>
-                <p>¡Absolutamente! Cada caja se arma según tus gustos y lo que esté más fresco el día de tu pedido. Solo dinos qué te gusta y qué no.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Ofrecen pedidos "a la carta"?</summary>
-                <p>Sí, si no pides una caja, el pedido mínimo es de 500 y el delivery no está incluido.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Qué productos extras tienen disponibles?</summary>
-                <p>Ofrecemos huevos de campo, quinoa, baba ganoush, miel, aceite de oliva, chimi churri, hummus y jugos naturales, y más. Revisa nuestro catálogo completo o consúltanos por WhatsApp.</p>
-              </details>
-            </details>
-            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-              <summary class="font-bold text-green-800 cursor-pointer">🚛 Entregas</summary>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿A dónde entregan?</summary>
-                <ul class="list-disc ml-6">
-                  <li><b>Juan Dolio</b>: Pedido mínimo $650</li>
-                  <li><b>Santo Domingo</b>: Pedido mínimo $990</li>
-                  <li><b>Boca Chica</b>: Pedido mínimo $990</li>
-                </ul>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Qué días hacen entregas?</summary>
-                <p>Entregamos todos los días de 9:00 AM a 6:00 PM. Los martes, jueves y sábados son GRATIS. Otros días tienen cargo de delivery de $100.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Con cuánta anticipación debo hacer mi pedido?</summary>
-                <p>Preferentemente con 24 horas de anticipación, o hasta las 12:00 PM del mismo día de entrega.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Tienen entrega gratis?</summary>
-                <p>Sí, ofrecemos entrega gratis en nuestras zonas de cobertura cuando cumples con el pedido mínimo.</p>
-              </details>
-            </details>
-            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-              <summary class="font-bold text-green-800 cursor-pointer">💰 Pagos</summary>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Qué formas de pago aceptan?</summary>
-                <ul class="list-disc ml-6">
-                  <li><b>Efectivo</b></li>
-                  <li><b>Transferencia bancaria</b></li>
-                  <li><b>PayPal</b> (con 10% de recargo)</li>
-                </ul>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">¿Cuándo debo pagar?</summary>
-                <p>¡Solo pagas cuando recibes tu pedido, no antes!</p>
-              </details>
-            </details>
-            <div class="mt-10 text-center text-green-800 text-lg font-bold">
-              ¿No encontraste tu respuesta?<br>
-              Escríbenos por WhatsApp o síguenos en Instagram <a href="https://www.instagram.com/green_dolio/" target="_blank" class="underline hover:text-green-600">@green_dolio</a>. ¡Estamos aquí para ayudarte!
+            <span class="lang-es">Preguntas Frecuentes</span>
+            <span class="lang-en" style="display:none;">Frequently Asked Questions</span>
+          </h2>
+        </div>
+
+        <div class="space-y-6">
+          <details class="bg-green-50/50 rounded-xl shadow-md p-4 md:p-6 transition-all duration-300 open:ring-2 open:ring-green-300">
+            <summary class="text-lg md:text-xl font-bold text-green-800 cursor-pointer list-none flex justify-between items-center">
+              <span>🚛 <span class="lang-es">Entregas</span><span class="lang-en" style="display:none;">Deliveries</span></span>
+              <i class="fas fa-chevron-down transition-transform duration-300 group-open:rotate-180"></i>
+            </summary>
+            <div class="mt-4 text-center text-green-700 space-y-4">
+              <p>
+                <strong class="text-green-800 block lang-es">¿Qué días y a qué hora entregan?</strong>
+                <strong class="text-green-800 block lang-en" style="display:none;">What days and times do you deliver?</strong>
+                <span class="block lang-es">Nuestro horario de entrega es de 12:30 PM a 8:00 PM.</span>
+                <span class="block lang-en" style="display:none;">Our delivery window is from 12:30 PM to 8:00 PM.</span>
+              </p>
+              <p>
+                <strong class="text-green-800 block lang-es">¿Cuándo es gratis el envío?</strong>
+                <strong class="text-green-800 block lang-en" style="display:none;">When is shipping free?</strong>
+                <span class="block lang-es">El envío es <strong>GRATIS</strong> los <strong>Lunes, Miércoles y Viernes</strong>.</span>
+                <span class="block lang-en" style="display:none;">Shipping is <strong>FREE</strong> on <strong>Mondays, Wednesdays, and Fridays</strong>.</span>
+                <span class="block text-sm lang-es">Los Martes, Jueves y Sábados tiene un costo de DOP 100.</span>
+                <span class="block text-sm lang-en" style="display:none;">On Tuesdays, Thursdays, and Saturdays, there is a DOP 100 fee.</span>
+              </p>
+              <p>
+                <strong class="text-green-800 block lang-es">¿A dónde entregan?</strong>
+                <strong class="text-green-800 block lang-en" style="display:none;">Where do you deliver?</strong>
+                <span class="block lang-es">Cubrimos Juan Dolio (pedido mín. $650), Santo Domingo y Boca Chica (pedido mín. $990).</span>
+                <span class="block lang-en" style="display:none;">We cover Juan Dolio (min. order $650), Santo Domingo, and Boca Chica (min. order $990).</span>
+              </p>
             </div>
-          </div>
-        </details>
-        <!-- Inglés -->
-        <details id="faq-main-en">
-          <summary class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-en flex items-center justify-center gap-3" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px; display:none;">
-            <i class="fas fa-question-circle text-green-600"></i>
-            Frequently asked questions
-          </summary>
-          <div class="space-y-8 lang-en" style="display:none;">
-            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-              <summary class="font-bold text-green-800 cursor-pointer">🛒 Orders & Products</summary>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">How do I place an order?</summary>
-                <p>You can place your order through our online form or by writing to us directly on WhatsApp. You can also follow us on Instagram @green_dolio to see our available products.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">What types of boxes do you offer?</summary>
-                <ul class="list-disc ml-6">
-                  <li><b>Caribbean Fresh Pack</b>: $650 (3 days)</li>
-                  <li><b>Island Weekssential</b>: $990 (1 week)</li>
-                  <li><b>All Green-clusive Mix</b>: $1990 (2 weeks)</li>
-                </ul>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">Can I customize my box?</summary>
-                <p>Absolutely! Each box is assembled according to your tastes and what is freshest on the day of your order. Just tell us what you like and what you don't.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">Do you offer "à la carte" orders?</summary>
-                <p>Yes, contact us via WhatsApp with your specific order and we will send you availability and a quote.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">What extra products are available?</summary>
-                <p>We offer free-range eggs, quinoa, baba ganoush, honey, olive oil, chimichurri, hummus, natural juices, and more. Check our full catalog or ask us on WhatsApp.</p>
-              </details>
-            </details>
-            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-              <summary class="font-bold text-green-800 cursor-pointer">🚛 Deliveries</summary>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">Where do you deliver?</summary>
-                <ul class="list-disc ml-6">
-                  <li><b>Juan Dolio</b>: Minimum order $650</li>
-                  <li><b>Santo Domingo</b>: Minimum order $990</li>
-                  <li><b>Boca Chica</b>: Minimum order $990</li>
-                </ul>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">What days do you deliver?</summary>
-                <p>We deliver every day from 9:00 AM to 6:00 PM. Tuesdays, Thursdays, and Saturdays are FREE. Other days have a delivery charge of $100.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">How far in advance should I order?</summary>
-                <p>Preferably 24 hours in advance, or until 12:00 PM on the same day of delivery.</p>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">Do you offer free delivery?</summary>
-                <p>Yes, we offer free delivery in our coverage areas when you meet the minimum order.</p>
-              </details>
-            </details>
-            <details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-              <summary class="font-bold text-green-800 cursor-pointer">💰 Payments</summary>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">What payment methods do you accept?</summary>
-                <ul class="list-disc ml-6">
-                  <li><b>Cash</b></li>
-                  <li><b>Bank transfer</b></li>
-                  <li><b>PayPal</b> (10% surcharge)</li>
-                </ul>
-              </details>
-              <details class="bg-white rounded shadow p-2 mb-1">
-                <summary class="font-semibold text-green-700 cursor-pointer">When do I have to pay?</summary>
-                <p>You only pay when you receive your order, never before!</p>
-              </details>
-            </details>
-            <div class="mt-10 text-center text-green-800 text-lg font-bold">
-              Didn't find your answer?<br>
-              Write to us on WhatsApp or follow us on Instagram <a href="https://www.instagram.com/green_dolio/" target="_blank" class="underline hover:text-green-600">@green_dolio</a>. We're here to help!
+          </details>
+
+          <details class="bg-green-50/50 rounded-xl shadow-md p-4 md:p-6 transition-all duration-300 open:ring-2 open:ring-green-300">
+            <summary class="text-lg md:text-xl font-bold text-green-800 cursor-pointer list-none flex justify-between items-center">
+              <span>🛒 <span class="lang-es">Pedidos y Productos</span><span class="lang-en" style="display:none;">Orders & Products</span></span>
+              <i class="fas fa-chevron-down transition-transform duration-300 group-open:rotate-180"></i>
+            </summary>
+            <div class="mt-4 text-center text-green-700 space-y-4">
+              <p>
+                <strong class="text-green-800 block lang-es">¿Puedo personalizar mi caja?</strong>
+                <strong class="text-green-800 block lang-en" style="display:none;">Can I customize my box?</strong>
+                <span class="block lang-es">¡Absolutamente! Al elegir tu caja, podrás indicar qué productos te gustan y cuáles prefieres no recibir.</span>
+                <span class="block lang-en" style="display:none;">Absolutely! When you choose your box, you can indicate which products you like and which ones you'd rather not receive.</span>
+              </p>
+              <p>
+                <strong class="text-green-800 block lang-es">¿Ofrecen pedidos "a la carta"?</strong>
+                <strong class="text-green-800 block lang-en" style="display:none;">Do you offer "à la carte" orders?</strong>
+                <span class="block lang-es">Sí. Para pedidos que no incluyen una caja (a la carta), el monto mínimo es de DOP 500 y el costo de envío no está incluido.</span>
+                <span class="block lang-en" style="display:none;">Yes. For orders that do not include a box (à la carte), the minimum amount is DOP 500 and the shipping fee is not included.</span>
+              </p>
             </div>
-          </div>
-        </details>
+          </details>
+
+          <details class="bg-green-50/50 rounded-xl shadow-md p-4 md:p-6 transition-all duration-300 open:ring-2 open:ring-green-300">
+            <summary class="text-lg md:text-xl font-bold text-green-800 cursor-pointer list-none flex justify-between items-center">
+              <span>💰 <span class="lang-es">Pagos</span><span class="lang-en" style="display:none;">Payments</span></span>
+              <i class="fas fa-chevron-down transition-transform duration-300 group-open:rotate-180"></i>
+            </summary>
+            <div class="mt-4 text-center text-green-700 space-y-4">
+              <p>
+                <strong class="text-green-800 block lang-es">¿Qué formas de pago aceptan?</strong>
+                <strong class="text-green-800 block lang-en" style="display:none;">What payment methods do you accept?</strong>
+                <span class="block lang-es">Aceptamos Efectivo, Transferencia Bancaria y PayPal (este último con un 10% de recargo).</span>
+                <span class="block lang-en" style="display:none;">We accept Cash, Bank Transfer, and PayPal (the latter with a 10% surcharge).</span>
+              </p>
+              <p>
+                <strong class="text-green-800 block lang-es">¿Cuándo debo pagar?</strong>
+                <strong class="text-green-800 block lang-en" style="display:none;">When do I pay?</strong>
+                <span class="block lang-es">¡Pagas al recibir tu pedido, nunca antes!</span>
+                <span class="block lang-en" style="display:none;">You pay upon receiving your order, never before!</span>
+              </p>
+            </div>
+          </details>
+        </div>
+
+        <div class="mt-12 text-center text-green-800 text-lg">
+          <p class="font-bold">
+            <span class="lang-es">¿No encontraste tu respuesta?</span>
+            <span class="lang-en" style="display:none;">Didn't find your answer?</span>
+          </p>
+          <p>
+            <span class="lang-es">¡Escríbenos por WhatsApp o síguenos en Instagram!</span>
+            <span class="lang-en" style="display:none;">Write to us on WhatsApp or follow us on Instagram!</span>
+          </p>
+          <a href="https://www.instagram.com/green_dolio/" target="_blank" class="text-green-600 hover:underline font-bold">@green_dolio</a>
+        </div>
       </div>
     </section>
 
@@ -1932,14 +1888,19 @@
     <div id="modal-resumen" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999] hidden p-4">
       <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full relative max-h-full overflow-y-auto">
         <button id="cerrar-modal-resumen" class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-2xl">&times;</button>
-        <h2 class="text-2xl font-bold text-green-800 mb-4 text-center">Resumen de tu pedido</h2>
+        <h2 class="text-2xl font-bold text-green-800 mb-4 text-center">
+          <span class="lang-es">Resumen de tu pedido</span>
+          <span class="lang-en" style="display:none;">Order Summary</span>
+        </h2>
         <div id="detalle-resumen" class="mb-4 text-green-900 text-base"></div>
         <div class="flex justify-between items-center font-bold text-lg mb-4">
           <span>Total:</span>
           <span id="total-resumen" class="text-green-800">$0.00</span>
         </div>
         <button id="enviar-whatsapp" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors font-bold text-lg flex items-center justify-center gap-2">
-          <i class="fab fa-whatsapp"></i> Enviar pedido por WhatsApp
+          <i class="fab fa-whatsapp"></i>
+          <span class="lang-es">Enviar pedido por WhatsApp</span>
+          <span class="lang-en" style="display:none;">Send Order via WhatsApp</span>
         </button>
       </div>
     </div>
@@ -2029,7 +1990,8 @@ function enviarPedido() {
     <section id="configurar-caja" class="hidden py-16 bg-white">
       <div class="container mx-auto px-4">
         <h2 class="text-4xl font-extrabold text-green-800 mb-8 text-center">
-          Configura tu caja
+          <span class="lang-es">Configura tu caja</span>
+          <span class="lang-en" style="display:none;">Set up your box</span>
         </h2>
 
         <!-- Botón AUTO-MODE -->
@@ -2214,17 +2176,18 @@ function enviarPedido() {
     <!-- Diálogo de confirmación -->
     <dialog id="dlg-configurar" class="rounded-xl p-6 shadow-xl w-full max-w-sm">
       <h3 class="text-xl font-bold text-green-800 mb-4 text-center">
-        ¿Querés personalizar la caja?
+        <span class="lang-es">¿Querés personalizar la caja?</span>
+        <span class="lang-en" style="display:none;">Do you want to customize the box?</span>
       </h3>
 
       <div class="flex justify-center gap-4">
-        <button id="btn-config-si"
-                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-          Sí
+        <button id="btn-config-si" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          <span class="lang-es">Sí</span>
+          <span class="lang-en" style="display:none;">Yes</span>
         </button>
-        <button id="btn-config-no"
-                class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">
-          No
+        <button id="btn-config-no" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">
+          <span class="lang-es">No</span>
+          <span class="lang-en" style="display:none;">No</span>
         </button>
       </div>
     </dialog>

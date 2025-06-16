@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.signInWithPopup(provider)
       .then((result) => {
         console.log("¡Inicio de sesión exitoso!", result.user);
-        mostrarNotificacion('¡Bienvenid@ de vuelta!');
+        const lang = localStorage.getItem('lang') || 'es';
+        mostrarNotificacion(lang === 'en' ? 'Welcome back!' : '¡Bienvenid@ de vuelta!');
       })
       .catch((error) => {
         console.error("Error en el inicio de sesión:", error);
@@ -30,7 +31,21 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.signOut()
       .then(() => {
         console.log("Sesión cerrada.");
-        mostrarNotificacion('Has cerrado sesión. ¡Vuelve pronto!');
+        // Limpiar el carrito local
+        localStorage.setItem('carrito', '[]');
+        renderCarrito();
+        // Limpiar el carrito en Firebase
+        const db = firebase.firestore();
+        const user = firebase.auth().currentUser;
+        if (user) {
+          db.collection("users").doc(user.uid).update({
+            carrito: []
+          }).catch((error) => {
+            console.error("Error al limpiar el carrito en Firebase:", error);
+          });
+        }
+        const lang = localStorage.getItem('lang') || 'es';
+        mostrarNotificacion(lang === 'en' ? 'You have logged out. Come back soon!' : 'Has cerrado sesión. ¡Vuelve pronto!');
       })
       .catch((error) => {
         console.error("Error al cerrar sesión:", error);
@@ -304,7 +319,8 @@ function eliminarDelCarrito(index) {
   localStorage.setItem('carrito', JSON.stringify(carrito));
   renderCarrito();
   guardarCarritoEnFirebase();
-  mostrarNotificacion('Producto eliminado del carrito');
+  const lang = localStorage.getItem('lang') || 'es';
+  mostrarNotificacion(lang === 'en' ? 'Product removed from cart' : 'Producto eliminado del carrito');
 }
 
 function cambiarCantidad(index, delta) {
@@ -851,12 +867,12 @@ function mostrarFormularioPedido() {
                 <label class="block text-sm font-medium text-gray-700 mb-1">Día de entrega</label>
                 <select name="dia" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                     <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
-                    <option value="Lunes">Lunes (12:30-20:00) - Gratis</option>
-                    <option value="Martes">Martes (12:30-20:00) - DOP 100</option>
-                    <option value="Miércoles">Miércoles (12:30-20:00) - Gratis</option>
-                    <option value="Jueves">Jueves (12:30-20:00) - DOP 100</option>
-                    <option value="Viernes">Viernes (12:30-20:00) - Gratis</option>
-                    <option value="Sábado">Sábado (12:30-20:00) - DOP 100</option>
+                    <option value="Lunes">${lang === 'en' ? 'Monday (12:30-20:00) - Free' : 'Lunes (12:30-20:00) - Gratis'}</option>
+                    <option value="Martes">${lang === 'en' ? 'Tuesday (12:30-20:00) - DOP 100' : 'Martes (12:30-20:00) - DOP 100'}</option>
+                    <option value="Miércoles">${lang === 'en' ? 'Wednesday (12:30-20:00) - Free' : 'Miércoles (12:30-20:00) - Gratis'}</option>
+                    <option value="Jueves">${lang === 'en' ? 'Thursday (12:30-20:00) - DOP 100' : 'Jueves (12:30-20:00) - DOP 100'}</option>
+                    <option value="Viernes">${lang === 'en' ? 'Friday (12:30-20:00) - Free' : 'Viernes (12:30-20:00) - Gratis'}</option>
+                    <option value="Sábado">${lang === 'en' ? 'Saturday (12:30-20:00) - DOP 100' : 'Sábado (12:30-20:00) - DOP 100'}</option>
                 </select>
             </div>
 
@@ -954,6 +970,7 @@ function enviarPedidoWhatsApp(pedidoData, dialog) {
             }
             localStorage.setItem('carrito', '[]');
             renderCarrito();
+            guardarCarritoEnFirebase();
         })
         .catch((error) => {
             console.error("Error al guardar el pedido en Firebase: ", error);
@@ -1077,12 +1094,17 @@ function agregarAlCarrito(item) {
     if (itemExistente) {
         // Si existe, solo actualizar la cantidad
         itemExistente.cantidad = (itemExistente.cantidad || 1) + 1;
-        mostrarNotificacion('Cantidad actualizada en el carrito');
+        const lang = localStorage.getItem('lang') || 'es';
+        mostrarNotificacion(lang === 'en' ? 'Quantity updated in cart' : 'Cantidad actualizada en el carrito');
     } else {
         // Si no existe, agregar como nuevo item
         item.cantidad = 1;
         carrito.push(item);
-        mostrarNotificacion(item.tipo === 'caja' ? 'Caja agregada al carrito' : 'Producto agregado al carrito');
+        const lang = localStorage.getItem('lang') || 'es';
+        const message = item.tipo === 'caja' 
+          ? (lang === 'en' ? 'Box added to cart' : 'Caja agregada al carrito')
+          : (lang === 'en' ? 'Product added to cart' : 'Producto agregado al carrito');
+        mostrarNotificacion(message);
     }
 
     localStorage.setItem('carrito', JSON.stringify(carrito));
@@ -1094,6 +1116,7 @@ function agregarAlCarrito(item) {
 function limpiarCarritoAlIniciar() {
     localStorage.removeItem('carrito');
     localStorage.setItem('carrito', '[]');
+    renderCarrito(); // Actualiza la interfaz de usuario
 }
 
 function guardarCarritoEnFirebase() {
@@ -1209,44 +1232,70 @@ function finalizarPedido(event) {
     event.preventDefault();
     const user = firebase.auth().currentUser;
     if (!user) {
-        mostrarNotificacion('Debes iniciar sesión para completar el pedido.');
+        const lang = localStorage.getItem('lang') || 'es';
+        mostrarNotificacion(lang === 'en' ? 'You must be logged in to complete the order.' : 'Debes iniciar sesión para completar el pedido.');
         return;
     }
     const form = document.getElementById('form-pedido');
     const formData = new FormData(form);
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
     if (carrito.length === 0) {
-        mostrarNotificacion('Tu carrito está vacío.');
+        const lang = localStorage.getItem('lang') || 'es';
+        mostrarNotificacion(lang === 'en' ? 'Your cart is empty.' : 'Tu carrito está vacío.');
         return;
     }
+
+    // Asegurarnos de que el idioma está disponible
+    const lang = localStorage.getItem('lang') || 'es';
+
     let detallePedido = carrito.map(item => {
         let linea = `• ${item.nombre} (x${item.cantidad || 1}) - DOP ${((item.precio || 0) * (item.cantidad || 1)).toFixed(2)}`;
         if (item.variedad) {
-            linea += `\n  - Variedad: ${item.variedad}`;
+            linea += `\n  - ${lang === 'en' ? 'Variety' : 'Variedad'}: ${item.variedad}`;
         }
         if (item.preferencias && (item.preferencias.like.length > 0 || item.preferencias.dislike.length > 0)) {
-            linea += `\n  - Gustos: 👍 ${item.preferencias.like.join(', ') || 'ninguno'}`;
-            linea += `\n  - Disgustos: 👎 ${item.preferencias.dislike.join(', ') || 'ninguno'}`;
+            linea += `\n  - ${lang === 'en' ? 'Likes' : 'Gustos'}: 👍 ${item.preferencias.like.join(', ') || (lang === 'en' ? 'none' : 'ninguno')}`;
+            linea += `\n  - ${lang === 'en' ? 'Dislikes' : 'Disgustos'}: 👎 ${item.preferencias.dislike.join(', ') || (lang === 'en' ? 'none' : 'ninguno')}`;
         }
         return linea;
     }).join('\n');
+
     const subtotal = carrito.reduce((sum, item) => sum + (item.precio || 0) * (item.cantidad || 1), 0);
     let totalFinal = subtotal;
-    let desgloseTotal = `Subtotal: DOP ${subtotal.toFixed(2)}`;
+    let desgloseTotal = `${lang === 'en' ? 'Subtotal' : 'Subtotal'}: DOP ${subtotal.toFixed(2)}`;
+    
     const diaSeleccionado = formData.get('dia');
     const diasConCargo = ['Martes', 'Jueves', 'Sábado'];
     if (diasConCargo.includes(diaSeleccionado)) {
         totalFinal += 100;
-        desgloseTotal += `\nEnvío: DOP 100.00`;
+        desgloseTotal += `\n${lang === 'en' ? 'Shipping' : 'Envío'}: DOP 100.00`;
     }
     const metodoPago = formData.get('pago');
     if (metodoPago === 'PayPal') {
         const cargoPaypal = totalFinal * 0.10;
         totalFinal += cargoPaypal;
-        desgloseTotal += `\nCargo PayPal (10%): DOP ${cargoPaypal.toFixed(2)}`;
+        desgloseTotal += `\n${lang === 'en' ? 'PayPal Fee' : 'Cargo PayPal'} (10%): DOP ${cargoPaypal.toFixed(2)}`;
     }
-    desgloseTotal += `\n*Total a Pagar: DOP ${totalFinal.toFixed(2)}*`;
-    const mensajeWhatsApp = `\n¡Hola Green Dolio! 👋 Quisiera confirmar mi pedido:\n\n*👤 DATOS DEL CLIENTE:*\n- Nombre: ${formData.get('nombre')}\n- Teléfono: ${formData.get('telefono')}\n- Dirección: ${formData.get('direccion')}\n- Día de entrega: ${diaSeleccionado}\n\n*🛒 RESUMEN DEL PEDIDO:*\n${detallePedido}\n\n*💰 TOTAL:*\n${desgloseTotal}\n\n*💳 MÉTODO DE PAGO:*\n${metodoPago}\n\n*📝 OBSERVACIONES:*\n${formData.get('observaciones') || 'Sin observaciones.'}`.trim();
+    desgloseTotal += `\n*${lang === 'en' ? 'Total to Pay' : 'Total a Pagar'}: DOP ${totalFinal.toFixed(2)}*`;
+
+    // Lógica para traducir el día de la semana en el mensaje final
+    const diasSemana = {
+        'Lunes': 'Monday',
+        'Martes': 'Tuesday',
+        'Miércoles': 'Wednesday',
+        'Jueves': 'Thursday',
+        'Viernes': 'Friday',
+        'Sábado': 'Saturday'
+    };
+    const diaEntregaDisplay = lang === 'en' ? (diasSemana[diaSeleccionado] || diaSeleccionado) : diaSeleccionado;
+
+    // Se usa la lógica de traducción para el mensaje completo que ya implementamos
+    let mensajeWhatsApp;
+    if (lang === 'en') {
+        mensajeWhatsApp = `Hello Green Dolio! 👋 I would like to confirm my order:\n\n*👤 CUSTOMER DETAILS:*\n- Name: ${formData.get('nombre')}\n- Phone: ${formData.get('telefono')}\n- Address: ${formData.get('direccion')}\n- Delivery day: ${diaEntregaDisplay}\n\n*🛒 ORDER SUMMARY:*\n${detallePedido}\n\n*💰 TOTAL:*\n${desgloseTotal}\n\n*💳 PAYMENT METHOD:*\n${metodoPago}\n\n*📝 NOTES:*\n${formData.get('observaciones') || 'No notes.'}`.trim();
+    } else {
+        mensajeWhatsApp = `¡Hola Green Dolio! 👋 Quisiera confirmar mi pedido:\n\n*👤 DATOS DEL CLIENTE:*\n- Nombre: ${formData.get('nombre')}\n- Teléfono: ${formData.get('telefono')}\n- Dirección: ${formData.get('direccion')}\n- Día de entrega: ${diaEntregaDisplay}\n\n*🛒 RESUMEN DEL PEDIDO:*\n${detallePedido}\n\n*💰 TOTAL:*\n${desgloseTotal}\n\n*💳 MÉTODO DE PAGO:*\n${metodoPago}\n\n*📝 OBSERVACIONES:*\n${formData.get('observaciones') || 'Sin observaciones.'}`.trim();
+    }
 
     const pedidoData = {
         userId: user.uid,
@@ -1267,7 +1316,6 @@ function finalizarPedido(event) {
     modalResumen.dataset.fullMessage = mensajeWhatsApp;
     document.getElementById('dlg-carrito').close();
     
-    // Ocultar la barra inferior cuando se abre el modal
     const bottomBar = document.getElementById('bottom-bar');
     if (bottomBar) bottomBar.style.display = 'none';
     
@@ -1276,12 +1324,10 @@ function finalizarPedido(event) {
     document.getElementById('enviar-whatsapp').onclick = () => {
       enviarPedidoWhatsApp(pedidoData, modalResumen);
       modalResumen.classList.add('hidden');
-      // Mostrar la barra inferior nuevamente
       if (bottomBar) bottomBar.style.display = 'flex';
     };
     document.getElementById('cerrar-modal-resumen').onclick = () => {
       modalResumen.classList.add('hidden');
-      // Mostrar la barra inferior nuevamente
       if (bottomBar) bottomBar.style.display = 'flex';
     };
 }
