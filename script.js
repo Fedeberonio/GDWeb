@@ -1,3 +1,109 @@
+/* ====== Autenticación con Google ====== */
+document.addEventListener('DOMContentLoaded', () => {
+  const auth = firebase.auth();
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  const btnLogin = document.getElementById('btn-login');
+  const btnLogout = document.getElementById('btn-logout');
+  const userInfoContainer = document.getElementById('user-info');
+  const userPic = document.getElementById('user-pic');
+  const userName = document.getElementById('user-name');
+
+  // Variable global para guardar los datos del perfil
+  window.userProfile = null;
+
+  // Función para Iniciar Sesión
+  const login = () => {
+    auth.signInWithPopup(provider)
+      .then((result) => {
+        console.log("¡Inicio de sesión exitoso!", result.user);
+        mostrarNotificacion('¡Bienvenid@ de vuelta!');
+      })
+      .catch((error) => {
+        console.error("Error en el inicio de sesión:", error);
+        mostrarNotificacion('Error al iniciar sesión. Por favor, intenta de nuevo.');
+      });
+  };
+
+  // Función para Cerrar Sesión
+  const logout = () => {
+    auth.signOut()
+      .then(() => {
+        console.log("Sesión cerrada.");
+        mostrarNotificacion('Has cerrado sesión. ¡Vuelve pronto!');
+      })
+      .catch((error) => {
+        console.error("Error al cerrar sesión:", error);
+        mostrarNotificacion('Error al cerrar sesión. Por favor, intenta de nuevo.');
+      });
+  };
+
+  // Escuchar cambios en el estado de autenticación
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      // Usuario ha iniciado sesión
+      const db = firebase.firestore();
+      const userRef = db.collection("users").doc(user.uid);
+
+      userRef.get().then((doc) => {
+        if (doc.exists) {
+          // Si el documento existe, el usuario es recurrente.
+          console.log("Usuario recurrente, cargando perfil...");
+          window.userProfile = doc.data(); // Guardamos los datos en la variable global
+
+          // INICIO DE LA MODIFICACIÓN: Cargar carrito desde Firebase
+          if (window.userProfile.carrito) {
+            localStorage.setItem('carrito', JSON.stringify(window.userProfile.carrito));
+            renderCarrito(); // Actualizamos la interfaz del carrito con los datos de la nube
+          }
+          // FIN DE LA MODIFICACIÓN
+
+        } else {
+          // Si el documento NO existe, es un usuario nuevo.
+          console.log("¡Hola, usuario nuevo! Mostrando formulario de perfil.");
+          guardarPerfilDeUsuario(user);
+        }
+      }).catch((error) => {
+        console.error("Error al obtener el documento del usuario:", error);
+      });
+
+      // --- Esto es el código que ya tenías para cambiar la interfaz ---
+      btnLogin.style.display = 'none';
+      userInfoContainer.style.display = 'flex';
+      userPic.src = user.photoURL;
+      userName.textContent = user.displayName;
+
+    } else {
+      // Usuario ha cerrado sesión
+      window.userProfile = null; // Limpiamos el perfil al cerrar sesión
+      btnLogin.style.display = 'block';
+      userInfoContainer.style.display = 'none';
+      userPic.src = '';
+      userName.textContent = '';
+    }
+  });
+
+  // Asignar eventos a los botones
+  btnLogin.addEventListener('click', login);
+  btnLogout.addEventListener('click', logout);
+
+  // Lógica para el botón de cerrar del formulario de perfil
+  const btnCerrarProfile = document.getElementById('cerrar-profile-setup');
+  if (btnCerrarProfile) {
+    btnCerrarProfile.addEventListener('click', function() {
+      document.getElementById('profile-setup').classList.add('hidden');
+      localStorage.setItem('profileSetupClosed', '1');
+      // Cerrar sesión automáticamente
+      firebase.auth().signOut().then(() => {
+        // Limpiar el estado de cierre para permitir reintentar login y mostrar el formulario
+        setTimeout(() => {
+          localStorage.removeItem('profileSetupClosed');
+        }, 300);
+      });
+    });
+  }
+});
+
 /* ====== preferencias de la caja (global) ====== */
 window.preferenciasCaja = { like: [], dislike: [] };
 const estadoCajas = {};   /* boxId -> { variedad:null, like:[], dislike:[], ok:false } */
@@ -57,13 +163,6 @@ function mostrarContenidoCaja(boxId) {
 function parsePrecio(txt){
   const m = (txt||'').match(/\d+(?:,\d+)?/);
   return m ? parseFloat(m[0].replace(',', '')) : 0;
-}
-
-// Función para reproducir el sonido de gota
-function playWaterDrop() {
-  const audio = new Audio('water-drop.mp3');
-  audio.volume = 0.3; // Ajustar volumen al 30%
-  audio.play().catch(e => console.log('Error al reproducir sonido:', e));
 }
 
 // Función para manejar el modal de imágenes
@@ -198,18 +297,17 @@ function renderCarrito() {
 
 // Función para eliminar un producto del carrito
 function eliminarDelCarrito(index) {
-  playWaterDrop();
   let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   if (!Array.isArray(carrito)) return;
   
   carrito.splice(index, 1);
   localStorage.setItem('carrito', JSON.stringify(carrito));
   renderCarrito();
+  guardarCarritoEnFirebase();
   mostrarNotificacion('Producto eliminado del carrito');
 }
 
 function cambiarCantidad(index, delta) {
-  playWaterDrop();
   let carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   if (!Array.isArray(carrito) || !carrito[index]) return;
 
@@ -217,6 +315,7 @@ function cambiarCantidad(index, delta) {
   if (carrito[index].cantidad < 1) carrito[index].cantidad = 1; // nunca < 1
   localStorage.setItem('carrito', JSON.stringify(carrito));
   renderCarrito();
+  guardarCarritoEnFirebase();
 }
 
 /* ----------  CONFIGURAR CAJA ---------- */
@@ -400,7 +499,6 @@ function clonarProductosSiHaceFalta() {
 }
 
 function marcar(card, esLike) {
-  playWaterDrop();
   const n = card.dataset.nombre;
   preferenciasCaja.like    = preferenciasCaja.like.filter(x => x !== n);
   preferenciasCaja.dislike = preferenciasCaja.dislike.filter(x => x !== n);
@@ -426,7 +524,6 @@ function refrescarPreferenciasUI() {
 
 /* ----------  AGREGAR AL CARRITO ---------- */
 function agregarAlCarritoDesdeTarjeta(btn) {
-  playWaterDrop();
   const card = btn.closest('.paso-card');
   if (!card) return;
 
@@ -455,22 +552,15 @@ document.addEventListener('DOMContentLoaded', () => {
   /* --- NUEVO: cierra el popup de resumen --- */
   document.getElementById('dlg-resumen-cerrar')
           ?.addEventListener('click', () => {
-            playWaterDrop();
-            /* 1) Cierra el pop-up */
             document.getElementById('dlg-resumen').close();
-
-            /* 2) Oculta la sección de configuración */
             document.getElementById('configurar-caja')
                     .classList.add('hidden');
-
-            /* 3) Sube con scroll a la zona de cajas */
             document.querySelector('#cajas')
                     ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
 
   document.getElementById('carrito-header-btn')
           ?.addEventListener('click', () => {
-            playWaterDrop();
             resetCarritoDialog();
             window.estadoFlujoCarrito = "lista";
             renderCarrito();
@@ -479,7 +569,6 @@ document.addEventListener('DOMContentLoaded', () => {
           
   document.getElementById('dlg-carrito-cerrar')
           ?.addEventListener('click', () => {
-            playWaterDrop();
             document.getElementById('dlg-carrito').close();
             window.estadoFlujoCarrito = "lista"; // Resetear flujo al cerrar
           });
@@ -490,37 +579,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) agregarAlCarritoDesdeTarjeta(btn);
   });
 
-  // Agregar el sonido a todos los botones de variedad
-  document.querySelectorAll('.variedad-btn').forEach(btn => {
-    btn.addEventListener('click', playWaterDrop);
-  });
-
-  // Agregar el sonido a los botones de like/dislike
-  document.querySelectorAll('.like-btn, .dislike-btn').forEach(btn => {
-    btn.addEventListener('click', playWaterDrop);
-  });
-
-  // Agregar el sonido al botón de guardar preferencias
-  document.getElementById('btn-guardar-preferencias')?.addEventListener('click', playWaterDrop);
-
   // Agregar el sonido a los botones de idioma
-  document.getElementById('btn-es')?.addEventListener('click', playWaterDrop);
-  document.getElementById('btn-en')?.addEventListener('click', playWaterDrop);
   document.getElementById('btn-es')?.addEventListener('click', () => setLanguage('es'));
   document.getElementById('btn-en')?.addEventListener('click', () => setLanguage('en'));
 
   // Agregar el sonido al botón del menú
-  document.getElementById('menu-toggle')?.addEventListener('click', playWaterDrop);
   document.getElementById('menu-toggle')?.addEventListener('click', toggleMobileMenu);
-
-  // Agregar el sonido a los botones de configuración
-  document.getElementById('btn-config-si')?.addEventListener('click', playWaterDrop);
-  document.getElementById('btn-config-no')?.addEventListener('click', playWaterDrop);
-
-  // Agregar el sonido a los botones de configuración de caja
-  document.querySelectorAll('.config-caja-btn').forEach(btn => {
-    btn.addEventListener('click', playWaterDrop);
-  });
 
   // Configurar el modal de imágenes
   setupImagenModal();
@@ -547,12 +611,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target === dlgInfografia) dlgInfografia.close();
     });
   }
-  /* ========= Fin Infografía de Cajas ========= */
 
   /* Footer actions */
   document.getElementById('btn-back').onclick = () => history.back();
   document.getElementById('btn-cart').onclick = () => {
-    playWaterDrop();
     resetCarritoDialog();
     window.estadoFlujoCarrito = "lista";
     renderCarrito();
@@ -606,7 +668,6 @@ function resetearCajasExcepto(boxIdKeep) {
 
 /* ----------  SELECCIONAR VARIEDAD ---------- */
 function seleccionarVariedad(btn) {
-  playWaterDrop();
   const card  = btn.closest('.caja-hover');
   if (!card) return;
   const boxId = card.dataset.box;
@@ -647,7 +708,6 @@ function actualizarBotonAgregar(boxId) {
 
 /* --- NUEVA versión robusta --- */
 function guardarPreferencias() {
-  playWaterDrop();
   if (!cajaActual || !estadoCajas[cajaActual]) {
     alert('Error: No se ha seleccionado ninguna caja.');
     return;
@@ -720,15 +780,37 @@ function mostrarNotificacion(mensaje) {
 
 // Función para mostrar el formulario de pedido
 function mostrarFormularioPedido() {
-  // Solo permitir mostrar el formulario si el flujo fue iniciado por el botón de continuar
   if (window.estadoFlujoCarrito !== 'formulario') {
-    // Si no fue iniciado correctamente, forzar la lista
     window.estadoFlujoCarrito = 'lista';
     renderCarrito();
     return;
   }
   const dialog = document.getElementById('dlg-carrito');
   const lang = document.documentElement.lang || 'es';
+
+  const user = firebase.auth().currentUser;
+  const profile = window.userProfile || {};
+
+  const nombre = user ? user.displayName : '';
+  const telefono = profile.telefono || '';
+  const direccion = profile.direccion || '';
+
+  // 1. Obtenemos el método de pago preferido
+  const pagoPreferido = profile.pagoPreferido || '';
+
+  // 2. Creamos el texto para las notas a partir de las preferencias
+  let notasPreferidas = '';
+  if (profile.likes || profile.dislikes) {
+    let notasArray = [];
+    if (profile.likes) {
+      notasArray.push(`👍 Preferencias: ${profile.likes}`);
+    }
+    if (profile.dislikes) {
+      notasArray.push(`👎 Evitar: ${profile.dislikes}`);
+    }
+    notasPreferidas = notasArray.join('\n');
+  }
+
   dialog.innerHTML = /* html */`
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -747,62 +829,67 @@ function mostrarFormularioPedido() {
           <form id="form-pedido" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Nombre</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Name</span>
+                <span class="lang-es">Nombre</span><span class="lang-en" style="display:none;">Name</span>
               </label>
               <input type="text" name="nombre" required
                      placeholder="${lang === 'en' ? 'Your name' : 'Tu nombre'}"
+                     value="${nombre}"  
                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Día de entrega</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery day</span>
+                <span class="lang-es">Teléfono</span><span class="lang-en" style="display:none;">Phone</span>
               </label>
-              <select name="dia" required
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
-                <option value="Lunes">${lang === 'en' ? 'Monday (12:30-20:00) - Free' : 'Lunes (12:30-20:00) - Gratis'}</option>
-                <option value="Martes">${lang === 'en' ? 'Tuesday (12:30-20:00) - DOP 100' : 'Martes (12:30-20:00) - DOP 100'}</option>
-                <option value="Miércoles">${lang === 'en' ? 'Wednesday (12:30-20:00) - Free' : 'Miércoles (12:30-20:00) - Gratis'}</option>
-                <option value="Jueves">${lang === 'en' ? 'Thursday (12:30-20:00) - DOP 100' : 'Jueves (12:30-20:00) - DOP 100'}</option>
-                <option value="Viernes">${lang === 'en' ? 'Friday (12:30-20:00) - Free' : 'Viernes (12:30-20:00) - Gratis'}</option>
-                <option value="Sábado">${lang === 'en' ? 'Saturday (12:30-20:00) - DOP 100' : 'Sábado (12:30-20:00) - DOP 100'}</option>
-              </select>
+              <input type="tel" name="telefono" required
+                     placeholder="${lang === 'en' ? 'Your phone number' : 'Tu número de teléfono'}"
+                     value="${telefono}" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Día de entrega</label>
+                <select name="dia" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
+                    <option value="Lunes">Lunes (12:30-20:00) - Gratis</option>
+                    <option value="Martes">Martes (12:30-20:00) - DOP 100</option>
+                    <option value="Miércoles">Miércoles (12:30-20:00) - Gratis</option>
+                    <option value="Jueves">Jueves (12:30-20:00) - DOP 100</option>
+                    <option value="Viernes">Viernes (12:30-20:00) - Gratis</option>
+                    <option value="Sábado">Sábado (12:30-20:00) - DOP 100</option>
+                </select>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                <span class="lang-es">Dirección de entrega</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Delivery address</span>
+                <span class="lang-es">Dirección de entrega</span><span class="lang-en" style="display:none;">Delivery address</span>
               </label>
               <textarea name="direccion" required rows="3"
                         placeholder="${lang === 'en' ? 'Delivery address' : 'Dirección de entrega'}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">${direccion}</textarea>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 <span class="lang-es">Observaciones (opcional)</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Notes (optional)</span>
+                <span class="lang-en" style="display:none;">Notes (optional)</span>
               </label>
-              <textarea name="observaciones" rows="2"
+              <textarea name="observaciones" rows="3"
                         placeholder="${lang === 'en' ? 'Notes (optional)' : 'Observaciones (opcional)'}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">${notasPreferidas}</textarea>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 <span class="lang-es">Modo de pago</span>
-                <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Payment method</span>
+                <span class="lang-en" style="display:none;">Payment method</span>
               </label>
               <select name="pago" required
                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                 <option value="">${lang === 'en' ? 'Select method' : 'Seleccionar método'}</option>
-                <option value="Cash">${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
-                <option value="Transferencia">${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
-                <option value="PayPal">PayPal (+10%)</option>
+                <option value="Cash" ${pagoPreferido === 'Cash' ? 'selected' : ''}>${lang === 'en' ? 'Cash' : 'Efectivo'}</option>
+                <option value="Transferencia" ${pagoPreferido === 'Transferencia' ? 'selected' : ''}>${lang === 'en' ? 'Bank Transfer' : 'Transferencia'}</option>
+                <option value="PayPal" ${pagoPreferido === 'PayPal' ? 'selected' : ''}>PayPal (+10%)</option>
               </select>
             </div>
 
@@ -812,8 +899,8 @@ function mostrarFormularioPedido() {
                 <span class="lang-es">Cancelar</span>
                 <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Cancel</span>
               </button>
-              <button type="submit"
-                      class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+              <button id="btn-send-order" type="submit"
+                      class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                 <span class="lang-es">Enviar pedido</span>
                 <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Send order</span>
               </button>
@@ -824,199 +911,91 @@ function mostrarFormularioPedido() {
     </div>
   `;
 
-  setLanguage(lang);   // actualiza visibilidad de .lang-es / .lang-en
-
-  document.getElementById('form-pedido')?.addEventListener('submit', enviarPedido);
+  setLanguage(lang);
+  document.getElementById('form-pedido')?.addEventListener('submit', finalizarPedido);
 }
 
 // Función para enviar el pedido por WhatsApp
-function enviarPedido(event) {
-  event.preventDefault();
-  const form = event.target;
-  const formData = new FormData(form);
-  const lang = document.documentElement.lang || 'es';
-  
-  // Obtener el carrito actual
-  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-  if (!Array.isArray(carrito) || carrito.length === 0) {
-    alert(lang === 'en' ? 'The cart is empty' : 'El carrito está vacío');
-    return;
-  }
-
-  // Verificar si hay cajas en el carrito
-  const tieneCajas = carrito.some(item => item.tipo === 'caja');
-  
-  // Calcular subtotal
-  const subtotal = carrito.reduce(
-    (sum, item) => sum + item.precio * (item.cantidad || 1),
-    0
-  );
-
-  // Verificar pedido mínimo si no hay cajas
-  if (!tieneCajas && subtotal < 500) {
-    const faltante = 500 - subtotal;
-    alert(lang === 'en' 
-      ? `Minimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
-      : `Pedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`
-    );
-    return;
-  }
-
-  // Construir el mensaje usando el mismo formato que se muestra en el checkout
-  let mensaje = lang === 'en' ? `*New GreenDolio Order*\n\n` : `*Nuevo Pedido GreenDolio*\n\n`;
-  mensaje += lang === 'en' ? `*Customer:* ${formData.get('nombre')}\n` : `*Cliente:* ${formData.get('nombre')}\n`;
-  mensaje += lang === 'en' ? `*Delivery day:* ${formData.get('dia')}\n` : `*Día de entrega:* ${formData.get('dia')}\n`;
-  mensaje += lang === 'en' ? `*Address:* ${formData.get('direccion')}\n` : `*Dirección:* ${formData.get('direccion')}\n`;
-  if (formData.get('observaciones')) {
-    mensaje += lang === 'en' ? `*Notes:* ${formData.get('observaciones')}\n` : `*Observaciones:* ${formData.get('observaciones')}\n`;
-  }
-  mensaje += lang === 'en' ? `*Payment method:* ${formData.get('pago')}\n\n` : `*Método de pago:* ${formData.get('pago')}\n\n`;
-  
-  mensaje += lang === 'en' ? `*Products:*\n` : `*Productos:*\n`;
-  carrito.forEach(item => {
-    const subtotal = item.precio * (item.cantidad || 1);
-    mensaje += `\n*${item.nombre}*\n`;
-    mensaje += lang === 'en' ? `Quantity: ${item.cantidad || 1}\n` : `Cantidad: ${item.cantidad || 1}\n`;
-    mensaje += lang === 'en' ? `Unit price: DOP ${item.precio.toFixed(2)}\n` : `Precio unitario: DOP ${item.precio.toFixed(2)}\n`;
-    mensaje += lang === 'en' ? `Subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal: DOP ${subtotal.toFixed(2)}\n`;
-    if (item.variedad) {
-      mensaje += lang === 'en' ? `Variety: ${item.variedad}\n` : `Variedad: ${item.variedad}\n`;
-    }
-    if (item.preferencias) {
-      if (item.preferencias.like.length > 0) {
-        mensaje += lang === 'en' ? `👍 Likes: ${item.preferencias.like.join(', ')}\n` : `👍 Me gusta: ${item.preferencias.like.join(', ')}\n`;
-      }
-      if (item.preferencias.dislike.length > 0) {
-        mensaje += lang === 'en' ? `👎 Dislikes: ${item.preferencias.dislike.join(', ')}\n` : `👎 No me gusta: ${item.preferencias.dislike.join(', ')}\n`;
-      }
-    }
-  });
-
-  // Calcular totales
-  let total = subtotal;
-
-  // Agregar costo de delivery si no hay cajas
-  if (!tieneCajas) {
-    total += 100;
-    mensaje += lang === 'en'
-      ? 'Delivery cost: DOP 100.00\n'
-      : 'Costo de delivery: DOP 100.00\n';
-  }
-  
-  // Agregar comisión PayPal si aplica
-  if (formData.get('pago') === 'PayPal') {
-    const comisionPayPal = total * 0.1;
-    total += comisionPayPal;
-    mensaje += lang === 'en' ? `PayPal fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
-  }
-  
-  mensaje += lang === 'en' ? `*Final total:* DOP ${total.toFixed(2)}` : `*Total final:* DOP ${total.toFixed(2)}`;
-
-  // Crear y mostrar el diálogo de confirmación
-  const dialogConfirm = document.createElement('dialog');
-  dialogConfirm.className = 'p-6 rounded-lg shadow-xl max-w-lg w-full';
-  dialogConfirm.innerHTML = `
-    <div class="space-y-4">
-      <h3 class="text-xl font-bold text-green-800 mb-4">
-        <span class="lang-es">Confirmar pedido</span>
-        <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Confirm order</span>
-      </h3>
-      
-      <div class="bg-gray-50 p-4 rounded-lg">
-        <pre class="whitespace-pre-wrap font-mono text-sm">${mensaje}</pre>
-      </div>
-      
-      <div class="flex justify-end gap-4 mt-6">
-        <button type="button" onclick="this.closest('dialog').close()"
-                class="px-4 py-2 text-gray-600 hover:text-gray-800">
-          <span class="lang-es">Cancelar</span>
-          <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Cancel</span>
-        </button>
-        <button type="button" onclick="enviarPedidoWhatsApp(this.closest('dialog'))"
-                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-          <span class="lang-es">Enviar por WhatsApp</span>
-          <span class="lang-en" style="display:${lang === 'en' ? '' : 'none'};">Send via WhatsApp</span>
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(dialogConfirm);
-  setLanguage(lang);   // oculta duplicados en modo EN
-  dialogConfirm.showModal();
-}
-
 function enviarPedidoWhatsApp(dialog) {
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    alert("Error: Debes iniciar sesión para poder registrar tu pedido.");
+    return;
+  }
+
+  // Verificar que el mensaje completo existe y no está vacío
+  const mensajeCompleto = dialog.dataset.fullMessage;
+  if (!mensajeCompleto || mensajeCompleto.trim() === '') {
+    alert("Error: No se pudo encontrar el resumen del pedido para enviar.");
+    return;
+  }
+
   const formData = new FormData(document.getElementById('form-pedido'));
-  const lang = document.documentElement.lang || 'es';
+  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
   const numeroWhatsApp = '18493757338';
 
-  let mensaje = lang === 'en' ? 'Hello! I want to place an order:\n\n' : '¡Hola! Quiero hacer un pedido:\n\n';
-
-  // Agregar items del carrito
-  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-  carrito.forEach((item, index) => {
-    mensaje += `${index + 1}. ${item.nombre}\n`;
-    if (item.variedad) {
-      mensaje += lang === 'en' ? `   Variety: ${item.variedad}\n` : `   Variedad: ${item.variedad}\n`;
-    }
-    if (item.preferencias) {
-      if (item.preferencias.like.length > 0) {
-        mensaje += lang === 'en' ? `   👍 Likes: ${item.preferencias.like.join(', ')}\n` : `   👍 Me gusta: ${item.preferencias.like.join(', ')}\n`;
-      }
-      if (item.preferencias.dislike.length > 0) {
-        mensaje += lang === 'en' ? `   👎 Dislikes: ${item.preferencias.dislike.join(', ')}\n` : `   👎 No me gusta: ${item.preferencias.dislike.join(', ')}\n`;
-      }
-    }
-    mensaje += lang === 'en' ? `   Quantity: ${item.cantidad || 1}\n` : `   Cantidad: ${item.cantidad || 1}\n`;
-    mensaje += `   DOP ${(item.precio * (item.cantidad || 1)).toFixed(2)}\n\n`;
-  });
-
-  // Calcular totales
-  const subtotal = carrito.reduce(
-    (sum, item) => sum + item.precio * (item.cantidad || 1),
-    0
-  );
-
-  let   total    = subtotal;
-
-  // Delivery
-  const diasConCargo = ['Martes', 'Tuesday', 'Jueves', 'Thursday', 'Sábado', 'Saturday'];
-  if (diasConCargo.includes(formData.get('dia'))) {
-    total += 100;
-    mensaje += lang === 'en'
-      ? 'Delivery cost: DOP 100.00\n'
-      : 'Costo de delivery: DOP 100.00\n';
+  // Validar que el carrito no esté vacío
+  if (carrito.length === 0) {
+    alert("Error: El carrito está vacío. Por favor, agrega productos antes de enviar el pedido.");
+    return;
   }
 
-  // Agregar resumen de costos
-  mensaje += lang === 'en' ? `Cost summary:\n` : `Resumen de costos:\n`;
-  mensaje += lang === 'en' ? `Products subtotal: DOP ${subtotal.toFixed(2)}\n` : `Subtotal productos: DOP ${subtotal.toFixed(2)}\n`;
-  
-  // Agregar comisión PayPal si aplica
+  const subtotalProductos = carrito.reduce((sum, item) => sum + item.precio * (item.cantidad || 1), 0);
+  let totalFinal = subtotalProductos;
+  const diaSeleccionado = formData.get('dia');
+  const diasConCargo = ['Martes', 'Jueves', 'Sábado'];
+  if (diasConCargo.includes(diaSeleccionado)) {
+    totalFinal += 100;
+  }
   if (formData.get('pago') === 'PayPal') {
-    const comisionPayPal = total * 0.1;
-    total += comisionPayPal;
-    mensaje += lang === 'en' ? `PayPal fee (10%): DOP ${comisionPayPal.toFixed(2)}\n` : `Comisión PayPal (10%): DOP ${comisionPayPal.toFixed(2)}\n`;
+    totalFinal += totalFinal * 0.1;
   }
 
-  mensaje += lang === 'en' ? `Final total: DOP ${total.toFixed(2)}\n\n` : `Total final: DOP ${total.toFixed(2)}\n\n`;
+  const db = firebase.firestore();
+  const pedidoData = {
+    userId: user.uid,
+    fecha: firebase.firestore.FieldValue.serverTimestamp(),
+    cliente: formData.get('nombre'),
+    telefono: formData.get('telefono'),
+    direccion: formData.get('direccion'),
+    diaEntrega: diaSeleccionado,
+    observaciones: formData.get('observaciones'),
+    metodoPago: formData.get('pago'),
+    items: carrito,
+    total: totalFinal,
+    estado: 'Recibido'
+  };
 
-  // Agregar datos de entrega
-  mensaje += lang === 'en' ? 'Delivery Information:\n' : 'Datos de entrega:\n';
-  mensaje += lang === 'en' ? `Name: ${formData.get('nombre')}\n` : `Nombre: ${formData.get('nombre')}\n`;
-  mensaje += lang === 'en' ? `Address: ${formData.get('direccion')}\n` : `Dirección: ${formData.get('direccion')}\n`;
-  mensaje += lang === 'en' ? `Delivery day: ${formData.get('dia')}\n` : `Día de entrega: ${formData.get('dia')}\n`;
-  mensaje += lang === 'en' ? `Payment method: ${formData.get('pago')}\n` : `Método de pago: ${formData.get('pago')}\n`;
-  if (formData.get('observaciones')) {
-    mensaje += lang === 'en' ? `Notes: ${formData.get('observaciones')}\n` : `Observaciones: ${formData.get('observaciones')}\n`;
-  }
+  // Mostrar indicador de carga
+  const loadingMessage = "Procesando tu pedido...";
+  mostrarNotificacion(loadingMessage);
 
-  // Abrir WhatsApp con el mensaje
-  const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
-  window.open(url, '_blank');
+  db.collection("orders").add(pedidoData)
+    .then((docRef) => {
+      console.log("¡Pedido guardado en Firebase con ID: ", docRef.id);
+
+      // Asegurarse de que el mensaje esté correctamente codificado para URL
+      const mensajeCodificado = encodeURIComponent(mensajeCompleto);
+      const url = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+      
+      // Abrir WhatsApp en una nueva pestaña
+      window.open(url, '_blank');
+      
+      // Limpiar y cerrar diálogos
+      dialog.close();
+      document.getElementById('dlg-carrito').close();
+      localStorage.setItem('carrito', '[]');
+      renderCarrito();
+
+      // Mostrar mensaje de éxito
+      mostrarNotificacion('¡Pedido enviado con éxito!');
+    })
+    .catch((error) => {
+      console.error("Error al guardar el pedido: ", error);
+      alert("Hubo un error al procesar tu pedido. Por favor, intenta de nuevo.");
+    });
 }
-
 
 /* ----------  MULTI‑IDIOMA ---------- */
 function setLanguage(lang){
@@ -1086,7 +1065,6 @@ function handleContinuarPedido() {
 
 // NUEVA FUNCIÓN: Se activa al hacer clic en un botón de variedad.
 function iniciarConfiguracionCaja(btn) {
-    playWaterDrop();
     const boxId = btn.dataset.box;
     const variedad = btn.dataset.variedad;
 
@@ -1144,6 +1122,7 @@ function agregarAlCarrito(item) {
 
     localStorage.setItem('carrito', JSON.stringify(carrito));
     renderCarrito();
+    guardarCarritoEnFirebase();
 }
 
 // Función para limpiar el carrito al iniciar la página
@@ -1152,9 +1131,21 @@ function limpiarCarritoAlIniciar() {
     localStorage.setItem('carrito', '[]');
 }
 
+function guardarCarritoEnFirebase() {
+    const user = firebase.auth().currentUser;
+    if (user) { // Solo intentamos guardar si el usuario está autenticado
+        const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+        const db = firebase.firestore();
+        db.collection("users").doc(user.uid).update({
+            carrito: carrito
+        }).catch((error) => {
+            console.error("Error al sincronizar el carrito con Firebase: ", error);
+        });
+    }
+}
+
 /* ----------  AUTO-MODE ---------- */
 function agregarCajaAutoMode() {
-  playWaterDrop();
   if (!cajaActual) {
     alert('Error: No se ha seleccionado ninguna caja.');
     return;
@@ -1194,74 +1185,136 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-auto-mode')?.addEventListener('click', agregarCajaAutoMode);
 });
 
-function actualizarCarrito() {
-  const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
-  const contador = document.getElementById('contador-carrito');
-  const total = document.getElementById('total-carrito');
-  const lista = document.getElementById('lista-carrito');
-  const btnContinuar = document.getElementById('btn-continuar');
-  const btnVaciar = document.getElementById('btn-vaciar');
-  const lang = document.documentElement.lang || 'es';
+/* ----------  PERFIL DE USUARIO ---------- */
+function guardarPerfilDeUsuario(user) {
+  const seccionFormulario = document.getElementById('profile-setup');
+  const formulario = document.getElementById('profile-form');
 
-  // Verificar si hay cajas en el carrito
-  const tieneCajas = carrito.some(item => item.tipo === 'caja');
-  
-  // Calcular subtotal
-  const subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
-  
-  // Calcular total con delivery si no hay cajas
-  let totalConDelivery = subtotal;
-  let mensajeDelivery = '';
-  
-  if (!tieneCajas) {
-    if (subtotal < 500) {
-      const faltante = 500 - subtotal;
-      mensajeDelivery = lang === 'en' 
-        ? `\nMinimum order: DOP 500. You need DOP ${faltante.toFixed(2)} more.`
-        : `\nPedido mínimo: DOP 500. Te faltan DOP ${faltante.toFixed(2)}.`;
-    } else {
-      totalConDelivery += 100;
-      mensajeDelivery = lang === 'en'
-        ? '\nDelivery fee: DOP 100.00'
-        : '\nCosto de delivery: DOP 100.00';
+  // Mostrar siempre el formulario si el usuario es nuevo
+  seccionFormulario.classList.remove('hidden');
+  document.getElementById('nombre').value = user.displayName;
+
+  formulario.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const telefono = document.getElementById('telefono').value;
+    const direccion = document.getElementById('direccion').value;
+    const pagoPreferido = document.getElementById('pago-preferido').value;
+    const likes = document.getElementById('likes').value;
+    const dislikes = document.getElementById('dislikes').value;
+    const comoNosConocio = document.getElementById('como-nos-conocio').value;
+
+    const db = firebase.firestore();
+
+    db.collection("users").doc(user.uid).set({
+      displayName: user.displayName,
+      email: user.email,
+      telefono: telefono,
+      direccion: direccion,
+      pagoPreferido: pagoPreferido,
+      likes: likes,
+      dislikes: dislikes,
+      comoNosConocio: comoNosConocio,
+      fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+      console.log("¡Perfil guardado con éxito!");
+      seccionFormulario.classList.add('hidden');
+      mostrarNotificacion("¡Gracias! Tu perfil ha sido guardado.");
+      localStorage.removeItem('profileSetupClosed'); // Permitir mostrar de nuevo si es necesario
+      window.userProfile = {
+          displayName: user.displayName,
+          email: user.email,
+          telefono: telefono,
+          direccion: direccion,
+          pagoPreferido: pagoPreferido,
+          likes: likes,
+          dislikes: dislikes,
+          comoNosConocio: comoNosConocio
+      };
+    })
+    .catch((error) => {
+      console.error("Error al guardar el perfil: ", error);
+      mostrarNotificacion("Hubo un error al guardar tu perfil. Por favor, intenta de nuevo.");
+    });
+  });
+}
+
+function finalizarPedido(event) {
+    event.preventDefault(); // Previene que el formulario se envíe de la forma tradicional
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        mostrarNotificacion('Debes iniciar sesión para completar el pedido.');
+        return;
     }
-  }
 
-  // Actualizar contador
-  contador.textContent = carrito.length;
-  contador.style.display = carrito.length > 0 ? 'block' : 'none';
+    const form = document.getElementById('form-pedido');
+    const formData = new FormData(form);
+    const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
+    const lang = document.documentElement.lang || 'es';
 
-  // Actualizar total
-  total.textContent = `DOP ${totalConDelivery.toFixed(2)}`;
-  if (mensajeDelivery) {
-    total.innerHTML += `<span class="text-sm text-red-600">${mensajeDelivery}</span>`;
-  }
+    if (carrito.length === 0) {
+        mostrarNotificacion('Tu carrito está vacío.');
+        return;
+    }
 
-  // Actualizar lista
-  lista.innerHTML = carrito.map((item, index) => `
-    <div class="flex items-center justify-between py-2">
-      <div class="flex-1">
-        <span class="font-medium">${item.nombre}</span>
-        ${item.variedad ? `<br><span class="text-sm text-gray-600">${item.variedad}</span>` : ''}
-        ${item.preferencias ? `
-          <br>
-          ${item.preferencias.like.length > 0 ? `<span class="text-sm text-green-600">👍 ${item.preferencias.like.join(', ')}</span>` : ''}
-          ${item.preferencias.dislike.length > 0 ? `<span class="text-sm text-red-600">👎 ${item.preferencias.dislike.join(', ')}</span>` : ''}
-        ` : ''}
-      </div>
-      <div class="flex items-center gap-2">
-        <button onclick="cambiarCantidad(${index}, -1)" class="text-gray-500 hover:text-gray-700">-</button>
-        <span>${item.cantidad || 1}</span>
-        <button onclick="cambiarCantidad(${index}, 1)" class="text-gray-500 hover:text-gray-700">+</button>
-        <span class="ml-4">DOP ${(item.precio * (item.cantidad || 1)).toFixed(2)}</span>
-        <button onclick="eliminarDelCarrito(${index})" class="ml-2 text-red-500 hover:text-red-700">
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>
-    </div>
-  `).join('');
+    // --- Construcción del mensaje de WhatsApp (esto ya lo tienes bien) ---
+    let detallePedido = carrito.map(item => {
+        let linea = `• ${item.nombre} (x${item.cantidad || 1}) - DOP ${((item.precio || 0) * (item.cantidad || 1)).toFixed(2)}`;
+        if (item.variedad) {
+            linea += `\n  - Variedad: ${item.variedad}`;
+        }
+        if (item.preferencias && (item.preferencias.like.length > 0 || item.preferencias.dislike.length > 0)) {
+            linea += `\n  - Gustos: 👍 ${item.preferencias.like.join(', ') || 'ninguno'}`;
+            linea += `\n  - Disgustos: 👎 ${item.preferencias.dislike.join(', ') || 'ninguno'}`;
+        }
+        return linea;
+    }).join('\n');
 
-  // Actualizar botones
-  btnContinuar.disabled = carrito.length === 0 || (!tieneCajas && subtotal < 500);
-  btnVaciar.disabled = carrito.length === 0;
+    const subtotal = carrito.reduce((sum, item) => sum + (item.precio || 0) * (item.cantidad || 1), 0);
+    
+    let totalFinal = subtotal;
+    let desgloseTotal = `Subtotal: DOP ${subtotal.toFixed(2)}`;
+    
+    const diaSeleccionado = formData.get('dia');
+    const diasConCargo = ['Martes', 'Jueves', 'Sábado'];
+    if (diasConCargo.includes(diaSeleccionado)) {
+        totalFinal += 100;
+        desgloseTotal += `\nEnvío: DOP 100.00`;
+    }
+
+    const metodoPago = formData.get('pago');
+    if (metodoPago === 'PayPal') {
+        const cargoPaypal = totalFinal * 0.10;
+        totalFinal += cargoPaypal;
+        desgloseTotal += `\nCargo PayPal (10%): DOP ${cargoPaypal.toFixed(2)}`;
+    }
+    desgloseTotal += `\n*Total a Pagar: DOP ${totalFinal.toFixed(2)}*`;
+
+    const mensajeWhatsApp = `\n¡Hola Green Dolio! 👋 Quisiera confirmar mi pedido:\n\n*👤 DATOS DEL CLIENTE:*\n- Nombre: ${formData.get('nombre')}\n- Teléfono: ${formData.get('telefono')}\n- Dirección: ${formData.get('direccion')}\n- Día de entrega: ${diaSeleccionado}\n\n*🛒 RESUMEN DEL PEDIDO:*\n${detallePedido}\n\n*💰 TOTAL:*\n${desgloseTotal}\n\n*💳 MÉTODO DE PAGO:*\n${metodoPago}\n\n*📝 OBSERVACIONES:*\n${formData.get('observaciones') || 'Sin observaciones.'}`.trim();
+
+    // ==== LÓGICA CORREGIDA PARA LAS VENTANAS MODALES ====
+    const modalResumen = document.getElementById('modal-resumen');
+    document.getElementById('detalle-resumen').innerText = mensajeWhatsApp;
+    document.getElementById('total-resumen').innerText = `DOP ${totalFinal.toFixed(2)}`;
+    modalResumen.dataset.fullMessage = mensajeWhatsApp; 
+    
+    // **AQUÍ LAS CORRECCIONES**
+    // 1. Cierra el diálogo del formulario ANTES de mostrar el resumen.
+    document.getElementById('dlg-carrito').close();
+
+    // 2. Muestra el resumen.
+    modalResumen.classList.remove('hidden');
+
+    // 3. El botón "enviar-whatsapp" ahora llama a la función para enviar directamente.
+    document.getElementById('enviar-whatsapp').onclick = () => {
+      enviarPedidoWhatsApp(modalResumen);
+      modalResumen.classList.add('hidden'); // Oculta el resumen después de enviar
+    };
+    
+    // Lógica para el botón de cerrar del modal de resumen
+    document.getElementById('cerrar-modal-resumen').onclick = () => {
+      modalResumen.classList.add('hidden');
+    };
 }
