@@ -922,21 +922,29 @@ function enviarPedidoWhatsApp(pedidoData, dialog) {
         alert("Error: Debes iniciar sesión para poder registrar tu pedido.");
         return;
     }
+
     const mensajeCompleto = dialog.dataset.fullMessage;
     if (!mensajeCompleto) {
         alert("Error: No se pudo encontrar el resumen del pedido para enviar.");
         return;
     }
+    
     const numeroWhatsApp = '18493757338';
     const db = firebase.firestore();
-    mostrarNotificacion("Procesando tu pedido...");
+
+    // 1. Abrir WhatsApp inmediatamente
+    const mensajeCodificado = encodeURIComponent(mensajeCompleto);
+    const url = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+    window.open(url, '_blank');
+    
+    // 2. Mostrar mensaje de éxito al usuario
+    mostrarNotificacion('¡Pedido enviado con éxito! Revisa WhatsApp para confirmar.');
+
+    // 3. Guardar el pedido en Firebase en segundo plano
     db.collection("orders").add(pedidoData)
         .then((docRef) => {
             console.log("¡Pedido guardado en Firebase con ID: ", docRef.id);
-            const mensajeCodificado = encodeURIComponent(mensajeCompleto);
-            const url = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
-            window.open(url, '_blank');
-            
+            // 4. Limpiar la interfaz
             const dlgCarrito = document.getElementById('dlg-carrito');
             if (dialog && typeof dialog.classList.add === 'function') {
                 dialog.classList.add('hidden');
@@ -946,11 +954,11 @@ function enviarPedidoWhatsApp(pedidoData, dialog) {
             }
             localStorage.setItem('carrito', '[]');
             renderCarrito();
-            mostrarNotificacion('¡Pedido enviado con éxito!');
         })
         .catch((error) => {
-            console.error("Error al guardar el pedido: ", error);
-            alert("Hubo un error al procesar tu pedido. Por favor, intenta de nuevo.");
+            console.error("Error al guardar el pedido en Firebase: ", error);
+            // Notificar al usuario del error en segundo plano
+            mostrarNotificacion("Tu pedido se abrió en WhatsApp, pero hubo un error al guardarlo en nuestro sistema.");
         });
 }
 
@@ -1258,12 +1266,22 @@ function finalizarPedido(event) {
     document.getElementById('total-resumen').innerText = `DOP ${totalFinal.toFixed(2)}`;
     modalResumen.dataset.fullMessage = mensajeWhatsApp;
     document.getElementById('dlg-carrito').close();
+    
+    // Ocultar la barra inferior cuando se abre el modal
+    const bottomBar = document.getElementById('bottom-bar');
+    if (bottomBar) bottomBar.style.display = 'none';
+    
     modalResumen.classList.remove('hidden');
+    
     document.getElementById('enviar-whatsapp').onclick = () => {
       enviarPedidoWhatsApp(pedidoData, modalResumen);
       modalResumen.classList.add('hidden');
+      // Mostrar la barra inferior nuevamente
+      if (bottomBar) bottomBar.style.display = 'flex';
     };
     document.getElementById('cerrar-modal-resumen').onclick = () => {
       modalResumen.classList.add('hidden');
+      // Mostrar la barra inferior nuevamente
+      if (bottomBar) bottomBar.style.display = 'flex';
     };
 }
