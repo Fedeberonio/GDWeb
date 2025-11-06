@@ -11,4 +11,8 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-firebase.analytics(); 
+if (typeof firebase.analytics === 'function') {
+  firebase.analytics();
+} else {
+  console.warn('[Firebase] analytics() no está disponible con los SDK cargados.');
+}

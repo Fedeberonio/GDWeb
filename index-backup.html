@@ -11,16 +11,6 @@
 <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="main.css" rel="stylesheet"/>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js">
-</script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js">
-</script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js">
-</script>
-<script src="firebase.js">
-</script>
-<script src="products.js">
-</script>
 <style>
    body { font-family: 'Poppins', sans-serif; }
         .bg-greendolio { background: #8dd94a; }
@@ -83,7 +73,7 @@
 </head>
 <body class="bg-greendolio">
 <!-- Formulario de perfil de usuario (solo visible para usuarios nuevos) -->
-<div class="hidden" id="profile-setup" style="max-width:400px;margin:40px auto;padding:32px;background:#fff;border-radius:16px;box-shadow:0 2px 16px #0002; position:relative; z-index:100;">
+<div class="hidden" id="profile-setup" style="max-width:400px;margin:40px auto;padding:32px;background:#fff;border-radius:16px;box-shadow:0 2px 16px #0002; position:relative;">
 <button aria-label="Cerrar" id="cerrar-profile-setup" style="position:absolute;top:12px;right:12px;font-size:1.7rem;color:#888;background:none;border:none;cursor:pointer;z-index:10;">
     ×
    </button>
@@ -239,16 +229,19 @@
 <span class="lang-en" style="display:none;">
        How did you hear about us?
       </span>
+<span class="text-red-500">
+       *
+      </span>
 </label>
-<select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" id="como-nos-conocio" name="como-nos-conocio">
-<option value="">
+<select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" id="como-nos-conocio" name="como-nos-conocio" required="">
+<option disabled="" selected="" value="">
        Elige una opción... / Choose an option...
       </option>
 <option value="WhatsApp">
        WhatsApp
       </option>
 <option value="Flyer">
-       Flyer
+       Flyer (volante) / Flyer
       </option>
 <option value="Instagram">
        Instagram
@@ -260,13 +253,13 @@
        YouTube
       </option>
 <option value="Google">
-       Google
+       Búsqueda de Google / Google Search
       </option>
 <option value="IA">
-       Inteligencia Artificial / AI
+       Inteligencia Artificial (Chatbot, etc.) / AI (Chatbot, etc.)
       </option>
 <option value="Recomendacion">
-       Recomendación / Referral
+       Alguien me recomendó / A friend told me
       </option>
 <option value="Sueño">
        ¡Lo soñé! / I dreamed it!
@@ -316,14 +309,14 @@
 <div class="flex items-center gap-2 h-full">
 <!-- Botón de autenticación -->
 <div class="flex items-center gap-2" id="auth-container">
-<button class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-700 transition-all flex items-center gap-2" id="btn-login">
-<i class="fab fa-google">
+<button class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-700 transition-all" id="btn-login">
+<i class="fab fa-google mr-2">
 </i>
 <span class="lang-es">
-        Iniciar sesión / Crear cuenta
+        Iniciar sesión
        </span>
 <span class="lang-en" style="display:none;">
-        Sign in / Sign up
+        Login
        </span>
 </button>
 <div class="hidden items-center gap-2" id="user-info">
@@ -348,7 +341,7 @@
        0
       </span>
 </button>
-<!-- Botón Historial (opcional) -->
+<!-- Botón Historial (temporalmente oculto) -->
 <button class="hidden relative flex items-center justify-center rounded-full border border-blue-200 bg-white shadow-sm focus:outline-none hover:bg-blue-100 transition-all" id="btn-history" style="height:44px;width:44px;font-size:1.2em;padding:0; margin-left:8px;">
 <i class="fas fa-history text-blue-700" style="font-size:1.2em;">
 </i>
@@ -372,7 +365,7 @@
 </div>
 </div>
 <!-- Menú dropdown -->
-<nav class="absolute right-2 mt-2 w-11/12 max-w-xs bg-white bg-opacity-95 backdrop-blur-md shadow-2xl rounded-xl border border-green-100 flex-col items-stretch py-2 px-0 z-50 transition-all duration-200 hidden" id="mobile-menu">
+<nav class="absolute right-2 mt-2 w-11/12 max-w-xs bg-white bg-opacity-95 backdrop-blur-md shadow-2xl rounded-xl border border-green-100 flex-col items-stretch py-2 px-0 z-50 hidden transition-all duration-200" id="mobile-menu">
 <a class="menu-link block text-base py-2 px-4 text-green-900 font-semibold hover:bg-green-100 rounded-xl lang-es" href="#inicio">
      Inicio
     </a>
@@ -411,12 +404,103 @@
     </a>
 </nav>
 </header>
+<!-- Scripts de Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js">
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js">
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js">
+</script>
+<script src="firebase.js">
+</script>
+<script src="products.js">
+</script>
+<!-- Scripts del Sistema de Productos -->
+<script src="products.js">
+</script>
+<script src="admin-tools.js">
+</script>
+<script>
+   // Order-history script loaded log
+    console.log('Order-history script loaded');
+    // Initialize Firebase Auth
+    const auth = firebase.auth();
+    /**
+     * Fetch order history for logged-in user
+     * @param {string} uid - Firebase Auth user ID
+     */
+    function fetchOrderHistory(uid) {
+      console.log('fetchOrderHistory called for user:', uid);
+      const db = firebase.firestore();
+      db.collection('orders')
+        .where('userId', '==', uid)
+        .orderBy('createdAt', 'desc')
+        .get()
+        .then(snapshot => {
+          const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          console.log('Order history data:', history);
+          renderHistory(history);
+        })
+        .catch(err => console.error('Error al cargar historial:', err));
+    }
+
+    /**
+     * Render the history into the page
+     * @param {Array} history - Array of order objects
+     */
+    function renderHistory(history) {
+      const container = document.getElementById('order-history-content');
+      if (!container) return;
+      container.innerHTML = history
+        .map(o => `<div class="p-4 border rounded-lg">
+          <strong>ID:</strong> ${o.id}<br>
+          <strong>Fecha:</strong> ${new Date(o.createdAt).toLocaleString()}<br>
+          <strong>Items:</strong> ${o.items?.length || 0}
+        </div>`)
+        .join('');
+    }
+
+    // ... (rest of your script, including auth and DOMContentLoaded)
+    // Listener de auth para cargar historial después de renderCarrito
+    auth.onAuthStateChanged((user) => {
+      console.log('onAuthStateChanged, user:', user ? user.uid : 'no user');
+      if (user) {
+        console.log('About to call fetchOrderHistory');
+        renderCarrito();
+        fetchOrderHistory(user.uid);
+      } else {
+        // ... lógica para usuario no autenticado
+      }
+    });
+
+    // Al final del DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // ...otros event listeners...
+      document.getElementById('btn-history')?.addEventListener('click', () => {
+        const section = document.getElementById('order-history');
+        section.classList.toggle('hidden');
+        if (!section.classList.contains('hidden')) {
+          window.location.hash = '#order-history';
+        }
+      });
+    });
+  </script>
+<!-- Sección Historial de Pedidos -->
+<section class="hidden py-16 bg-white" id="order-history">
+<div class="container mx-auto px-4">
+<h2 class="text-3xl font-bold text-green-800 mb-4 text-center">
+     Tu Historial de Pedidos
+    </h2>
+<div class="space-y-4 text-green-900" id="order-history-content">
+</div>
+</div>
+</section>
 <!-- Hero / Banner -->
 <section class="w-full min-h-[60vh] flex flex-col items-center justify-center bg-greendolio relative pt-2 pb-2" id="inicio">
 <!-- Banner español -->
-<img alt="Banner Green Dolio" class="banner-img mx-auto block banner-animado-zoom parallax-banner shadow-2xl shadow-green-900/30 relative z-10 lang-es" src="assets/images/banners/portadaSPA.jpg" style="background-color: transparent;"/>
+<img alt="Banner Green Dolio" class="banner-img mx-auto block banner-animado-zoom parallax-banner shadow-2xl shadow-green-900/30 relative z-10 lang-es" loading="lazy" src="assets/images/banners/portadaSPA.jpg" style="background-color: transparent;"/>
 <!-- Banner inglés -->
-<img alt="Green Dolio Banner English" class="banner-img mx-auto block banner-animado-zoom parallax-banner shadow-2xl shadow-green-900/30 relative z-10 lang-en" src="assets/images/banners/portadaENG.png" style="background-color: transparent; display:none;"/>
+<img alt="Green Dolio Banner English" class="banner-img mx-auto block banner-animado-zoom parallax-banner shadow-2xl shadow-green-900/30 relative z-10 lang-en" loading="lazy" src="assets/images/banners/portadaENG.png" style="background-color: transparent;"/>
 <div class="relative z-20 flex flex-col items-center justify-center w-full px-2 mt-0">
 </div>
 </section>
@@ -435,44 +519,6 @@
           max-width: 312px !important;
         }
       }
-      .tooltip-config {
-        position: relative;
-      }
-      .tooltip-config[disabled]::before,
-      .tooltip-config[disabled]::after {
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.2s ease-in-out;
-      }
-      .tooltip-config[disabled]:hover::before,
-      .tooltip-config[disabled]:hover::after {
-        opacity: 1;
-      }
-      .tooltip-config[disabled]::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: calc(100% + 10px);
-        left: 50%;
-        transform: translateX(-50%);
-        background: #166534;
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        white-space: nowrap;
-        z-index: 40;
-      }
-      .tooltip-config[disabled]::before {
-        content: "";
-        position: absolute;
-        bottom: calc(100% + 6px);
-        left: 50%;
-        transform: translateX(-50%);
-        border-width: 6px;
-        border-style: solid;
-        border-color: #166534 transparent transparent transparent;
-        z-index: 39;
-      }
   </style>
 <!-- Carrusel de productos -->
 <section class="cinta-carrusel-container w-full flex justify-center items-center" style="border-bottom:2px solid #e0f2e9; margin-top:0; padding-top:0;">
@@ -487,12 +533,12 @@
 <img alt="Producto 7" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel007.jpg"/>
 <img alt="Producto 8" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel008.jpg"/>
 <img alt="Producto 9" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel009.jpg"/>
-<img alt="Producto 10" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel010.jpg"/>
-<img alt="Producto 11" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel011.jpg"/>
-<img alt="Producto 12" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel012_optimized.jpg"/>
-<img alt="Producto 13" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel013.jpeg">
-<img alt="Producto 14" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel014.jpg">
-<img alt="Producto 15" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel015.jpg">
+<img alt="Producto 10" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel010.jpg">
+<img alt="Producto 11" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel011.jpg">
+<img alt="Producto 12" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel012_optimized.jpg">
+<img alt="Producto 13" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel013.jpeg"/>
+<img alt="Producto 14" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel014.jpg"/>
+<img alt="Producto 15" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel015.jpg"/>
 <img alt="Producto 16" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel016.jpg"/>
 <img alt="Producto 17" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel017.jpg"/>
 <img alt="Producto 18" class="carrusel-img" loading="lazy" src="assets/images/carousel/Carrousel018.jpeg"/>
@@ -550,10 +596,10 @@
 <i class="fas fa-shopping-basket text-green-500">
 </i>
 <span class="lang-es">
-     X Unidad
+     Por Unidad
     </span>
 <span class="lang-en" style="display:none;">
-     Shop by Unit
+     By Unit
     </span>
 <i class="fas fa-apple-alt text-red-400">
 </i>
@@ -662,19 +708,14 @@
        "Caribbean Fresh Pack"
       </span>
 <!-- 3. Imagen -->
-<div class="relative inline-block my-2" style="width:80%; max-width:240px; min-width:90px;">
-<img alt="Box 1" class="rounded-xl shadow-lg object-contain bg-white cursor-pointer hover:scale-105 transition-transform" onclick="mostrarContenidoCaja(1)" src="assets/images/boxes/Box1_optimized.png" style="border:6px solid #fff; width:100%;"/>
-<div class="box-info-icon" onclick="mostrarContenidoCaja(1)">
-<i class="fas fa-info-circle"></i>
-</div>
-</div>
+<img alt="Box 1" class="rounded-xl shadow-lg object-contain bg-white my-2 cursor-pointer hover:scale-105 transition-transform" onclick="mostrarContenidoCaja(1)" src="assets/images/boxes/Box1_optimized.png" style="border:6px solid #fff; width:80%; max-width:240px; min-width:90px;"/>
 <!-- 4. Precio -->
 <span class="inline-block bg-white text-green-800 font-extrabold text-2xl md:text-3xl px-6 py-2 rounded-full shadow-lg border-4 border-green-800 mb-3" style="font-family:'Poppins','Comic Sans MS',cursive;">
        $650.-
       </span>
 <!-- 5. Botones categorías -->
 <div class="flex justify-center gap-2 mb-2">
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box1" data-variedad="Mix" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="1" data-variedad="Mix" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Mezcla
         </span>
@@ -682,7 +723,7 @@
          Mix
         </span>
 </button>
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box1" data-variedad="Fruitty" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="1" data-variedad="Fruitty" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Frutas
         </span>
@@ -690,7 +731,7 @@
          Fruits
         </span>
 </button>
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box1" data-variedad="Veggie" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="1" data-variedad="Veggie" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Vegetales
         </span>
@@ -706,7 +747,7 @@
        Choose a variety to start configuring:
       </p>
 <!-- 6. Botón Configurar -->
-<button class="config-caja-btn bg-yellow-400 text-green-900 px-3 py-1 rounded-full mt-2 text-sm transition-colors opacity-50 cursor-not-allowed" data-box="box1" data-tooltip-en="Choose a variety to enable configuration" data-tooltip-es="Selecciona una variedad para habilitar la configuración" disabled="" type="button">
+<button class="config-caja-btn bg-yellow-400 text-green-900 px-3 py-1 rounded-full mt-2 text-sm hover:bg-yellow-500 transition-colors" data-box="box1" onclick="abrirConfig(this)">
 <span class="lang-es">
         Configurar caja
        </span>
@@ -745,22 +786,17 @@
 </div>
 <!-- 2. Subtítulo -->
 <span class="text-3xl md:text-4xl font-bold text-green-800 mb-2 text-center" style="font-family:'Poppins','Comic Sans MS',cursive;">
-       "Island Weekscential"
+       "Island Weekssential"
       </span>
 <!-- 3. Imagen -->
-<div class="relative inline-block my-2" style="width:80%; max-width:240px; min-width:90px;">
-<img alt="Box 2" class="rounded-xl shadow-lg object-contain bg-white cursor-pointer hover:scale-105 transition-transform" onclick="mostrarContenidoCaja(2)" src="assets/images/boxes/Box2_optimized.png" style="border:6px solid #fff; width:100%;"/>
-<div class="box-info-icon" onclick="mostrarContenidoCaja(2)">
-<i class="fas fa-info-circle"></i>
-</div>
-</div>
+<img alt="Box 2" class="rounded-xl shadow-lg object-contain bg-white my-2 cursor-pointer hover:scale-105 transition-transform" onclick="mostrarContenidoCaja(2)" src="assets/images/boxes/Box2_optimized.png" style="border:6px solid #fff; width:80%; max-width:240px; min-width:90px;"/>
 <!-- 4. Precio -->
 <span class="inline-block bg-white text-green-800 font-extrabold text-2xl md:text-3xl px-6 py-2 rounded-full shadow-lg border-4 border-green-800 mb-3" style="font-family:'Poppins','Comic Sans MS',cursive;">
        $990.-
       </span>
 <!-- 5. Botones categorías -->
 <div class="flex justify-center gap-2 mb-2">
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box2" data-variedad="Mix" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="2" data-variedad="Mix" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Mezcla
         </span>
@@ -768,7 +804,7 @@
          Mix
         </span>
 </button>
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box2" data-variedad="Fruitty" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="2" data-variedad="Fruitty" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Frutas
         </span>
@@ -776,7 +812,7 @@
          Fruits
         </span>
 </button>
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box2" data-variedad="Veggie" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="2" data-variedad="Veggie" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Vegetales
         </span>
@@ -792,7 +828,7 @@
        Choose a variety to start configuring:
       </p>
 <!-- 6. Botón Configurar -->
-<button class="config-caja-btn bg-yellow-400 text-green-900 px-3 py-1 rounded-full mt-2 text-sm transition-colors opacity-50 cursor-not-allowed" data-box="box2" data-tooltip-en="Choose a variety to enable configuration" data-tooltip-es="Selecciona una variedad para habilitar la configuración" disabled="" type="button">
+<button class="config-caja-btn bg-yellow-400 text-green-900 px-3 py-1 rounded-full mt-2 text-sm hover:bg-yellow-500 transition-colors" data-box="box2" onclick="abrirConfig(this)">
 <span class="lang-es">
         Configurar caja
        </span>
@@ -834,19 +870,14 @@
        "Allgreenxclusive"
       </span>
 <!-- 3. Imagen -->
-<div class="relative inline-block my-2" style="width:115%; max-width:320px; min-width:100px;">
-<img alt="Box 3" class="rounded-xl shadow-lg object-contain bg-white cursor-pointer hover:scale-105 transition-transform" onclick="mostrarContenidoCaja(3)" src="assets/images/boxes/Box3_optimized.png" style="border:6px solid #fff; width:100%;"/>
-<div class="box-info-icon" onclick="mostrarContenidoCaja(3)">
-<i class="fas fa-info-circle"></i>
-</div>
-</div>
+<img alt="Box 3" class="rounded-xl shadow-lg object-contain bg-white my-2 cursor-pointer hover:scale-105 transition-transform" onclick="mostrarContenidoCaja(3)" src="assets/images/boxes/Box3_optimized.png" style="border:6px solid #fff; width:115%; max-width:320px; min-width:100px;"/>
 <!-- 4. Precio -->
 <span class="inline-block bg-white text-green-800 font-extrabold text-2xl md:text-3xl px-6 py-2 rounded-full shadow-lg border-4 border-green-800 mb-3" style="font-family:'Poppins','Comic Sans MS',cursive;">
        $1,990.-
       </span>
 <!-- 5. Botones categorías -->
 <div class="flex justify-center gap-2 mb-2">
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box3" data-variedad="Mix" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="3" data-variedad="Mix" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Mezcla
         </span>
@@ -854,7 +885,7 @@
          Mix
         </span>
 </button>
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box3" data-variedad="Fruitty" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="3" data-variedad="Fruitty" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Frutas
         </span>
@@ -862,7 +893,7 @@
          Fruits
         </span>
 </button>
-<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="box3" data-variedad="Veggie" onclick="iniciarConfiguracionCaja(this)">
+<button class="variedad-btn bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm hover:bg-green-200 transition-colors" data-box="3" data-variedad="Veggie" onclick="iniciarConfiguracionCaja(this)">
 <span class="lang-es">
          Vegetales
         </span>
@@ -878,7 +909,7 @@
        Choose a variety to start configuring:
       </p>
 <!-- 6. Botón Configurar -->
-<button class="config-caja-btn bg-yellow-400 text-green-900 px-3 py-1 rounded-full mt-2 text-sm transition-colors opacity-50 cursor-not-allowed" data-box="box3" data-tooltip-en="Choose a variety to enable configuration" data-tooltip-es="Selecciona una variedad para habilitar la configuración" disabled="" type="button">
+<button class="config-caja-btn bg-yellow-400 text-green-900 px-3 py-1 rounded-full mt-2 text-sm hover:bg-yellow-500 transition-colors" data-box="box3" onclick="abrirConfig(this)">
 <span class="lang-es">
         Configurar caja
        </span>
@@ -916,23 +947,43 @@
 <!-- Diálogo de confirmación -->
 <dialog class="rounded-xl p-6 shadow-xl w-full max-w-sm" id="dlg-configurar">
 <h3 class="text-xl font-bold text-green-800 mb-4 text-center">
-    ¿Querés personalizar la caja?
-   </h3>
+<span class="lang-es">
+     ¿Querés personalizar la caja?
+    </span>
+<span class="lang-en" style="display:none;">
+     Do you want to customize the box?
+    </span>
+</h3>
 <div class="flex justify-center gap-4">
 <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" id="btn-config-si">
-     Sí
-    </button>
+<span class="lang-es">
+      Sí
+     </span>
+<span class="lang-en" style="display:none;">
+      Yes
+     </span>
+</button>
 <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400" id="btn-config-no">
-     No
-    </button>
+<span class="lang-es">
+      No
+     </span>
+<span class="lang-en" style="display:none;">
+      No
+     </span>
+</button>
 </div>
 </dialog>
 <!-- Sección Configura tu caja -->
 <section class="hidden py-16 bg-white" id="configurar-caja">
 <div class="container mx-auto px-4">
 <h2 class="text-4xl font-extrabold text-green-800 mb-8 text-center">
-     Configura tu caja
-    </h2>
+<span class="lang-es">
+      Configura tu caja
+     </span>
+<span class="lang-en" style="display:none;">
+      Set up your box
+     </span>
+</h2>
 <!-- Botón AUTO-MODE -->
 <div class="flex justify-center mb-8">
 <button class="bg-green-600 text-white px-6 py-2 rounded-full text-lg font-bold hover:bg-green-700 transition-colors flex items-center gap-2" id="btn-auto-mode">
@@ -1058,64 +1109,6 @@
 </div>
 <!-- El botón cerrar original se elimina -->
 </dialog>
-<!-- === Resumen de pedido (overlay) === -->
-<div class="fixed inset-0 z-[9999] hidden overflow-y-auto flex items-start justify-center px-4 py-12 bg-black bg-opacity-60 backdrop-blur-sm" id="modal-resumen">
-<div class="relative w-full max-w-md mx-auto bg-white rounded-3xl shadow-2xl order-summary-card flex flex-col max-h-[92vh]">
-<div class="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-green-400 via-emerald-500 to-green-600">
-</div>
-<button aria-label="Cerrar" class="absolute top-4 right-4 text-2xl text-green-800 hover:text-red-500 transition-colors" id="cerrar-modal-resumen">
-     ×
-    </button>
-<div class="px-6 pt-12 pb-6 space-y-6 flex-1 overflow-y-auto">
-<div class="text-center">
-<h2 class="text-3xl font-extrabold text-green-800 tracking-tight">
-<span class="lang-es">
-        Resumen de tu pedido
-       </span>
-<span class="lang-en" style="display:none;">
-        Order Summary
-       </span>
-</h2>
-<p class="mt-2 text-sm text-green-600">
-<span class="lang-es">
-        Revisa los detalles antes de enviarlo por WhatsApp.
-       </span>
-<span class="lang-en" style="display:none;">
-        Review everything before sending it via WhatsApp.
-       </span>
-</p>
-</div>
-<div class="bg-green-50 border border-green-200 rounded-2xl p-4 shadow-sm">
-<pre class="whitespace-pre-wrap text-green-900 text-sm leading-relaxed font-medium max-h-[50vh] overflow-y-auto pr-2" id="detalle-resumen"></pre>
-</div>
-<div class="flex items-center justify-between bg-white rounded-2xl border border-green-200 px-5 py-3 shadow-sm">
-<span class="text-lg font-semibold text-green-700">
-<span class="lang-es">
-        Total:
-       </span>
-<span class="lang-en" style="display:none;">
-        Total:
-       </span>
-</span>
-<span class="text-xl font-extrabold text-green-900" id="total-resumen">
-       DOP 0.00
-      </span>
-</div>
-</div>
-<div class="px-6 pb-6 pt-4 bg-white border-t border-green-200 flex-shrink-0 sticky bottom-0 left-0">
-<button class="w-full flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white font-semibold text-lg py-3 rounded-full shadow-lg transition-transform transform hover:scale-[1.01]" id="enviar-whatsapp">
-<i class="fab fa-whatsapp text-2xl">
-</i>
-<span class="lang-es">
-       Enviar pedido por WhatsApp
-      </span>
-<span class="lang-en" style="display:none;">
-       Send Order via WhatsApp
-      </span>
-</button>
-</div>
-</div>
-</div>
 <!-- Sección Agrega a tu pedido! -->
 <section class="py-16 bg-green-50" id="extras">
 <div class="container mx-auto px-4">
@@ -1146,10 +1139,10 @@
          Homemade Products
         </span>
 </summary>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6" data-categoria="productosElaborados">
 <!-- Baba Ganoush -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Baba Ganoush" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Baba Ganoush.jpg"/>
+<img alt="Baba Ganoush" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Baba Ganoush.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Baba Ganoush
          </span>
@@ -1169,7 +1162,7 @@
 </div>
 <!-- Hummus -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Hummus" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Hummus.jpg"/>
+<img alt="Hummus" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Hummus.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Hummus
          </span>
@@ -1189,7 +1182,7 @@
 </div>
 <!-- Guacamole -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Guacamole" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Guacamole.jpg"/>
+<img alt="Guacamole" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Guacamole.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Guacamole
          </span>
@@ -1209,7 +1202,7 @@
 </div>
 <!-- Chimi Churri -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Chimi Churri" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Chimichurri.jpg"/>
+<img alt="Chimi Churri" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Chimichurri.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Chimi Churri
          </span>
@@ -1248,10 +1241,10 @@
          Detox No sugar! - 100% Natural
         </span>
 </p>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6" data-categoria="jugos">
 <!-- Pepinada -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Pepinada" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/PepinadaOKLow.jpg"/>
+<img alt="Pepinada" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/PepinadaOKLow.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Pepinada
          </span>
@@ -1277,7 +1270,7 @@
 </div>
 <!-- Tropicalote -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Tropicalote" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/TropicalotOKlow.jpg"/>
+<img alt="Tropicalote" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/TropicalotOKlow.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Tropicalote
          </span>
@@ -1303,7 +1296,7 @@
 </div>
 <!-- Rosa Maravillosa -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Rosa Maravillosa" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/RosaOKlow.jpg"/>
+<img alt="Rosa Maravillosa" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/RosaOKlow.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Rosa Maravillosa
          </span>
@@ -1329,7 +1322,7 @@
 </div>
 <!-- Cina Chinola -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="China Chinola" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/ChinaOKweb.jpg"/>
+<img alt="China Chinola" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/ChinaOKweb.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           China Chinola
          </span>
@@ -1366,10 +1359,10 @@
          Farm Products
         </span>
 </summary>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6" data-categoria="productosCampo">
 <!-- Huevos Blancos -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Huevos Blancos" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Huevos blancos.jpg"/>
+<img alt="Huevos Blancos" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Huevos blancos.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Huevos Blancos
          </span>
@@ -1389,7 +1382,7 @@
 </div>
 <!-- Huevos de color -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Huevos de color" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Huevos marrones.jpg"/>
+<img alt="Huevos de color" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Huevos marrones.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Huevos de color
          </span>
@@ -1409,7 +1402,7 @@
 </div>
 <!-- Huevos de campo orgánicos -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Huevos de campo orgánicos" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Huevos de campo.jpg"/>
+<img alt="Huevos de campo orgánicos" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Huevos de campo.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Huevos de campo orgánicos
          </span>
@@ -1429,7 +1422,7 @@
 </div>
 <!-- Miel pura de abejas -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Miel pura de abejas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Miel de abejas.jpg"/>
+<img alt="Miel pura de abejas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Miel de abejas.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Miel pura de abejas
          </span>
@@ -1449,7 +1442,7 @@
 </div>
 <!-- Miel de abejas orgánica con panal -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Miel de abejas orgánica con panal" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Miel-con-panal_optimized.jpg"/>
+<img alt="Miel de abejas orgánica con panal" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Miel-con-panal_optimized.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Miel de abejas orgánica con panal
          </span>
@@ -1480,10 +1473,10 @@
          Others
         </span>
 </summary>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6" data-categoria="otros">
 <!-- Aceite de oliva sabor ajo -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Aceite de oliva sabor ajo" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Aceite de oliva.jpg"/>
+<img alt="Aceite de oliva sabor ajo" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Aceite de oliva.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Aceite de oliva sabor ajo
          </span>
@@ -1503,7 +1496,7 @@
 </div>
 <!-- Aceite de oliva extra virgen importado -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Aceite de oliva extra virgen importado" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Aceite de oliva 3litros.jpg"/>
+<img alt="Aceite de oliva extra virgen importado" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Aceite de oliva 3litros.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Aceite de oliva extra virgen importado
          </span>
@@ -1523,7 +1516,7 @@
 </div>
 <!-- Quinoa -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Quinoa" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Quinoa.jpg"/>
+<img alt="Quinoa" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Quinoa.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Quinoa
          </span>
@@ -1543,7 +1536,7 @@
 </div>
 <!-- Arroz blanco -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Arroz blanco" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Arroz blanco.jpg"/>
+<img alt="Arroz blanco" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Arroz blanco.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Arroz blanco
          </span>
@@ -1563,7 +1556,7 @@
 </div>
 <!-- Arroz integral -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Arroz integral" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Arroz integral.jpg"/>
+<img alt="Arroz integral" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Arroz integral.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Arroz integral
          </span>
@@ -1583,7 +1576,7 @@
 </div>
 <!-- Lentejas -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Lentejas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Lentejas.jpg"/>
+<img alt="Lentejas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Lentejas.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Lentejas
          </span>
@@ -1603,7 +1596,7 @@
 </div>
 <!-- Habichuelas rojas -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Habichuelas rojas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Frijoles rojos.jpg"/>
+<img alt="Habichuelas rojas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Frijoles rojos.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Habichuelas rojas
          </span>
@@ -1623,7 +1616,7 @@
 </div>
 <!-- Habichuelas negras -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Habichuelas negras" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Frijoles negros.jpg"/>
+<img alt="Habichuelas negras" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Frijoles negros.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Habichuelas negras
          </span>
@@ -1643,7 +1636,7 @@
 </div>
 <!-- Habichuelas blancas -->
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Habichuelas blancas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Frijoles blancos.jpg"/>
+<img alt="Habichuelas blancas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Frijoles blancos.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Habichuelas blancas
          </span>
@@ -1716,9 +1709,9 @@
          Fruits
         </span>
 </summary>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6" data-categoria="frutas">
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Aguacates" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Aguacate.jpg"/>
+<img alt="Aguacates" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Aguacate.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Aguacates
          </span>
@@ -1743,7 +1736,7 @@
 </button>
 </div>
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
-<img alt="Mandarinas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Mandarinas.jpg"/>
+<img alt="Mandarinas" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" loading="lazy" src="assets/images/products/Mandarinas.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
           Mandarinas
          </span>
@@ -2170,7 +2163,7 @@
          Vegetables
         </span>
 </summary>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6" data-categoria="verduras">
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
 <img alt="Tomate bugalú" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Tomates bugalu.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
@@ -2260,7 +2253,7 @@
 <p class="text-green-800 text-center lang-en" style="display:none;">
           DOP 50
          </p>
-<button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto">
+<button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center justify-center hover:bg-green-700 transition-colors text-sm" data-tipo="producto">
 <i class="fas fa-cart-plus">
 </i>
 <span class="lang-es">
@@ -2335,7 +2328,7 @@
 <p class="text-green-800 text-center lang-en" style="display:none;">
           DOP 75
          </p>
-<button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto">
+<button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center justify-center hover:bg-green-700 transition-colors text-sm" data-tipo="producto">
 <i class="fas fa-cart-plus">
 </i>
 <span class="lang-es">
@@ -2360,7 +2353,7 @@
 <p class="text-green-800 text-center lang-en" style="display:none;">
           DOP 85
          </p>
-<button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto">
+<button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center justify-center hover:bg-green-700 transition-colors text-sm" data-tipo="producto">
 <i class="fas fa-cart-plus">
 </i>
 <span class="lang-es">
@@ -2385,7 +2378,7 @@
 <p class="text-green-800 text-center lang-en" style="display:none;">
           DOP 85
          </p>
-<button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center gap-2 hover:bg-green-700 transition-colors text-sm" data-tipo="producto">
+<button class="agregar-carrito bg-green-600 text-white px-3 py-1 rounded-full mt-2 flex items-center justify-center hover:bg-green-700 transition-colors text-sm" data-tipo="producto">
 <i class="fas fa-cart-plus">
 </i>
 <span class="lang-es">
@@ -2802,7 +2795,7 @@
          Herbs &amp; Spices
         </span>
 </summary>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6" data-categoria="hierbas">
 <div class="paso-card flex flex-col items-center bg-white rounded-2xl shadow-xl p-6 transition hover:shadow-2xl hover:scale-105 duration-200 relative w-full h-[420px] producto-hover">
 <img alt="Cilantro" class="w-32 h-32 object-contain mb-4 rounded-2xl shadow-lg bg-green-50" src="assets/images/products/Cilantro.jpg"/>
 <span class="font-bold text-lg mb-2 text-green-900 lang-es">
@@ -2995,348 +2988,212 @@
 <!-- Sección Preguntas -->
 <section class="py-16 bg-white" id="faq">
 <div class="container mx-auto px-4 max-w-3xl">
-<!-- Título principal FAQ desplegable -->
-<details id="faq-main" open="">
-<summary class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-es flex items-center justify-center gap-3" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px;">
+<div class="text-center mb-12">
+<h2 class="text-3xl md:text-4xl font-extrabold text-green-800 flex items-center justify-center gap-3" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px;">
 <i class="fas fa-question-circle text-green-600">
 </i>
-      Preguntas frecuentes
-     </summary>
-<div class="space-y-8 lang-es">
-<details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-<summary class="font-bold text-green-800 cursor-pointer">
-        🛒 Pedidos y Productos
-       </summary>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Cómo hago un pedido?
-        </summary>
+<span class="lang-es">
+       Preguntas Frecuentes
+      </span>
+<span class="lang-en" style="display:none;">
+       Frequently Asked Questions
+      </span>
+</h2>
+</div>
+<div class="space-y-6">
+<details class="bg-green-50/50 rounded-xl shadow-md p-4 md:p-6 transition-all duration-300 open:ring-2 open:ring-green-300">
+<summary class="text-lg md:text-xl font-bold text-green-800 cursor-pointer list-none flex justify-between items-center">
+<span>
+        🚛
+        <span class="lang-es">
+         Entregas
+        </span>
+<span class="lang-en" style="display:none;">
+         Deliveries
+        </span>
+</span>
+<i class="fas fa-chevron-down transition-transform duration-300 group-open:rotate-180">
+</i>
+</summary>
+<div class="mt-4 text-center text-green-700 space-y-4">
 <p>
-         Puedes hacer tu pedido a través de nuestro formulario online o escribiéndonos directamente por WhatsApp. También puedes seguirnos en Instagram @green_dolio para ver nuestros productos disponibles.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Qué tipos de cajas ofrecen?
-        </summary>
-<ul class="list-disc ml-6">
-<li>
-<b>
-           Caribbean Fresh Pack
-          </b>
-          : $650 (3 días)
-         </li>
-<li>
-<b>
-           Island Weeksential
-          </b>
-          : $990 (1 semana)
-         </li>
-<li>
-<b>
-           All Green-clusive Mix
-          </b>
-          : $1990 (2 semanas)
-         </li>
-</ul>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Puedo personalizar mi caja?
-        </summary>
+<strong class="text-green-800 block lang-es">
+         ¿Qué días y a qué hora entregan?
+        </strong>
+<strong class="text-green-800 block lang-en" style="display:none;">
+         What days and times do you deliver?
+        </strong>
+<span class="block lang-es">
+         Nuestro horario de entrega es de 12:30 PM a 8:00 PM.
+        </span>
+<span class="block lang-en" style="display:none;">
+         Our delivery window is from 12:30 PM to 8:00 PM.
+        </span>
+</p>
 <p>
-         ¡Absolutamente! Cada caja se arma según tus gustos y lo que esté más fresco el día de tu pedido. Solo dinos qué te gusta y qué no.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Ofrecen pedidos "a la carta"?
-        </summary>
+<strong class="text-green-800 block lang-es">
+         ¿Cuándo es gratis el envío?
+        </strong>
+<strong class="text-green-800 block lang-en" style="display:none;">
+         When is shipping free?
+        </strong>
+<span class="block lang-es">
+         El envío es
+         <strong>
+          GRATIS
+         </strong>
+         los
+         <strong>
+          Lunes, Miércoles y Viernes
+         </strong>
+         .
+        </span>
+<span class="block lang-en" style="display:none;">
+         Shipping is
+         <strong>
+          FREE
+         </strong>
+         on
+         <strong>
+          Mondays, Wednesdays, and Fridays
+         </strong>
+         .
+        </span>
+<span class="block text-sm lang-es">
+         Los Martes, Jueves y Sábados tiene un costo de DOP 100.
+        </span>
+<span class="block text-sm lang-en" style="display:none;">
+         On Tuesdays, Thursdays, and Saturdays, there is a DOP 100 fee.
+        </span>
+</p>
 <p>
-         Sí, si no pides una caja, el pedido mínimo es de 500 y el delivery no está incluido.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Qué productos extras tienen disponibles?
-        </summary>
-<p>
-         Ofrecemos huevos de campo, quinoa, baba ganoush, miel, aceite de oliva, chimi churri, hummus y jugos naturales, y más. Revisa nuestro catálogo completo o consúltanos por WhatsApp.
-        </p>
-</details>
-</details>
-<details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-<summary class="font-bold text-green-800 cursor-pointer">
-        🚛 Entregas
-       </summary>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
+<strong class="text-green-800 block lang-es">
          ¿A dónde entregan?
-        </summary>
-<ul class="list-disc ml-6">
-<li>
-<b>
-           Juan Dolio
-          </b>
-          : Pedido mínimo $650
-         </li>
-<li>
-<b>
-           Santo Domingo
-          </b>
-          : Pedido mínimo $990
-         </li>
-<li>
-<b>
-           Boca Chica
-          </b>
-          : Pedido mínimo $990
-         </li>
-</ul>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Qué días hacen entregas?
-        </summary>
-<p>
-         Entregamos todos los días de 9:00 AM a 6:00 PM. Los martes, jueves y sábados son GRATIS. Otros días tienen cargo de delivery de $100.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Con cuánta anticipación debo hacer mi pedido?
-        </summary>
-<p>
-         Preferentemente con 24 horas de anticipación, o hasta las 12:00 PM del mismo día de entrega.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Tienen entrega gratis?
-        </summary>
-<p>
-         Sí, ofrecemos entrega gratis en nuestras zonas de cobertura cuando cumples con el pedido mínimo.
-        </p>
-</details>
-</details>
-<details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-<summary class="font-bold text-green-800 cursor-pointer">
-        💰 Pagos
-       </summary>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Qué formas de pago aceptan?
-        </summary>
-<ul class="list-disc ml-6">
-<li>
-<b>
-           Efectivo
-          </b>
-</li>
-<li>
-<b>
-           Transferencia bancaria
-          </b>
-</li>
-<li>
-<b>
-           PayPal
-          </b>
-          (con 10% de recargo)
-         </li>
-</ul>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         ¿Cuándo debo pagar?
-        </summary>
-<p>
-         ¡Solo pagas cuando recibes tu pedido, no antes!
-        </p>
-</details>
-</details>
-<div class="mt-10 text-center text-green-800 text-lg font-bold">
-       ¿No encontraste tu respuesta?
-       <br/>
-       Escríbenos por WhatsApp o síguenos en Instagram
-       <a class="underline hover:text-green-600" href="https://www.instagram.com/green_dolio/" target="_blank">
-        @green_dolio
-       </a>
-       . ¡Estamos aquí para ayudarte!
-      </div>
-</div>
-</details>
-<!-- Inglés -->
-<details id="faq-main-en">
-<summary class="text-3xl font-extrabold text-green-800 mb-10 text-center lang-en flex items-center justify-center gap-3" style="font-family:'Poppins','Comic Sans MS',cursive; letter-spacing:1px; display:none;">
-<i class="fas fa-question-circle text-green-600">
-</i>
-      Frequently asked questions
-     </summary>
-<div class="space-y-8 lang-en" style="display:none;">
-<details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-<summary class="font-bold text-green-800 cursor-pointer">
-        🛒 Orders &amp; Products
-       </summary>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         How do I place an order?
-        </summary>
-<p>
-         You can place your order through our online form or by writing to us directly on WhatsApp. You can also follow us on Instagram @green_dolio to see our available products.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         What types of boxes do you offer?
-        </summary>
-<ul class="list-disc ml-6">
-<li>
-<b>
-           Caribbean Fresh Pack
-          </b>
-          : $650 (3 days)
-         </li>
-<li>
-<b>
-           Island Weeksential
-          </b>
-          : $990 (1 week)
-         </li>
-<li>
-<b>
-           All Green-clusive Mix
-          </b>
-          : $1990 (2 weeks)
-         </li>
-</ul>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         Can I customize my box?
-        </summary>
-<p>
-         Absolutely! Each box is assembled according to your tastes and what is freshest on the day of your order. Just tell us what you like and what you don't.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         Do you offer "à la carte" orders?
-        </summary>
-<p>
-         Yes, contact us via WhatsApp with your specific order and we will send you availability and a quote.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         What extra products are available?
-        </summary>
-<p>
-         We offer free-range eggs, quinoa, baba ganoush, honey, olive oil, chimichurri, hummus, natural juices, and more. Check our full catalog or ask us on WhatsApp.
-        </p>
-</details>
-</details>
-<details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-<summary class="font-bold text-green-800 cursor-pointer">
-        🚛 Deliveries
-       </summary>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
+        </strong>
+<strong class="text-green-800 block lang-en" style="display:none;">
          Where do you deliver?
-        </summary>
-<ul class="list-disc ml-6">
-<li>
-<b>
-           Juan Dolio
-          </b>
-          : Minimum order $650
-         </li>
-<li>
-<b>
-           Santo Domingo
-          </b>
-          : Minimum order $990
-         </li>
-<li>
-<b>
-           Boca Chica
-          </b>
-          : Minimum order $990
-         </li>
-</ul>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         What days do you deliver?
-        </summary>
-<p>
-         We deliver every day from 9:00 AM to 6:00 PM. Tuesdays, Thursdays, and Saturdays are FREE. Other days have a delivery charge of $100.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         How far in advance should I order?
-        </summary>
-<p>
-         Preferably 24 hours in advance, or until 12:00 PM on the same day of delivery.
-        </p>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         Do you offer free delivery?
-        </summary>
-<p>
-         Yes, we offer free delivery in our coverage areas when you meet the minimum order.
-        </p>
-</details>
-</details>
-<details class="bg-green-50 rounded-xl shadow p-4 mb-2">
-<summary class="font-bold text-green-800 cursor-pointer">
-        💰 Payments
-       </summary>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         What payment methods do you accept?
-        </summary>
-<ul class="list-disc ml-6">
-<li>
-<b>
-           Cash
-          </b>
-</li>
-<li>
-<b>
-           Bank transfer
-          </b>
-</li>
-<li>
-<b>
-           PayPal
-          </b>
-          (10% surcharge)
-         </li>
-</ul>
-</details>
-<details class="bg-white rounded shadow p-2 mb-1">
-<summary class="font-semibold text-green-700 cursor-pointer">
-         When do I have to pay?
-        </summary>
-<p>
-         You only pay when you receive your order, never before!
-        </p>
-</details>
-</details>
-<div class="mt-10 text-center text-green-800 text-lg font-bold">
-       Didn't find your answer?
-       <br/>
-       Write to us on WhatsApp or follow us on Instagram
-       <a class="underline hover:text-green-600" href="https://www.instagram.com/green_dolio/" target="_blank">
-        @green_dolio
-       </a>
-       . We're here to help!
-      </div>
+        </strong>
+<span class="block lang-es">
+         Cubrimos Juan Dolio (pedido mín. $650), Santo Domingo y Boca Chica (pedido mín. $990).
+        </span>
+<span class="block lang-en" style="display:none;">
+         We cover Juan Dolio (min. order $650), Santo Domingo, and Boca Chica (min. order $990).
+        </span>
+</p>
 </div>
 </details>
+<details class="bg-green-50/50 rounded-xl shadow-md p-4 md:p-6 transition-all duration-300 open:ring-2 open:ring-green-300">
+<summary class="text-lg md:text-xl font-bold text-green-800 cursor-pointer list-none flex justify-between items-center">
+<span>
+        🛒
+        <span class="lang-es">
+         Pedidos y Productos
+        </span>
+<span class="lang-en" style="display:none;">
+         Orders &amp; Products
+        </span>
+</span>
+<i class="fas fa-chevron-down transition-transform duration-300 group-open:rotate-180">
+</i>
+</summary>
+<div class="mt-4 text-center text-green-700 space-y-4">
+<p>
+<strong class="text-green-800 block lang-es">
+         ¿Puedo personalizar mi caja?
+        </strong>
+<strong class="text-green-800 block lang-en" style="display:none;">
+         Can I customize my box?
+        </strong>
+<span class="block lang-es">
+         ¡Absolutamente! Al elegir tu caja, podrás indicar qué productos te gustan y cuáles prefieres no recibir.
+        </span>
+<span class="block lang-en" style="display:none;">
+         Absolutely! When you choose your box, you can indicate which products you like and which ones you'd rather not receive.
+        </span>
+</p>
+<p>
+<strong class="text-green-800 block lang-es">
+         ¿Ofrecen pedidos "a la carta"?
+        </strong>
+<strong class="text-green-800 block lang-en" style="display:none;">
+         Do you offer "à la carte" orders?
+        </strong>
+<span class="block lang-es">
+         Sí. Para pedidos que no incluyen una caja (a la carta), el monto mínimo es de DOP 500 y el costo de envío no está incluido.
+        </span>
+<span class="block lang-en" style="display:none;">
+         Yes. For orders that do not include a box (à la carte), the minimum amount is DOP 500 and the shipping fee is not included.
+        </span>
+</p>
+</div>
+</details>
+<details class="bg-green-50/50 rounded-xl shadow-md p-4 md:p-6 transition-all duration-300 open:ring-2 open:ring-green-300">
+<summary class="text-lg md:text-xl font-bold text-green-800 cursor-pointer list-none flex justify-between items-center">
+<span>
+        💰
+        <span class="lang-es">
+         Pagos
+        </span>
+<span class="lang-en" style="display:none;">
+         Payments
+        </span>
+</span>
+<i class="fas fa-chevron-down transition-transform duration-300 group-open:rotate-180">
+</i>
+</summary>
+<div class="mt-4 text-center text-green-700 space-y-4">
+<p>
+<strong class="text-green-800 block lang-es">
+         ¿Qué formas de pago aceptan?
+        </strong>
+<strong class="text-green-800 block lang-en" style="display:none;">
+         What payment methods do you accept?
+        </strong>
+<span class="block lang-es">
+         Aceptamos Efectivo, Transferencia Bancaria y PayPal (este último con un 10% de recargo).
+        </span>
+<span class="block lang-en" style="display:none;">
+         We accept Cash, Bank Transfer, and PayPal (the latter with a 10% surcharge).
+        </span>
+</p>
+<p>
+<strong class="text-green-800 block lang-es">
+         ¿Cuándo debo pagar?
+        </strong>
+<strong class="text-green-800 block lang-en" style="display:none;">
+         When do I pay?
+        </strong>
+<span class="block lang-es">
+         ¡Pagas al recibir tu pedido, nunca antes!
+        </span>
+<span class="block lang-en" style="display:none;">
+         You pay upon receiving your order, never before!
+        </span>
+</p>
+</div>
+</details>
+</div>
+<div class="mt-12 text-center text-green-800 text-lg">
+<p class="font-bold">
+<span class="lang-es">
+       ¿No encontraste tu respuesta?
+      </span>
+<span class="lang-en" style="display:none;">
+       Didn't find your answer?
+      </span>
+</p>
+<p>
+<span class="lang-es">
+       ¡Escríbenos por WhatsApp o síguenos en Instagram!
+      </span>
+<span class="lang-en" style="display:none;">
+       Write to us on WhatsApp or follow us on Instagram!
+      </span>
+</p>
+<a class="text-green-600 hover:underline font-bold" href="https://www.instagram.com/green_dolio/" target="_blank">
+      @green_dolio
+     </a>
+</div>
 </div>
 </section>
 <!-- Sección Sustentabilidad -->
@@ -3421,12 +3278,504 @@
     </div>
 </div>
 </footer>
+<!-- Efectos hover en cajas y productos -->
+<script>
+   document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.bg-green-50.rounded-xl.shadow.p-6').forEach(function(el) {
+          el.classList.add('caja-hover');
+        });
+        document.querySelectorAll('.bg-green-50.rounded-xl.shadow.p-4').forEach(function(el) {
+          el.classList.add('producto-hover');
+        });
+      });
+  </script>
+<script>
+   function setLanguage(lang) {
+        document.querySelectorAll('.lang-es').forEach(el => {
+          el.style.display = (lang === 'es') ? '' : 'none';
+        });
+        document.querySelectorAll('.lang-en').forEach(el => {
+          el.style.display = (lang === 'en') ? '' : 'none';
+        });
+        document.getElementById('btn-es').classList.toggle('bg-green-600', lang === 'es');
+        document.getElementById('btn-es').classList.toggle('text-white', lang === 'es');
+        document.getElementById('btn-en').classList.toggle('bg-green-600', lang === 'en');
+        document.getElementById('btn-en').classList.toggle('text-white', lang === 'en');
+        localStorage.setItem('lang', lang);
+        
+        // Disparar evento de cambio de idioma
+        window.dispatchEvent(new CustomEvent('languageChange', { detail: { lang } }));
+        
+        // Reiniciar animación del banner visible
+        setTimeout(() => {
+          const banner = document.querySelector(`.parallax-banner.lang-${lang}`);
+          if (banner) {
+            banner.classList.remove('banner-animado');
+            // Forzar reflow para reiniciar la animación
+            void banner.offsetWidth;
+            banner.classList.add('banner-animado');
+          }
+        }, 50);
+      }
+      window.onload = function() {
+        const lang = localStorage.getItem('lang') || 'es';
+        setLanguage(lang);
+      };
+  </script>
+<script>
+   // Menú dropdown: abrir/cerrar y cerrar al pulsar enlace o fuera
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuLinks = document.querySelectorAll('.menu-link');
+    let menuOpen = false;
+    menuToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      mobileMenu.classList.toggle('hidden');
+      menuOpen = !mobileMenu.classList.contains('hidden');
+    });
+    menuLinks.forEach(link => link.addEventListener('click', () => {
+      mobileMenu.classList.add('hidden');
+      menuOpen = false;
+    }));
+    document.addEventListener('click', function(e) {
+      if (menuOpen && !mobileMenu.contains(e.target) && e.target !== menuToggle && !menuToggle.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
+        menuOpen = false;
+      }
+    });
+  </script>
+<!-- Carrito flotante centrado -->
+<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50 hidden" id="carrito-flotante">
+<div class="bg-green-50 rounded-lg shadow-xl p-6 w-[90%] max-w-4xl mx-2 relative">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-2xl font-bold text-green-800">
+<span class="lang-es">
+       Carrito de Compras
+      </span>
+<span class="lang-en" style="display:none;">
+       Shopping Cart
+      </span>
+</h3>
+<button class="text-gray-400 hover:text-gray-600 p-0 m-0" id="cerrar-carrito" style="background:none; border:none; width:24px; height:24px; display:flex; align-items:center; justify-content:center;">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+</path>
+</svg>
+</button>
+</div>
+<div class="max-h-[60vh] overflow-y-auto mb-6" id="carrito-items">
+</div>
+<div class="border-t pt-6">
+<div class="flex justify-between items-center mb-6">
+<span class="text-xl font-bold text-green-800">
+<span class="lang-es">
+        Total:
+       </span>
+<span class="lang-en" style="display:none;">
+        Total:
+       </span>
+</span>
+<span class="text-xl font-bold text-green-800" id="carrito-total">
+       $0.00
+      </span>
+</div>
+<button class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors text-lg font-semibold" id="checkout-btn">
+<span class="lang-es">
+       Proceder al Pago
+      </span>
+<span class="lang-en" style="display:none;">
+       Proceed to Checkout
+      </span>
+</button>
+</div>
+</div>
+</div>
+<!-- Modal de Checkout -->
+<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50 hidden" id="checkout-modal">
+<div class="bg-green-50 rounded-lg shadow-xl p-4 w-full max-w-md mx-2 relative">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xl font-bold text-green-800">
+<span class="lang-es">
+       Finalizar Pedido
+      </span>
+<span class="lang-en" style="display:none;">
+       Complete Order
+      </span>
+</h3>
+<button class="text-gray-400 hover:text-gray-600 p-0 m-0" id="cerrar-checkout" style="background:none; border:none; width:24px; height:24px; display:flex; align-items:center; justify-content:center;">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+</path>
+</svg>
+</button>
+</div>
+<form class="space-y-4" id="formulario-pedido">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">
+<span class="lang-es">
+        Nombre
+       </span>
+<span class="lang-en" style="display:none;">
+        Name
+       </span>
+</label>
+<input class="w-full px-3 py-2 border border-gray-300 rounded-md" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">
+<span class="lang-es">
+        Teléfono
+       </span>
+<span class="lang-en" style="display:none;">
+        Phone
+       </span>
+</label>
+<input class="w-full px-3 py-2 border border-gray-300 rounded-md" required="" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">
+<span class="lang-es">
+        Dirección de Entrega
+       </span>
+<span class="lang-en" style="display:none;">
+        Delivery Address
+       </span>
+</label>
+<textarea class="w-full px-3 py-2 border border-gray-300 rounded-md" required=""></textarea>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">
+<span class="lang-es">
+        Notas Adicionales
+       </span>
+<span class="lang-en" style="display:none;">
+        Additional Notes
+       </span>
+</label>
+<textarea class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
+</div>
+<button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors" type="submit">
+<span class="lang-es">
+       Confirmar Pedido
+      </span>
+<span class="lang-en" style="display:none;">
+       Confirm Order
+      </span>
+</button>
+</form>
+</div>
+</div>
+<!-- Modal de resumen de compra -->
+<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999] hidden p-4" id="modal-resumen">
+<div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full relative max-h-full overflow-y-auto">
+<button class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-2xl" id="cerrar-modal-resumen">
+     ×
+    </button>
+<h2 class="text-2xl font-bold text-green-800 mb-4 text-center">
+<span class="lang-es">
+      Resumen de tu pedido
+     </span>
+<span class="lang-en" style="display:none;">
+      Order Summary
+     </span>
+</h2>
+<div class="mb-4 text-green-900 text-base" id="detalle-resumen">
+</div>
+<div class="flex justify-between items-center font-bold text-lg mb-4">
+<span>
+      Total:
+     </span>
+<span class="text-green-800" id="total-resumen">
+      $0.00
+     </span>
+</div>
+<button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors font-bold text-lg flex items-center justify-center gap-2" id="enviar-whatsapp">
+<i class="fab fa-whatsapp">
+</i>
+<span class="lang-es">
+      Enviar pedido por WhatsApp
+     </span>
+<span class="lang-en" style="display:none;">
+      Send Order via WhatsApp
+     </span>
+</button>
+</div>
+</div>
+<!-- Modal de preview de WhatsApp -->
+<div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[10000] hidden" id="modal-preview">
+<div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full relative">
+<button class="absolute top-2 right-2 text-gray-500 hover:text-red-600 text-2xl" id="cerrar-modal-preview">
+     ×
+    </button>
+<h2 class="text-2xl font-bold text-green-800 mb-4 text-center">
+     Mensaje a enviar por WhatsApp
+    </h2>
+<pre class="mb-4 text-green-900 text-base bg-gray-100 rounded p-3 whitespace-pre-wrap" id="preview-mensaje"></pre>
+<button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors font-bold text-lg flex items-center justify-center gap-2" id="confirmar-whatsapp">
+<i class="fab fa-whatsapp">
+</i>
+     Confirmar y enviar por WhatsApp
+    </button>
+</div>
+</div>
+<script>
+   // ... existing code ...
+
+function enviarPedido() {
+    // Obtener los datos del formulario
+    const nombre = document.getElementById('nombre').value;
+    const whatsapp = document.getElementById('whatsapp').value;
+    const direccion = document.getElementById('direccion').value;
+    const diaEntrega = document.getElementById('dia-entrega').value;
+    const metodoPago = document.querySelector('input[name="metodo-pago"]:checked')?.value;
+
+    // Validar que todos los campos estén completos
+    if (!nombre || !whatsapp || !direccion || !diaEntrega || !metodoPago) {
+        alert('Por favor completa todos los campos del formulario');
+        return;
+    }
+
+    // Obtener los items del carrito
+    const items = window.carrito.map(item => {
+        return `${item.nombre} x${item.cantidad} - $${(item.precio * item.cantidad).toFixed(2)}`;
+    }).join('\n');
+
+    // Calcular el total
+    const total = window.carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+
+    // Crear el mensaje
+    const mensaje = `¡Hola! Quiero hacer un pedido:\n\n${items}\n\nTotal: $${total.toFixed(2)}\n\nDatos de entrega:\nNombre: ${nombre}\nWhatsApp: ${whatsapp}\nDirección: ${direccion}\nDía de entrega: ${diaEntrega}\nMétodo de pago: ${metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia bancaria'}`;
+
+    // Codificar el mensaje para la URL
+    const mensajeCodificado = encodeURIComponent(mensaje);
+
+    // Abrir WhatsApp con el mensaje
+    window.open(`https://wa.me/18493757338?text=${mensajeCodificado}`, '_blank');
+
+    // Limpiar el carrito
+    window.carrito = [];
+    actualizarCarrito();
+    ocultarCarrito();
+}
+// ... existing code ...
+
+      // Eventos para los botones de variedad
+      document.querySelectorAll('.variedad-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const card = this.closest('.caja-hover');
+          const allBtns = card.querySelectorAll('.variedad-btn');
+          allBtns.forEach(b => b.classList.remove('selected', 'bg-white', 'text-green-700'));
+          this.classList.add('selected', 'bg-white', 'text-green-700');
+          const agregarBtn = card.querySelector('.agregar-carrito');
+          agregarBtn.disabled = false;
+        });
+      });
+
+      // Eliminamos la función actualizarCarrito que usa carritoItems
+  </script>
+<!-- Modal de configuración de caja -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="modal-configura">
+<div class="bg-white rounded-2xl shadow-2xl p-8 relative w-full max-w-md flex flex-col items-center">
+<button class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-red-500 font-bold" onclick="cerrarModalConfigura()">
+     ×
+    </button>
+<h2 class="text-2xl font-bold text-green-800 mb-6 text-center">
+     ELIGE TU VARIEDAD
+    </h2>
+<div class="flex justify-center gap-4 mb-6">
+<button class="variedad-modal-btn bg-green-100 text-green-800 px-4 py-2 rounded-full text-lg font-semibold hover:bg-green-200 transition-colors" data-variedad="Mix">
+      Mix
+     </button>
+<button class="variedad-modal-btn bg-green-100 text-green-800 px-4 py-2 rounded-full text-lg font-semibold hover:bg-green-200 transition-colors" data-variedad="Fruitty">
+      Fruitty
+     </button>
+<button class="variedad-modal-btn bg-green-100 text-green-800 px-4 py-2 rounded-full text-lg font-semibold hover:bg-green-200 transition-colors" data-variedad="Veggie">
+      Veggie
+     </button>
+</div>
+<button class="preferencias-btn bg-yellow-400 text-green-900 font-bold px-6 py-2 rounded-full hover:bg-yellow-500 transition-colors" onclick="abrirPreferencias()">
+     Preferencias
+    </button>
+</div>
+</div>
+<!-- Sección Configura tu caja -->
+<section class="hidden py-16 bg-white" id="configurar-caja">
+<div class="container mx-auto px-4">
+<h2 class="text-4xl font-extrabold text-green-800 mb-8 text-center">
+<span class="lang-es">
+      Configura tu caja
+     </span>
+<span class="lang-en" style="display:none;">
+      Set up your box
+     </span>
+</h2>
+<!-- Botón AUTO-MODE -->
+<div class="flex justify-center mb-8">
+<button class="bg-green-600 text-white px-6 py-2 rounded-full text-lg font-bold hover:bg-green-700 transition-colors flex items-center gap-2" id="btn-auto-mode">
+<i class="fas fa-magic">
+</i>
+<span class="lang-es">
+       AUTO-MODE
+      </span>
+<span class="lang-en" style="display:none;">
+       AUTO-MODE
+      </span>
+</button>
+</div>
+<!-- Categorías de productos -->
+<div class="grid grid-cols-1 gap-8">
+<!-- Frutas -->
+<div class="bg-green-50 rounded-xl p-6">
+<h3 class="text-2xl font-bold text-green-800 mb-6 flex items-center gap-2">
+<i class="fas fa-apple-alt text-green-600">
+</i>
+<span class="lang-es">
+        Frutas
+       </span>
+<span class="lang-en" style="display:none;">
+        Fruits
+       </span>
+</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="config-productos-frutas">
+</div>
+</div>
+<!-- Vegetales -->
+<div class="bg-green-50 rounded-xl p-6">
+<h3 class="text-2xl font-bold text-green-800 mb-6 flex items-center gap-2">
+<i class="fas fa-carrot text-green-600">
+</i>
+<span class="lang-es">
+        Vegetales
+       </span>
+<span class="lang-en" style="display:none;">
+        Vegetables
+       </span>
+</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="config-productos-vegetales">
+</div>
+</div>
+<!-- Hierbas y Especias -->
+<div class="bg-green-50 rounded-xl p-6">
+<h3 class="text-2xl font-bold text-green-800 mb-6 flex items-center gap-2">
+<i class="fas fa-leaf text-green-600">
+</i>
+<span class="lang-es">
+        Hierbas y Especias
+       </span>
+<span class="lang-en" style="display:none;">
+        Herbs and Spices
+       </span>
+</h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="config-productos-hierbas">
+</div>
+</div>
+</div>
+<!-- lista de like/dislike -->
+<h3 class="mt-10 text-2xl font-bold text-green-800">
+     Preferencias
+    </h3>
+<ul class="sticky-preferencias mt-2 space-y-2 border border-green-300 rounded-xl p-4 bg-green-50 max-h-60 overflow-auto shadow-inner mx-auto w-full max-w-3xl hidden" id="lista-preferencias">
+</ul>
+<button class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white p-6 rounded-full shadow-xl hover:bg-green-700 transition flex items-center justify-center z-50 animate-bounce-slow" id="btn-guardar-preferencias">
+<i class="fas fa-save text-3xl">
+</i>
+<!-- Etiquetas sólo para lectores de pantalla -->
+<span class="sr-only lang-es">
+      Guardar preferencias
+     </span>
+<span class="sr-only lang-en" style="display:none;">
+      Save preferences
+     </span>
+</button>
+</div>
+</section>
+<script>
+   document.addEventListener('DOMContentLoaded', function() {
+      // Forzar idioma inglés por defecto para pruebas
+      setLanguage('en');
+
+      // Asegurar listeners explícitos SOLO si existen los botones
+      const btnEs = document.getElementById('btn-es');
+      const btnEn = document.getElementById('btn-en');
+      if (btnEs) btnEs.onclick = function() { setLanguage('es'); };
+      if (btnEn) btnEn.onclick = function() { setLanguage('en'); };
+    });
+  </script>
+<script src="script.js">
+</script>
+<!-- Fallback: define abrirSeccionConfigurarCaja si no llegó desde script.js -->
+<script>
+   if (typeof window.abrirSeccionConfigurarCaja !== 'function') {
+        window.abrirSeccionConfigurarCaja = function () {
+          const seccion = document.getElementById('configurar-caja');
+          if (!seccion) return;
+          seccion.classList.remove('hidden');
+          seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+      }
+  </script>
+<dialog class="rounded-xl p-6 shadow-xl w-full max-w-sm" id="dlg-resumen-preferencias">
+<h3 class="text-xl font-bold text-green-800 mb-4 text-center">
+    Resumen de la caja
+   </h3>
+<div class="text-green-800 mb-6 text-sm" id="resumen-preferencias-contenido">
+</div>
+<div class="flex justify-center gap-4">
+<button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" id="btn-resumen-ok">
+     OK
+    </button>
+</div>
+</dialog>
+<!-- Dialogo Carrito -->
+<dialog class="rounded-xl p-6 shadow-2xl max-w-lg w-11/12 bg-white/95 backdrop-blur z-50" id="dlg-carrito">
+<h3 class="text-2xl font-bold text-green-800 mb-4 text-center">
+<i class="fas fa-shopping-cart">
+</i>
+    Carrito
+   </h3>
+<div class="max-h-[60vh] overflow-auto text-green-900 text-sm space-y-4" id="carrito-contenido">
+<!-- renderCarrito() inyecta aquí -->
+</div>
+<div class="flex justify-center mt-6">
+<button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700" id="dlg-carrito-cerrar">
+     Cerrar
+    </button>
+</div>
+</dialog>
 <!-- Modal para imagen a pantalla completa -->
 <div class="modal-imagen" id="modal-imagen">
 <img alt="Imagen ampliada" id="imagen-modal" src=""/>
 </div>
-<script src="script.js">
-</script>
+<script>
+   // ... existing code ...
+
+    function abrirWhatsAppDefault() {
+      playWaterDrop();
+      const isEnglish = document.documentElement.lang === 'en';
+      const mensaje = isEnglish 
+        ? "Hello GreenDolio! I would like to place an order."
+        : "¡Hola GreenDolio! Me gustaría hacer un pedido.";
+      const mensajeCodificado = encodeURIComponent(mensaje);
+      window.open(`https://wa.me/18493757338?text=${mensajeCodificado}`, '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('btn-infografia-cajas');
+      const dlg = document.getElementById('dlg-infografia-cajas');
+
+      if (!btn || !dlg) return;
+
+      btn.addEventListener('click', () => {
+        const img = dlg.querySelector('img.infografia-img');
+        if (!img) return;
+        const englishVisible = getComputedStyle(btn.querySelector('.lang-en')).display !== 'none';
+        img.src = englishVisible
+          ? 'assets/images/banners/InfografiaCajasENG.jpg'
+          : 'assets/images/banners/InfografiaCajasESP.jpg';
+        dlg.showModal();
+      });
+    });
+  </script>
 <footer class="fixed bottom-0 left-0 w-full flex justify-center items-center px-6 py-3 bg-white border-t border-gray-200 z-50" id="bottom-bar">
 <div class="flex items-center gap-4">
 <a class="text-pink-500 text-2xl rounded-full p-3 transition-transform hover:scale-110" href="https://www.instagram.com/green_dolio/" target="_blank">
@@ -3445,21 +3794,50 @@
 <i class="fas fa-home">
 </i>
 </button>
-<a class="text-green-500 text-2xl rounded-full p-3 transition-transform hover:scale-110" href="https://wa.me/18493757338?text=Hola%20GreenDolio%21%20Me%20gustar%C3%ADa%20hacer%20un%20pedido." target="_blank" id="btn-whatsapp-footer">
+<a class="text-green-500 text-2xl rounded-full p-3 transition-transform hover:scale-110" href="https://wa.me/18493757338" target="_blank">
 <i class="fab fa-whatsapp">
 </i>
 </a>
 </div>
 </footer>
 <!-- ModalBox para contenido de cajas -->
-<dialog class="rounded-2xl p-4 md:p-8 shadow-2xl w-full max-w-[95vw] md:max-w-[650px] lg:max-w-[700px] bg-gradient-to-br from-green-50 to-white backdrop-blur z-50 border-4 border-green-200" id="modal-box-content">
+<dialog class="rounded-2xl p-8 shadow-2xl w-full max-w-[90vw] md:max-w-[600px] bg-gradient-to-br from-green-50 to-white backdrop-blur z-50 border-4 border-green-200" id="modal-box-content">
 <div class="relative">
 <button class="absolute -top-4 -right-4 w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg" onclick="this.closest('dialog').close()">
 <i class="fas fa-times text-lg">
 </i>
 </button>
-  <div class="text-green-800 text-left whitespace-pre-wrap font-medium leading-relaxed" id="modal-box-text" style="font-size: clamp(1.05rem, 2.3vw, 1.25rem);">
-  </div>
+<div class="text-green-800 text-center whitespace-pre-wrap font-medium leading-relaxed" id="modal-box-text" style="font-size: clamp(1.1rem, 2.5vw, 1.3rem);">
+</div>
+</div>
+</dialog>
+<!-- Diálogo de confirmación -->
+<dialog class="rounded-xl p-6 shadow-xl w-full max-w-sm" id="dlg-configurar">
+<h3 class="text-xl font-bold text-green-800 mb-4 text-center">
+<span class="lang-es">
+     ¿Querés personalizar la caja?
+    </span>
+<span class="lang-en" style="display:none;">
+     Do you want to customize the box?
+    </span>
+</h3>
+<div class="flex justify-center gap-4">
+<button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" id="btn-config-si">
+<span class="lang-es">
+      Sí
+     </span>
+<span class="lang-en" style="display:none;">
+      Yes
+     </span>
+</button>
+<button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400" id="btn-config-no">
+<span class="lang-es">
+      No
+     </span>
+<span class="lang-en" style="display:none;">
+      No
+     </span>
+</button>
 </div>
 </dialog>
 </body>

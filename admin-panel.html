@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Green Dolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="products.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">
+                    <i class="fas fa-cog mr-2"></i>
+                    Panel de Administración - Green Dolio
+                </h1>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.location.href='index.html'" class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-home mr-2"></i>Ir a la Tienda
+                    </button>
+                    <button onclick="guardarCambios()" class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-box text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Total Productos</h3>
+                        <p class="text-3xl font-bold text-blue-600" id="total-productos">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-tags text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Categorías</h3>
+                        <p class="text-3xl font-bold text-green-600" id="total-categorias">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-dollar-sign text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Precio Promedio</h3>
+                        <p class="text-3xl font-bold text-yellow-600" id="precio-promedio">DOP 0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Sin Imagen</h3>
+                        <p class="text-3xl font-bold text-red-600" id="sin-imagen">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" id="search-input" placeholder="Buscar productos..." 
+                               class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <select id="category-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="btn-add-product" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Agregar Producto
+                    </button>
+                    <button id="btn-export" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Exportar
+                    </button>
+                    <button id="btn-import" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-upload mr-2"></i>Importar
+                    </button>
+                    <input type="file" id="file-input" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">Gestión de Productos</h2>
+                <button id="btn-load-more" class="text-green-600 hover:text-green-800 font-medium">
+                    <i class="fas fa-sync-alt mr-2"></i>Actualizar Lista
+                </button>
+            </div>
+            <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Add/Edit Product -->
+    <div id="product-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800" id="modal-title">Agregar Producto</h2>
+                    <button id="btn-close-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="product-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                            <select name="categoria" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Seleccionar categoría</option>
+                                <option value="frutas">Frutas</option>
+                                <option value="vegetales">Vegetales</option>
+                                <option value="productosElaborados">Productos Elaborados</option>
+                                <option value="jugos">Jugos</option>
+                                <option value="productosCampo">Productos de Campo</option>
+                                <option value="hierbas">Hierbas y Especias</option>
+                                <option value="otros">Otros</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ID del Producto</label>
+                            <input type="text" name="id" required placeholder="ej: manzana" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre (Español)</label>
+                            <input type="text" name="nombre_es" required placeholder="Manzana" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre (Inglés)</label>
+                            <input type="text" name="nombre_en" required placeholder="Apple" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Precio (DOP)</label>
+                            <input type="number" name="precio" required min="0" step="0.01" placeholder="100" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Imagen</label>
+                            <input type="text" name="imagen" required placeholder="assets/images/products/manzana.jpg" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Descripción (Español)</label>
+                            <input type="text" name="descripcion_es" placeholder="(1 kg)" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Descripción (Inglés)</label>
+                            <input type="text" name="descripcion_en" placeholder="(1 kg)" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="btn-cancel" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                            Guardar Producto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Notification -->
+    <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="notification-text">Cambios guardados exitosamente</span>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let productosMostrados = 0;
+        let productosPorPagina = 12;
+        let productoEditando = null;
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarEstadisticas();
+            cargarCategorias();
+            cargarProductos();
+            asignarEventListeners();
+        });
+
+        // Función para cargar estadísticas
+        function cargarEstadisticas() {
+            const todos = getAllProductos();
+            const categorias = Object.keys(PRODUCTOS_CONFIG).filter(cat => cat !== 'cajas');
+            
+            let precioTotal = 0;
+            let sinImagen = 0;
+            
+            todos.forEach(producto => {
+                precioTotal += producto.precio || 0;
+                if (!producto.imagen || producto.imagen === '') {
+                    sinImagen++;
+                }
+            });
+            
+            const precioPromedio = todos.length > 0 ? Math.round(precioTotal / todos.length) : 0;
+            
+            document.getElementById('total-productos').textContent = todos.length;
+            document.getElementById('total-categorias').textContent = categorias.length;
+            document.getElementById('precio-promedio').textContent = `DOP ${precioPromedio}`;
+            document.getElementById('sin-imagen').textContent = sinImagen;
+        }
+
+        // Función para cargar categorías en el filtro
+        function cargarCategorias() {
+            const select = document.getElementById('category-filter');
+            const categorias = Object.keys(PRODUCTOS_CONFIG).filter(cat => cat !== 'cajas');
+            
+            categorias.forEach(categoria => {
+                const option = document.createElement('option');
+                option.value = categoria;
+                option.textContent = categoria.charAt(0).toUpperCase() + categoria.slice(1);
+                select.appendChild(option);
+            });
+        }
+
+        // Función para cargar productos
+        function cargarProductos() {
+            const grid = document.getElementById('products-grid');
+            const todos = getAllProductos();
+            
+            grid.innerHTML = '';
+            productosMostrados = 0;
+            
+            todos.forEach(producto => {
+                if (productosMostrados < productosPorPagina) {
+                    agregarProductoAlGrid(producto);
+                    productosMostrados++;
+                }
+            });
+        }
+
+        // Función para agregar producto al grid
+        function agregarProductoAlGrid(producto) {
+            const grid = document.getElementById('products-grid');
+            
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow';
+            card.innerHTML = `
+                <div class="relative">
+                    <img src="${producto.imagen || 'assets/images/products/default.jpg'}" 
+                         alt="${producto.nombre.es}" 
+                         class="w-full h-48 object-cover"
+                         onerror="this.src='assets/images/products/default.jpg'">
+                    <div class="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
+                        ${producto.categoria}
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">${producto.nombre.es}</h3>
+                    <p class="text-sm text-gray-600 mb-2">${producto.nombre.en}</p>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-green-600 font-bold text-xl">DOP ${producto.precio}</span>
+                        <span class="text-sm text-gray-500">${producto.descripcion ? producto.descripcion.es : ''}</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="editarProducto('${producto.id}', '${producto.categoria}')" 
+                                class="flex-1 bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                            <i class="fas fa-edit mr-1"></i>Editar
+                        </button>
+                        <button onclick="eliminarProducto('${producto.id}', '${producto.categoria}')" 
+                                class="flex-1 bg-red-500 text-white py-2 px-3 rounded-lg hover:bg-red-600 transition-colors text-sm">
+                            <i class="fas fa-trash mr-1"></i>Eliminar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            grid.appendChild(card);
+        }
+
+        // Función para asignar event listeners
+        function asignarEventListeners() {
+            // Búsqueda y filtros
+            document.getElementById('search-input').addEventListener('input', filtrarProductos);
+            document.getElementById('category-filter').addEventListener('change', filtrarProductos);
+            
+            // Botones principales
+            document.getElementById('btn-add-product').addEventListener('click', abrirModalAgregar);
+            document.getElementById('btn-export').addEventListener('click', exportarConfiguracion);
+            document.getElementById('btn-import').addEventListener('click', () => document.getElementById('file-input').click());
+            document.getElementById('file-input').addEventListener('change', importarConfiguracion);
+            document.getElementById('btn-load-more').addEventListener('click', cargarProductos);
+            
+            // Modal
+            document.getElementById('btn-close-modal').addEventListener('click', cerrarModal);
+            document.getElementById('btn-cancel').addEventListener('click', cerrarModal);
+            document.getElementById('product-form').addEventListener('submit', guardarProducto);
+        }
+
+        // Función para filtrar productos
+        function filtrarProductos() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('category-filter').value;
+            const todos = getAllProductos();
+            
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+            
+            const productosFiltrados = todos.filter(producto => {
+                const matchesSearch = producto.nombre.es.toLowerCase().includes(searchTerm) || 
+                                    producto.nombre.en.toLowerCase().includes(searchTerm);
+                const matchesCategory = !categoryFilter || producto.categoria === categoryFilter;
+                return matchesSearch && matchesCategory;
+            });
+            
+            productosFiltrados.forEach(producto => {
+                agregarProductoAlGrid(producto);
+            });
+        }
+
+        // Función para abrir modal de agregar
+        function abrirModalAgregar() {
+            productoEditando = null;
+            document.getElementById('modal-title').textContent = 'Agregar Producto';
+            document.getElementById('product-form').reset();
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.getElementById('product-modal').classList.add('flex');
+        }
+
+        // Función para editar producto
+        function editarProducto(id, categoria) {
+            productoEditando = { id, categoria };
+            const producto = PRODUCTOS_CONFIG[categoria][id];
+            
+            if (!producto) {
+                mostrarNotificacion('Producto no encontrado', 'error');
+                return;
+            }
+            
+            document.getElementById('modal-title').textContent = 'Editar Producto';
+            
+            // Llenar el formulario
+            document.querySelector('select[name="categoria"]').value = categoria;
+            document.querySelector('input[name="id"]').value = id;
+            document.querySelector('input[name="nombre_es"]').value = producto.nombre.es;
+            document.querySelector('input[name="nombre_en"]').value = producto.nombre.en;
+            document.querySelector('input[name="precio"]').value = producto.precio;
+            document.querySelector('input[name="imagen"]').value = producto.imagen;
+            document.querySelector('input[name="descripcion_es"]').value = producto.descripcion ? producto.descripcion.es : '';
+            document.querySelector('input[name="descripcion_en"]').value = producto.descripcion ? producto.descripcion.en : '';
+            
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.getElementById('product-modal').classList.add('flex');
+        }
+
+        // Función para cerrar modal
+        function cerrarModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            document.getElementById('product-modal').classList.remove('flex');
+            productoEditando = null;
+        }
+
+        // Función para guardar producto
+        function guardarProducto(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const producto = {
+                id: formData.get('id'),
+                nombre: {
+                    es: formData.get('nombre_es'),
+                    en: formData.get('nombre_en')
+                },
+                precio: parseFloat(formData.get('precio')),
+                imagen: formData.get('imagen'),
+                categoria: formData.get('categoria')
+            };
+            
+            if (formData.get('descripcion_es') || formData.get('descripcion_en')) {
+                producto.descripcion = {
+                    es: formData.get('descripcion_es'),
+                    en: formData.get('descripcion_en')
+                };
+            }
+            
+            if (productoEditando) {
+                // Editar producto existente
+                const categoriaAnterior = productoEditando.categoria;
+                const idAnterior = productoEditando.id;
+                
+                // Eliminar el producto anterior
+                if (PRODUCTOS_CONFIG[categoriaAnterior] && PRODUCTOS_CONFIG[categoriaAnterior][idAnterior]) {
+                    delete PRODUCTOS_CONFIG[categoriaAnterior][idAnterior];
+                }
+                
+                // Agregar el producto actualizado
+                agregarProducto(producto.categoria, producto.id, producto);
+                mostrarNotificacion('Producto actualizado exitosamente');
+            } else {
+                // Agregar nuevo producto
+                agregarProducto(producto.categoria, producto.id, producto);
+                mostrarNotificacion('Producto agregado exitosamente');
+            }
+            
+            cerrarModal();
+            cargarProductos();
+            cargarEstadisticas();
+            
+            // Guardar cambios automáticamente
+            guardarCambios();
+        }
+
+        // Función para eliminar producto
+        function eliminarProducto(id, categoria) {
+            if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+                if (eliminarProducto(id)) {
+                    mostrarNotificacion('Producto eliminado exitosamente');
+                    cargarProductos();
+                    cargarEstadisticas();
+                } else {
+                    mostrarNotificacion('Error al eliminar el producto', 'error');
+                }
+            }
+        }
+
+        // Función para exportar configuración
+        function exportarConfiguracion() {
+            const config = exportarConfiguracion();
+            const blob = new Blob([config], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'productos-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            mostrarNotificacion('Configuración exportada exitosamente');
+        }
+
+        // Función para importar configuración
+        function importarConfiguracion(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    if (importarConfiguracion(JSON.stringify(config))) {
+                        mostrarNotificacion('Configuración importada exitosamente');
+                        cargarProductos();
+                        cargarEstadisticas();
+                    } else {
+                        mostrarNotificacion('Error al importar la configuración', 'error');
+                    }
+                } catch (error) {
+                    mostrarNotificacion('Error al leer el archivo', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Función para guardar cambios
+        function guardarCambios() {
+            try {
+                // Guardar en localStorage
+                localStorage.setItem('productos_cambios', JSON.stringify(PRODUCTOS_CONFIG));
+                mostrarNotificacion('Cambios guardados exitosamente en localStorage');
+                console.log('✅ Cambios guardados en localStorage:', PRODUCTOS_CONFIG);
+            } catch (error) {
+                console.error('❌ Error al guardar cambios:', error);
+                mostrarNotificacion('Error al guardar cambios', 'error');
+            }
+        }
+
+        // Función para mostrar notificaciones
+        function mostrarNotificacion(mensaje, tipo = 'success') {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            
+            text.textContent = mensaje;
+            
+            if (tipo === 'error') {
+                notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50';
+            } else {
+                notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50';
+            }
+            
+            notification.classList.remove('translate-x-full');
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 
