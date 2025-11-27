@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <circle cx="32" cy="32" r="24" fill="#F5F1E8" stroke="#2D5016" stroke-width="3"/>
+  <path d="M32 8V32L44 44" stroke="#7DB835" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M16 20L20 16L24 20L20 24L16 20Z" fill="#7DB835"/>
+  <path d="M40 12L44 8L48 12L44 16L40 12Z" fill="#F77F00"/>
+  <path d="M48 28L52 24L56 28L52 32L48 28Z" fill="#E63946"/>
+  <circle cx="14" cy="32" r="3" fill="#7DB835"/>
+  <circle cx="32" cy="52" r="3" fill="#F77F00"/>
+  <circle cx="50" cy="48" r="3" fill="#E63946"/>
+  <text x="32" y="36" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#2D5016" text-anchor="middle">TEMP</text>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <circle cx="32" cy="32" r="22" fill="#7DB835"/>
+  <circle cx="32" cy="32" r="22" stroke="#2D5016" stroke-width="3"/>
+  <path d="M20 32L28 40L44 24" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 10V14" stroke="#2D5016" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M32 50V54" stroke="#2D5016" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M10 32H14" stroke="#2D5016" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M50 32H54" stroke="#2D5016" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="32" y="18" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#2D5016" text-anchor="middle">ORG</text>
+</svg>
