@@ -1,0 +1,13 @@
+# Ignora la versión legacy (GitHub Pages) para que Vercel solo procese GreenDolio-Pro/apps/web
+# Estos archivos se mantienen en el repo porque sirven la web estática actual.
+/*.html
+/*.css
+/*.js
+/*.png
+/*.jpeg
+/*.jpg
+/*.gif
+/*.pdf
+/assets
+/assets_backup
+/firebase.js
