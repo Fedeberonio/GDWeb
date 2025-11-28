@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Usar output standalone para evitar problemas con export
+  // Esto evita que Next.js intente exportar páginas estáticas
   output: 'standalone',
   images: {
     remotePatterns: [
