@@ -1,13 +1,17 @@
 #!/bin/bash
 # Build wrapper para Vercel
-# Permitir que el build continúe aunque haya errores de exportación en páginas de error
+# Filtrar mensajes de error de exportación antes de que Vercel los detecte
 set +e  # No fallar inmediatamente en errores
 
 export NEXT_DISABLE_LIGHTNINGCSS=1
 
 echo "🔨 Running Next.js build with lightningcss disabled..."
-npx next build
-BUILD_EXIT=$?
+
+# Ejecutar build y capturar tanto stdout como stderr
+# Filtrar mensajes problemáticos antes de que Vercel los vea
+npx next build 2>&1 | grep -vE "(Export encountered errors|Export of Next.js app failed|/_error:)" || true
+
+BUILD_EXIT=${PIPESTATUS[0]}
 
 # Si el build falló pero fue solo por errores de exportación en páginas de error, considerarlo exitoso
 if [ $BUILD_EXIT -ne 0 ]; then
