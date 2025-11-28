@@ -6,7 +6,8 @@ export NEXT_DISABLE_LIGHTNINGCSS=1
 
 # Ejecutar next build y redirigir TODO (stdout y stderr) a archivos temporales
 # Esto evita que Vercel lea los errores directamente
-npx next build > /tmp/build-stdout.log 2>/tmp/build-stderr.log
+# Usar --webpack explícitamente para evitar problemas con Turbopack
+npx next build --webpack > /tmp/build-stdout.log 2>/tmp/build-stderr.log
 BUILD_EXIT=$?
 
 # Filtrar y mostrar stdout (sin errores de exportación)

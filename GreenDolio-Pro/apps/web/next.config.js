@@ -66,6 +66,9 @@ const nextConfig = {
     // Deshabilitar completamente la generación estática durante el build
     isrMemoryCacheSize: 0,
   },
+  // Configurar Turbopack (Next.js 16 usa Turbopack por defecto)
+  // Como tenemos configuración de webpack, necesitamos especificar que usamos webpack
+  turbopack: {},
   // Deshabilitar completamente el export estático
   // Con output: 'standalone', esto debería estar deshabilitado, pero lo forzamos
   trailingSlash: false,
