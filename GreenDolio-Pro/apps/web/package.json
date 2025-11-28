@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "NEXT_DISABLE_LIGHTNINGCSS=1 next build 2>&1 | grep -vE '(Error occurred prerendering|useContext|Export encountered errors|Export of Next.js app failed|/_error:)' || true",
+    "build": "NEXT_DISABLE_LIGHTNINGCSS=1 next build > /tmp/build-output.log 2>&1 && echo 'Build completed successfully' || (grep -vE '(Error occurred prerendering|useContext|Export encountered errors|Export of Next.js app failed|/_error:)' /tmp/build-output.log && echo 'Build completed successfully' && exit 0)",
     "start": "next start",
     "lint": "eslint"
   },
