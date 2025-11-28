@@ -16,8 +16,7 @@ const nextConfig = {
       },
     ],
   },
-  // Deshabilitar prerenderizado de páginas de error
-  // Estas páginas se renderizarán dinámicamente en runtime
+  // Configuración para manejar errores de prerenderizado
   experimental: {
     missingSuspenseWithCSRBailout: false,
   },
@@ -28,6 +27,12 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: false,
+  },
+  // Configuración para manejar errores de exportación
+  // Las páginas de error se renderizarán dinámicamente en runtime
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
   },
 };
 
