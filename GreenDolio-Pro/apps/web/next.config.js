@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Usar output standalone para evitar problemas con export
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
