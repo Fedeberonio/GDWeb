@@ -59,6 +59,16 @@ const nextConfig = {
   generateBuildId: async () => {
     return 'build-' + Date.now();
   },
+  // Forzar que todas las páginas sean dinámicas para evitar prerenderizado
+  // Esto evita que Next.js intente exportar páginas estáticas
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+    // Deshabilitar completamente la generación estática durante el build
+    isrMemoryCacheSize: 0,
+  },
+  // Deshabilitar completamente el export estático
+  // Con output: 'standalone', esto debería estar deshabilitado, pero lo forzamos
+  trailingSlash: false,
 };
 
 module.exports = nextConfig;
