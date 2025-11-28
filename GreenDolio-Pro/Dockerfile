@@ -11,8 +11,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY apps/web/package.json apps/web/package-lock.json* ./apps/web/
 
-# Instalar dependencias del workspace
-RUN npm ci --workspace=apps/web || npm install --workspace=apps/web
+# Instalar dependencias (npm ci instala todas las dependencias de todos los workspaces automáticamente)
+RUN npm ci || npm install
 
 # Rebuild del código fuente solo cuando sea necesario
 FROM base AS builder
