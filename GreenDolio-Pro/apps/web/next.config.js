@@ -48,3 +48,4 @@ module.exports = nextConfig;
 
 
 
+// Variable NEXT_DISABLE_LIGHTNINGCSS configurada en Vercel
