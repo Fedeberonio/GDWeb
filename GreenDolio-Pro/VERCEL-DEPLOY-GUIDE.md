@@ -105,3 +105,6 @@ El build local falla en `/404` y `/500` por styled-jsx, pero **Vercel puede mane
 4. ⏳ Testing end-to-end
 5. ⏳ Go-live cuando esté listo
 
+
+
+

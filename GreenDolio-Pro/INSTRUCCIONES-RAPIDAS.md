@@ -97,3 +97,6 @@ El build local falla en `/404` y `/500`, pero **Vercel puede manejarlo**. Si fal
 
 ¿Necesitas ayuda? Revisa `VERCEL-DEPLOY-GUIDE.md` para más detalles.
 
+
+
+
