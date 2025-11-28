@@ -23,6 +23,8 @@ const nextConfig = {
   // Configuración para manejar errores de prerenderizado
   experimental: {
     missingSuspenseWithCSRBailout: false,
+    // Desactiva lightningcss en el build de Vercel
+    optimizeCss: false,
   },
   // Permitir que el build continúe aunque haya errores en páginas de error
   // Estas páginas funcionan correctamente en runtime
