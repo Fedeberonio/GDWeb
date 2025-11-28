@@ -65,6 +65,8 @@ const nextConfig = {
     missingSuspenseWithCSRBailout: false,
     // Deshabilitar completamente la generación estática durante el build
     isrMemoryCacheSize: 0,
+    // Desactivar optimizador CSS de Next.js para evitar problemas con lightningcss
+    optimizeCss: false,
   },
   // Configurar Turbopack (Next.js 16 usa Turbopack por defecto)
   // Como tenemos configuración de webpack, necesitamos especificar que usamos webpack
