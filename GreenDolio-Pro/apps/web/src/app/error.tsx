@@ -1,19 +1,10 @@
 "use client";
 
-// Página de error global - Evitar prerenderizado completamente
+// Página de error global - Renderizado dinámico
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// Evitar que Next.js intente prerenderizar esta página
-export const generateStaticParams = () => [];
-
 export default function GlobalError({ reset }: { reset: () => void }) {
-  // Retornar null durante build para evitar prerenderizado
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  // Solo renderizar en el cliente
   return (
     <div style={{margin:0,padding:0,minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',backgroundColor:'#ffffff',fontFamily:'system-ui,-apple-system,sans-serif'}}>
       <div style={{textAlign:'center',padding:'24px'}}>

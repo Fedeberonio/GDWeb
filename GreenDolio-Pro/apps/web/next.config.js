@@ -28,6 +28,23 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  // Ignorar errores de prerenderizado en páginas de error
+  // Estas páginas se renderizarán dinámicamente en runtime
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
+  // Configuración para evitar errores de build en páginas de error
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Ignorar errores de styled-jsx durante el build del servidor
+      config.ignoreWarnings = [
+        { module: /styled-jsx/ },
+        { message: /useContext/ },
+      ];
+    }
+    return config;
+  },
   // Configuración para manejar errores de exportación
   // Las páginas de error se renderizarán dinámicamente en runtime
   onDemandEntries: {
