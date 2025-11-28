@@ -85,7 +85,7 @@ export function CategoryHighlightSection({ categories }: CategoryHighlightSectio
               key={category.id}
               {...itemProps}
               href="#catalogo"
-              onClick={(e) => {
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                 e.preventDefault();
                 window.dispatchEvent(
                   new CustomEvent("categoryFilter", {
