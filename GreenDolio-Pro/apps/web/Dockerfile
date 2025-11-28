@@ -1,5 +1,6 @@
 # Dockerfile para Next.js con output standalone
 # Este Dockerfile debe ejecutarse desde la raíz del proyecto (GreenDolio-Pro)
+# Render ejecuta el build desde el Root Directory (apps/web), así que necesitamos ajustar las rutas
 FROM node:18-alpine AS base
 
 # Instalar dependencias solo cuando sea necesario
@@ -8,26 +9,34 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copiar archivos de dependencias del workspace
-COPY package.json package-lock.json* ./
-COPY apps/web/package.json apps/web/package-lock.json* ./apps/web/
+# Copiar archivos de dependencias
+# Si Render ejecuta desde apps/web, necesitamos copiar desde el contexto padre
+COPY ../../package.json ../../package-lock.json* ./
+COPY package.json package-lock.json* ./web/
 
-# Instalar dependencias (usando npm ci para instalación limpia)
-RUN npm ci --workspace=apps/web || npm install --workspace=apps/web
+# Instalar dependencias
+RUN cd web && npm ci || npm install
 
 # Rebuild del código fuente solo cuando sea necesario
 FROM base AS builder
 WORKDIR /app
+
+# Copiar node_modules desde deps
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-COPY . .
+COPY --from=deps /app/web/node_modules ./web/node_modules
+
+# Copiar código fuente
+# Render copia el contenido del Root Directory a /opt/render/project/src
+# Necesitamos copiar desde el contexto correcto
+COPY ../../ ./
+COPY . ./web/
 
 # Establecer variables de entorno para el build
 ENV NEXT_DISABLE_LIGHTNINGCSS=1
 ENV NODE_ENV=production
 
 # Build de la aplicación
-WORKDIR /app/apps/web
+WORKDIR /app/web
 RUN npm run build
 
 # Imagen de producción, copiar todos los archivos y ejecutar next
@@ -42,9 +51,9 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copiar archivos necesarios desde builder
 # Con output: 'standalone', Next.js crea una carpeta standalone con todo lo necesario
-COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/web/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/web/.next/static ./.next/static
 
 USER nextjs
 
