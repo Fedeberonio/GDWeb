@@ -1,0 +1,29 @@
+🥗 IDENTIFICACIÓN DE ENSALADAS GREENDELIO - PRODUCT SHOTS
+=========================================================
+
+✅ ENSALADAS IDENTIFICADAS:
+
+1. VERDE DETOX CON ARROZ INTEGRAL Y BERENJENAS
+   - Archivo: 01_VERDE_DETOX_ARROZ_BERENJENAS.png
+   - Ingredientes visibles: Berenjenas asadas, arroz integral, aguacate, pepino, col morada
+
+2. GRIEGA CON TRIGO BURGOL Y MAÍZ (3 versiones)
+   - Archivos: 02_GRIEGA_BULGUR_MAIZ_v1.png, v2.png, v3.png
+   - Ingredientes visibles: Queso feta, maíz amarillo, tomates, pepino, aceitunas, cebolla morada
+
+3. TROPICAL CON QUINOA Y PITAHAYA  
+   - Archivo: 03_TROPICAL_QUINOA_PITAHAYA.png
+   - Ingredientes visibles: Quinoa tricolor, pitahaya rosa, frutas tropicales, menta
+
+4. VERDE DETOX SIMPLIFICADA (3 versiones)
+   - Archivos: 04_VERDE_DETOX_SIMPLIFICADA_v1.png, v2.png, v3.png
+   - Ingredientes visibles: Lechuga, tomate cherry, pepino, zanahoria, semillas chía
+
+5. GRIEGA SIMPLIFICADA
+   - Archivo: 05_GRIEGA_SIMPLIFICADA.png
+   - Ingredientes visibles: Queso feta, tomate, pepino, lechuga, eneldo
+
+⚠️ ENSALADAS FALTANTES (necesitan generar):
+- 06. ENDIVIA CON TOMATE ASADO Y MOZZARELLA
+- 07. LECHUGA RIZADA CON AUYAMA SALTEADA
+

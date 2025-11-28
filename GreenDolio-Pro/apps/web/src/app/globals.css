@@ -1,0 +1,218 @@
+@import "tailwindcss";
+
+:root {
+  --gd-color-forest: #2d5016;
+  --gd-color-leaf: #7db835;
+  --gd-color-sprout: #d4e5b8;
+  --gd-color-avocado: #6a994e;
+  --gd-color-sky: #7dd3c0;
+  --gd-color-beige: #f5f1e8;
+  --gd-color-apple: #e63946;
+  --gd-color-strawberry: #c1121f;
+  --gd-color-citrus: #f77f00;
+  --gd-color-text: #1a1a1a;
+  --gd-color-text-muted: #6c6c6c;
+  --gd-color-border: #e5e5e5;
+  --gd-color-white: #ffffff;
+  --gd-surface: var(--gd-color-white);
+  --gd-surface-muted: var(--gd-color-beige);
+  --gd-body: var(--gd-color-text);
+  --gd-font-sans: var(--font-montserrat, "Montserrat", "Helvetica Neue", Arial, sans-serif);
+  --gd-font-display: var(--font-patua, "Patua One", "Cooper Black", "Georgia", serif);
+}
+
+@theme inline {
+  --color-background: var(--gd-surface);
+  --color-background-muted: var(--gd-surface-muted);
+  --color-foreground: var(--gd-body);
+  --color-muted: var(--gd-color-text-muted);
+  --color-muted-surface: var(--gd-color-beige);
+  --color-border: var(--gd-color-border);
+  --color-brand: var(--gd-color-forest);
+  --color-brand-accent: var(--gd-color-leaf);
+  --color-brand-soft: var(--gd-color-sprout);
+  --color-accent-warm: var(--gd-color-citrus);
+  --color-accent-cool: var(--gd-color-sky);
+  --color-danger: var(--gd-color-apple);
+  --color-success: var(--gd-color-avocado);
+  --font-sans: var(--gd-font-sans);
+  --font-display: var(--gd-font-display);
+
+  /* Remap common Tailwind tokens to la paleta oficial */
+  --color-green-50: #f4f8ec;
+  --color-green-100: #e9f1d9;
+  --color-green-200: #d4e5b8;
+  --color-green-300: #bddc88;
+  --color-green-400: #9fcb5a;
+  --color-green-500: #7db835;
+  --color-green-600: #6a994e;
+  --color-green-700: #4f7a36;
+  --color-green-800: #365525;
+  --color-green-900: #1f3510;
+
+  --color-slate-50: #f5f1e8;
+  --color-slate-100: #efe9dd;
+  --color-slate-200: #e5e5e5;
+  --color-slate-300: #d1d1d1;
+  --color-slate-400: #b0b0b0;
+  --color-slate-500: #8a8a8a;
+  --color-slate-600: #6c6c6c;
+  --color-slate-700: #4a4a4a;
+  --color-slate-800: #2f2f2f;
+  --color-slate-900: #1a1a1a;
+
+  --color-red-100: #ffd7dc;
+  --color-red-200: #ffb3bd;
+  --color-red-300: #ff8997;
+  --color-red-400: #f85f71;
+  --color-red-500: #e63946;
+  --color-red-600: #c1121f;
+  --color-red-700: #9b0e19;
+
+  --color-amber-50: #fff3e0;
+  --color-amber-100: #ffe0b2;
+  --color-amber-200: #ffcc80;
+  --color-amber-300: #ffb74d;
+  --color-amber-400: #ffa726;
+  --color-amber-500: #f77f00;
+  --color-amber-600: #d46600;
+  --color-amber-700: #b35300;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--gd-surface);
+  color: var(--gd-body);
+  font-family: var(--gd-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--gd-font-display);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shadow-soft {
+  box-shadow: 0 20px 45px -22px rgba(44, 82, 52, 0.35);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 30px 60px -15px rgba(45, 80, 22, 0.3);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: saturate(180%) blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Animaciones personalizadas */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px) translateY(-1px) rotate(-1deg);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px) translateY(1px) rotate(1deg);
+  }
+}
+
+@keyframes shake-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-4px);
+  }
+  75% {
+    transform: translateY(4px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-shake-slow {
+  animation: shake-slow 2s ease-in-out infinite;
+}
+
+/* Mejoras de tipografía */
+.font-display {
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+
+/* Efectos de hover mejorados */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(45, 80, 22, 0.2);
+}
+
+/* Gradientes de marca */
+.gradient-brand {
+  background: linear-gradient(135deg, var(--gd-color-forest) 0%, var(--gd-color-leaf) 50%, var(--gd-color-avocado) 100%);
+}
+
+.gradient-brand-text {
+  background: linear-gradient(135deg, var(--gd-color-forest) 0%, var(--gd-color-leaf) 50%, var(--gd-color-forest) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

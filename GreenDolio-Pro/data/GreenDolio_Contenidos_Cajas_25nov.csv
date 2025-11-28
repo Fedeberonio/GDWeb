@@ -1,0 +1,117 @@
+Caja_ID,Caja_Nombre,Variante,Producto,Cantidad,Costo_Unitario,Peso_Unit_Lb,Costo_Total,Peso_Total_Lb
+GD-CAJA-001,BOX 1 (3 días),MIX,Ajo baby,1,14.62,0.5,14.62,0.5
+GD-CAJA-001,BOX 1 (3 días),MIX,Cebolla morada/amarilla baby,2,11.38,0.25,22.75,0.5
+GD-CAJA-001,BOX 1 (3 días),MIX,Ají morrón baby,1,14.62,0.2,14.62,0.2
+GD-CAJA-001,BOX 1 (3 días),MIX,Papas baby,1,16.25,0.5,16.25,0.5
+GD-CAJA-001,BOX 1 (3 días),MIX,Batata baby,1,8.12,0.25,8.12,0.25
+GD-CAJA-001,BOX 1 (3 días),MIX,Brócoli baby,1,40.62,0.6,40.62,0.6
+GD-CAJA-001,BOX 1 (3 días),MIX,Tomate redondo baby,2,16.25,0.5,32.5,1.0
+GD-CAJA-001,BOX 1 (3 días),MIX,Lechuga rizada baby,1,16.25,0.6,16.25,0.6
+GD-CAJA-001,BOX 1 (3 días),MIX,Plátano verde baby,1,11.38,0.5,11.38,0.5
+GD-CAJA-001,BOX 1 (3 días),MIX,Chinola baby,2,11.38,0.12,22.75,0.25
+GD-CAJA-001,BOX 1 (3 días),MIX,Mango baby,1,16.25,0.4,16.25,0.4
+GD-CAJA-001,BOX 1 (3 días),MIX,Piña pequeña baby,1,26.0,1.5,26.0,1.5
+GD-CAJA-001,BOX 1 (3 días),MIX,Limón baby,3,11.38,0.07,34.12,0.22
+GD-CAJA-001,BOX 1 (3 días),MIX,Cilantro baby,1,8.12,0.14,8.12,0.14
+GD-CAJA-001,BOX 1 (3 días),FRUTAL,Plátano maduro baby,3,8.12,0.25,24.38,0.75
+GD-CAJA-001,BOX 1 (3 días),FRUTAL,Mango baby,2,16.25,0.4,32.5,0.8
+GD-CAJA-001,BOX 1 (3 días),FRUTAL,Lechosa baby,1,24.38,2.0,24.38,2.0
+GD-CAJA-001,BOX 1 (3 días),FRUTAL,Limón baby,2,11.38,0.07,22.75,0.15
+GD-CAJA-001,BOX 1 (3 días),FRUTAL,Piña pequeña baby,1,26.0,1.5,26.0,1.5
+GD-CAJA-001,BOX 1 (3 días),FRUTAL,Chinola baby,2,11.38,0.12,22.75,0.25
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Ajo baby,1,14.62,0.5,14.62,0.5
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Cebolla morada/amarilla baby,2,11.38,0.25,22.75,0.5
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Tomate redondo baby,3,16.25,0.5,48.75,1.5
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Ají morrón baby,1,14.62,0.2,14.62,0.2
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Papas baby,1,16.25,0.5,16.25,0.5
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Batata baby,1,8.12,0.25,8.12,0.25
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Brócoli baby,1,40.62,0.6,40.62,0.6
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Zanahoria baby,2,4.88,0.1,9.75,0.2
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Pepino baby,1,8.12,0.5,8.12,0.5
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Lechuga romana baby,1,27.62,0.75,27.62,0.75
+GD-CAJA-001,BOX 1 (3 días),VEGGIE,Cilantro baby,1,8.12,0.14,8.12,0.14
+GD-CAJA-002,BOX 2 (1 semana),MIX,Ajo,1,29.25,1.0,29.25,1.0
+GD-CAJA-002,BOX 2 (1 semana),MIX,Cebolla morada/amarilla,3,22.75,0.5,68.25,1.5
+GD-CAJA-002,BOX 2 (1 semana),MIX,Tomate redondo,4,32.5,1.0,130.0,4.0
+GD-CAJA-002,BOX 2 (1 semana),MIX,Ají morrón,1,29.25,0.4,29.25,0.4
+GD-CAJA-002,BOX 2 (1 semana),MIX,Papas,2,32.5,1.0,65.0,2.0
+GD-CAJA-002,BOX 2 (1 semana),MIX,Batata,1,16.25,0.5,16.25,0.5
+GD-CAJA-002,BOX 2 (1 semana),MIX,Brócoli,1,81.25,1.2,81.25,1.2
+GD-CAJA-002,BOX 2 (1 semana),MIX,Zanahoria,3,9.75,0.2,29.25,0.6
+GD-CAJA-002,BOX 2 (1 semana),MIX,Lechuga rizada,1,32.5,1.2,32.5,1.2
+GD-CAJA-002,BOX 2 (1 semana),MIX,Pepino,2,16.25,1.0,32.5,2.0
+GD-CAJA-002,BOX 2 (1 semana),MIX,Guineo verde,3,9.75,1.0,29.25,3.0
+GD-CAJA-002,BOX 2 (1 semana),MIX,Plátano verde,1,22.75,1.0,22.75,1.0
+GD-CAJA-002,BOX 2 (1 semana),MIX,Lechosa baby,1,24.38,2.0,24.38,2.0
+GD-CAJA-002,BOX 2 (1 semana),MIX,Melón,1,97.5,5.0,97.5,5.0
+GD-CAJA-002,BOX 2 (1 semana),MIX,Limón,4,22.75,0.15,91.0,0.6
+GD-CAJA-002,BOX 2 (1 semana),MIX,Mango,2,32.5,0.8,65.0,1.6
+GD-CAJA-002,BOX 2 (1 semana),MIX,Piña pequeña,1,52.0,3.0,52.0,3.0
+GD-CAJA-002,BOX 2 (1 semana),FRUTAL,Plátano maduro,6,16.25,0.5,97.5,3.0
+GD-CAJA-002,BOX 2 (1 semana),FRUTAL,Lechosa baby,1,24.38,2.0,24.38,2.0
+GD-CAJA-002,BOX 2 (1 semana),FRUTAL,Lechosa,1,48.75,4.0,48.75,4.0
+GD-CAJA-002,BOX 2 (1 semana),FRUTAL,Limón,4,22.75,0.15,91.0,0.6
+GD-CAJA-002,BOX 2 (1 semana),FRUTAL,Mango,2,32.5,0.8,65.0,1.6
+GD-CAJA-002,BOX 2 (1 semana),FRUTAL,Piña pequeña,1,52.0,3.0,52.0,3.0
+GD-CAJA-002,BOX 2 (1 semana),FRUTAL,Chinola,4,22.75,0.25,91.0,1.0
+GD-CAJA-002,BOX 2 (1 semana),FRUTAL,Manzana,3,55.25,0.55,165.75,1.65
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Ajo,2,29.25,1.0,58.5,2.0
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Cebolla morada/amarilla,4,22.75,0.5,91.0,2.0
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Tomate redondo,4,32.5,1.0,130.0,4.0
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Ají morrón,2,29.25,0.4,58.5,0.8
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Papas,2,32.5,1.0,65.0,2.0
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Batata,1,16.25,0.5,16.25,0.5
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Brócoli,1,81.25,1.2,81.25,1.2
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Auyama,1,97.5,2.5,97.5,2.5
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Zanahoria,3,9.75,0.2,29.25,0.6
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Pepino,2,16.25,1.0,32.5,2.0
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Lechuga rizada,1,32.5,1.2,32.5,1.2
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Repollo blanco,1,48.75,1.5,48.75,1.5
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Aguacate,1,65.0,0.66,65.0,0.66
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Cilantro,1,16.25,0.28,16.25,0.28
+GD-CAJA-002,BOX 2 (1 semana),VEGGIE,Apio,1,58.5,0.28,58.5,0.28
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Ajo,2,29.25,1.0,58.5,2.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Cebolla morada/amarilla,4,22.75,0.5,91.0,2.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Tomate redondo,6,32.5,1.0,195.0,6.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Ají morrón,2,29.25,0.4,58.5,0.8
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Papas,3,32.5,1.0,97.5,3.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Batata,2,16.25,0.5,32.5,1.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Auyama,1,97.5,2.5,97.5,2.5
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Brócoli,1,81.25,1.2,81.25,1.2
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Zanahoria,4,9.75,0.2,39.0,0.8
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Lechuga rizada,2,32.5,1.2,65.0,2.4
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Pepino,2,16.25,1.0,32.5,2.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Repollo blanco,1,48.75,1.5,48.75,1.5
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Apio,1,58.5,0.28,58.5,0.28
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Plátano maduro,6,16.25,0.5,97.5,3.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Plátano verde,3,22.75,1.0,68.25,3.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Lechosa,1,48.75,4.0,48.75,4.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Piña pequeña,1,52.0,3.0,52.0,3.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Mandarina,4,29.25,0.25,117.0,1.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Naranja,4,29.25,0.5,117.0,2.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Mango,4,32.5,0.8,130.0,3.2
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Chinola,4,22.75,0.25,91.0,1.0
+GD-CAJA-003,BOX 3 (2 semanas),MIX,Manzana,3,55.25,0.55,165.75,1.65
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Piña pequeña,2,52.0,3.0,104.0,6.0
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Lechosa,2,48.75,4.0,97.5,8.0
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Mango,4,32.5,0.8,130.0,3.2
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Melón,1,97.5,5.0,97.5,5.0
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Sandía,1,65.0,6.0,65.0,6.0
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Chinola,6,22.75,0.25,136.5,1.5
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Plátano maduro,6,16.25,0.5,97.5,3.0
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Zapote,1,60.0,1.0,60.0,1.0
+GD-CAJA-003,BOX 3 (2 semanas),FRUTAL,Limón,10,22.75,0.15,227.5,1.5
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Ajo,2,29.25,1.0,58.5,2.0
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Cebolla morada/amarilla,5,22.75,0.5,113.75,2.5
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Tomate redondo,7,32.5,1.0,227.5,7.0
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Ají morrón,2,29.25,0.4,58.5,0.8
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Papas,4,32.5,1.0,130.0,4.0
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Batata,2,16.25,0.5,32.5,1.0
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Auyama,1,97.5,2.5,97.5,2.5
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Brócoli,1,81.25,1.2,81.25,1.2
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Zanahoria,4,9.75,0.2,39.0,0.8
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Pepino,3,16.25,1.0,48.75,3.0
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Lechuga rizada,2,32.5,1.2,65.0,2.4
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Repollo blanco,1,48.75,1.5,48.75,1.5
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Berenjena,2,26.0,0.8,52.0,1.6
+GD-CAJA-003,BOX 3 (2 semanas),VEGGIE,Apio,2,58.5,0.28,117.0,0.55
