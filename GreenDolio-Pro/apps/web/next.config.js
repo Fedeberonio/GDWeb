@@ -2,6 +2,7 @@
 const nextConfig = {
   // Usar output standalone para evitar problemas con export
   // Esto evita que Next.js intente exportar páginas estáticas
+  // IMPORTANTE: Con standalone, Next.js NO debería intentar exportar
   output: 'standalone',
   images: {
     remotePatterns: [
