@@ -1,6 +1,6 @@
 # Green Dolio Pro — Reporte de Avance
 
-**Última actualización:** 2025-11-27
+**Última actualización:** 2025-11-28
 
 ## 1. Panorama General
 
@@ -20,6 +20,8 @@
    - Página `/checkout` envía pedidos a un endpoint público `/api/orders` y los guarda en Firestore como `pending`.
 4. **Datos/landing**
    - Catálogo y rules 25nov cargados; filtros “baby” aplicados al catálogo público. Landing y secciones principales visibles.
+5. **Higiene + ramas**
+   - Se creó `legacy-ghpages` para servir la web vieja en GitHub Pages y se limpió el repo de archivos basura (`.DS_Store`) con `.gitignore` actualizado.
 
 ## 3. Estado Actual y Diagnóstico
 
@@ -36,6 +38,7 @@
 - **Precio de swaps no visible**: cuando se agrega una caja personalizada con extras (swap que encarece), el exceso no se refleja en el carrito ni en el flujo de checkout.
 - **Integración de pagos**: sigue pendiente.
 - **Persistencia en backend**: carrito solo en cliente; pedidos se guardan como borrador en Firestore pero sin cálculo de extras robusto.
+- **Rutas de deploy**: falta reconfigurar Vercel apuntando a `GreenDolio-Pro/apps/web` (branch de staging `test-build`) y confirmar subdominio de pruebas.
 
 ### ⚠️ Bloqueos de build (detalles)
 - Web: error de prerender en `/404` y `/500` (styled-jsx useContext null). Se requiere página de error mínima sin dependencias.
@@ -81,6 +84,7 @@
 - Mantener `.env` sincronizados entre web/backend (Firebase + correos permitidos).
 - Cada nuevo asset debe copiarse a `public/` o configurarse en `next.config.ts` (remotePatterns) y reiniciar `npm run dev:web`.
 - Registrar cambios relevantes en este archivo (fecha + puntos clave) al finalizar cada sesión.
+- GitHub Pages usa `legacy-ghpages` para la web estática; `test-build`/`main` quedan para la nueva app (Next.js + Vercel). `.DS_Store` y artefactos generados ya se ignoran.
 
 ---
 
