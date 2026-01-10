@@ -1,0 +1,121 @@
+{
+  "GD-CAJA-001": {
+    "displayName": "Caribbean Fresh Pack",
+    "slotBudget": 12,
+    "targetWeightKg": 3.5,
+    "minMargin": 0.32,
+    "categoryBudget": {
+      "leafy": { "min": 1, "max": 3 },
+      "fruit_large": { "min": 1, "max": 2 },
+      "aromatic": { "min": 1, "max": 2 },
+      "root": { "min": 2, "max": 4 },
+      "citrus": { "min": 2, "max": 4 }
+    },
+    "baseContents": [
+      { "productSlug": "ajo", "quantity": 1 },
+      { "productSlug": "cebolla-morada-amarilla", "quantity": 2 },
+      { "productSlug": "aji-morron", "quantity": 1 },
+      { "productSlug": "batata", "quantity": 2 },
+      { "productSlug": "brocoli", "quantity": 1 },
+      { "productSlug": "tomate-bugalu", "quantity": 2 },
+      { "productSlug": "lechuga-repollada", "quantity": 1 },
+      { "productSlug": "platano-maduro", "quantity": 1 },
+      { "productSlug": "chinola", "quantity": 2 },
+      { "productSlug": "mango", "quantity": 1 },
+      { "productSlug": "pina-pequena", "quantity": 1 },
+      { "productSlug": "limon", "quantity": 3 },
+      { "productSlug": "apio", "quantity": 1 },
+      { "productSlug": "perejil", "quantity": 1 },
+      { "productSlug": "cilantro", "quantity": 1 }
+    ],
+    "variantContents": {
+      "fruity": [
+        { "productSlug": "mandarina", "quantity": 2 },
+        { "productSlug": "mango", "quantity": 4 },
+        { "productSlug": "pina-pequena", "quantity": 2 },
+        { "productSlug": "melon", "quantity": 1 },
+        { "productSlug": "banana", "quantity": 3 },
+        { "productSlug": "limon", "quantity": 2 },
+        { "productSlug": "chinola", "quantity": 1 }
+      ],
+      "veggie": [
+        { "productSlug": "ajo", "quantity": 2 },
+        { "productSlug": "cebolla-morada-amarilla", "quantity": 4 },
+        { "productSlug": "batata", "quantity": 4 },
+        { "productSlug": "brocoli", "quantity": 1 },
+        { "productSlug": "coliflor", "quantity": 1 },
+        { "productSlug": "tomate-bugalu", "quantity": 4 },
+        { "productSlug": "pepino", "quantity": 1 },
+        { "productSlug": "zucchini", "quantity": 1 },
+        { "productSlug": "lechuga-romana", "quantity": 1 },
+        { "productSlug": "cilantro", "quantity": 1 },
+        { "productSlug": "perejil", "quantity": 1 }
+      ]
+    }
+  },
+  "GD-CAJA-002": {
+    "displayName": "Island Weekssential",
+    "slotBudget": 20,
+    "targetWeightKg": 6,
+    "minMargin": 0.35,
+    "categoryBudget": {
+      "leafy": { "min": 2, "max": 4 },
+      "fruit_large": { "min": 2, "max": 3 },
+      "aromatic": { "min": 1, "max": 3 },
+      "root": { "min": 3, "max": 6 },
+      "citrus": { "min": 3, "max": 5 }
+    },
+    "baseContents": [
+      { "productSlug": "ajo", "quantity": 1 },
+      { "productSlug": "cebolla-morada-amarilla", "quantity": 4 },
+      { "productSlug": "aji-morron", "quantity": 1 },
+      { "productSlug": "batata", "quantity": 5 },
+      { "productSlug": "calabaza", "quantity": 1 },
+      { "productSlug": "brocoli", "quantity": 1 },
+      { "productSlug": "tomate-bugalu", "quantity": 4 },
+      { "productSlug": "lechuga-repollada", "quantity": 1 },
+      { "productSlug": "repollo-blanco", "quantity": 1 },
+      { "productSlug": "platano-maduro", "quantity": 2 },
+      { "productSlug": "guineo-verde", "quantity": 5 },
+      { "productSlug": "banana", "quantity": 4 },
+      { "productSlug": "mango", "quantity": 2 },
+      { "productSlug": "pina-pequena", "quantity": 1 },
+      { "productSlug": "lechosa", "quantity": 1 },
+      { "productSlug": "berenjena", "quantity": 2 },
+      { "productSlug": "apio", "quantity": 1 }
+    ]
+  },
+  "GD-CAJA-003": {
+    "displayName": "All Greenxclusive",
+    "slotBudget": 30,
+    "targetWeightKg": 12,
+    "minMargin": 0.38,
+    "categoryBudget": {
+      "leafy": { "min": 3, "max": 6 },
+      "fruit_large": { "min": 2, "max": 4 },
+      "aromatic": { "min": 2, "max": 4 },
+      "root": { "min": 4, "max": 8 },
+      "citrus": { "min": 4, "max": 6 }
+    },
+    "baseContents": [
+      { "productSlug": "ajo", "quantity": 2 },
+      { "productSlug": "cebolla-morada-amarilla", "quantity": 6 },
+      { "productSlug": "aji-morron", "quantity": 2 },
+      { "productSlug": "batata", "quantity": 7 },
+      { "productSlug": "yuca", "quantity": 1 },
+      { "productSlug": "brocoli", "quantity": 1 },
+      { "productSlug": "coliflor", "quantity": 1 },
+      { "productSlug": "tomate-bugalu", "quantity": 8 },
+      { "productSlug": "lechuga-repollada", "quantity": 2 },
+      { "productSlug": "repollo-blanco", "quantity": 1 },
+      { "productSlug": "pepino", "quantity": 2 },
+      { "productSlug": "platano-maduro", "quantity": 2 },
+      { "productSlug": "guineo-verde", "quantity": 10 },
+      { "productSlug": "mango", "quantity": 4 },
+      { "productSlug": "pina-pequena", "quantity": 2 },
+      { "productSlug": "limon", "quantity": 10 },
+      { "productSlug": "zanahoria", "quantity": 5 },
+      { "productSlug": "berenjena", "quantity": 4 }
+    ]
+  }
+}

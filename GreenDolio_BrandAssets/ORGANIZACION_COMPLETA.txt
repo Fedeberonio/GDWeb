@@ -1,0 +1,79 @@
+═══════════════════════════════════════════════════════════════
+  GREENFOLIO - ORGANIZACIÓN DE ACTIVOS DE MARCA
+═══════════════════════════════════════════════════════════════
+
+📊 ESTADO ACTUAL DE LAS CARPETAS
+═══════════════════════════════════════════════════════════════
+
+✅ 01_Logo/PNG/
+   ├─ GreenDolio_Logo_Original.png (78 KB)
+   ├─ GreenDolio_Logo_Principal_FondoBeige.png (75 KB)
+   ├─ GreenDolio_Logo_FondoOscuro.png (72 KB)
+   ├─ GreenDolio_Logo_Tropical.png (60 KB)
+   ├─ GreenDolio_Logo_FrutasVerdes.png (79 KB)
+   ├─ GreenDolio_Logo_Horizontal.png (28 KB)
+   └─ DESCRIPCION_LOGOS.txt
+
+⚠️  PENDIENTE POR AGREGAR:
+═══════════════════════════════════════════════════════════════
+
+📁 01_Logo/Vector/
+   └─ Archivos en formato AI, EPS o SVG (editables)
+   └─ Recomendación: Convertir los PNG a vectores
+
+📁 01_Logo/JPG/
+   └─ Logos con fondo blanco para impresión
+
+📁 02_Colores/
+   └─ Paleta de colores oficial (ASE, ACO)
+   └─ Colores identificados:
+      • Verde oscuro (logo): #2D5016 aprox
+      • Verde claro: #C8E6A0 aprox
+      • Beige fondo: #F5F1E8 aprox
+      • Paleta frutas: rojos, naranjas, verdes
+
+📁 03_Tipografia/
+   └─ Fuentes oficiales de la marca
+   └─ Fuente del logo parece ser una serif bold
+
+📁 04_Fotografia/
+   ├─ Productos/ (fotos de frutas y verduras)
+   ├─ Lifestyle/ (personas, clientes, experiencias)
+   └─ Hero/ (imágenes principales para banners)
+
+📁 05_Iconos/
+   ├─ Vector/ (iconos editables)
+   └─ PNG/ (iconos para uso web)
+
+📁 06_Templates_Redes/
+   ├─ Instagram/ (posts, stories, reels)
+   ├─ Facebook/ (publicaciones, covers)
+   └─ Otros/ (LinkedIn, Twitter, etc)
+
+📁 07_Impresos/
+   └─ Tarjetas, volantes, menús, etc.
+
+📁 08_Manual_Marca/
+   └─ GreenDolio_BrandGuidelines.pdf
+
+═══════════════════════════════════════════════════════════════
+  PRÓXIMOS PASOS RECOMENDADOS
+═══════════════════════════════════════════════════════════════
+
+1. Convertir logos PNG a formatos vectoriales (SVG, AI, EPS)
+2. Crear versiones JPG con fondo blanco
+3. Documentar la paleta de colores oficial
+4. Identificar y agregar las tipografías oficiales
+5. Crear templates para redes sociales
+6. Desarrollar el manual de marca completo
+
+═══════════════════════════════════════════════════════════════
+  INFORMACIÓN DE CONTACTO
+═══════════════════════════════════════════════════════════════
+
+Marca: GreenDolio
+Tagline: "De la Huerta a tu Puerta"
+Concepto: Delivery de frutas y verduras frescas
+Estilo: Natural, fresco, tropical, orgánico
+
+═══════════════════════════════════════════════════════════════

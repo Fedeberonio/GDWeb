@@ -1,0 +1,1 @@
+{"version":3,"file":"service.d.ts","sourceRoot":"","sources":["../../../src/modules/boxBuilderRequests/service.ts"],"names":[],"mappings":"AAEA,OAAO,EAAgD,KAAK,iBAAiB,EAAE,MAAM,WAAW,CAAC;AAGjG,wBAAsB,mBAAmB,CAAC,KAAK,SAAM,GAAG,OAAO,CAAC,iBAAiB,EAAE,CAAC,CAYnF;AAED,wBAAsB,uBAAuB,CAAC,EAAE,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,GAAG,OAAO,CAAC,iBAAiB,GAAG,IAAI,CAAC,CAK3G"}

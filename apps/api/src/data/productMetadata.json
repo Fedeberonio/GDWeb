@@ -1,0 +1,922 @@
+[
+  {
+    "slug": "gd-caja-001",
+    "name": "Box 1 'Caribbean Fresh Pack' (3 dÃ­as)",
+    "category": "Cajas",
+    "weightKg": 0.5,
+    "wholesaleCost": 422.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-caja-002",
+    "name": "Box 2 'Island Weekssential' (1 semana)",
+    "category": "Cajas",
+    "weightKg": 0.5,
+    "wholesaleCost": 643.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-caja-003",
+    "name": "Box 3 'Allgreenxclusive' (2 semanas)",
+    "category": "Cajas",
+    "weightKg": 0.5,
+    "wholesaleCost": 1293.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-case-004",
+    "name": "Baba Ganoush (16 oz)",
+    "category": "Productos Caseros",
+    "weightKg": 0.5,
+    "wholesaleCost": 325,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-case-005",
+    "name": "Hummus (16 oz)",
+    "category": "Productos Caseros",
+    "weightKg": 0.5,
+    "wholesaleCost": 325,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-case-006",
+    "name": "Guacamole (16 oz)",
+    "category": "Productos Caseros",
+    "weightKg": 0.5,
+    "wholesaleCost": 325,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-case-007",
+    "name": "Chimichurri (9.5 oz)",
+    "category": "Productos Caseros",
+    "weightKg": 0.5,
+    "wholesaleCost": 227.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-jugo-008",
+    "name": "Pepinada (1 porciÃ³n)",
+    "category": "Jugos Naturales",
+    "weightKg": 0.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-jugo-009",
+    "name": "Tropicalote (1 porciÃ³n)",
+    "category": "Jugos Naturales",
+    "weightKg": 0.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-jugo-010",
+    "name": "Rosa Maravillosa (1 porciÃ³n)",
+    "category": "Jugos Naturales",
+    "weightKg": 0.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-jugo-011",
+    "name": "China Chinola (1 porciÃ³n)",
+    "category": "Jugos Naturales",
+    "weightKg": 0.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-gran-012",
+    "name": "Huevos Blancos (12 unidades)",
+    "category": "Productos de Granja",
+    "weightKg": 1.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-gran-013",
+    "name": "Huevos de color (12 unidades)",
+    "category": "Productos de Granja",
+    "weightKg": 1.5,
+    "wholesaleCost": 146.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-gran-014",
+    "name": "Huevos de campo orgÃ¡nicos (12 unidades)",
+    "category": "Productos de Granja",
+    "weightKg": 1.5,
+    "wholesaleCost": 247,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-gran-015",
+    "name": "Miel pura de abejas (6.5 oz)",
+    "category": "Productos de Granja",
+    "weightKg": 0.405,
+    "wholesaleCost": 162.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-gran-016",
+    "name": "Miel orgÃ¡nica con panal (12 oz)",
+    "category": "Productos de Granja",
+    "weightKg": 0.749,
+    "wholesaleCost": 325,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-otro-017",
+    "name": "Aceite de oliva sabor ajo (400 cc)",
+    "category": "Otros",
+    "weightKg": 0.881,
+    "wholesaleCost": 253.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-otro-018",
+    "name": "Aceite de oliva extra virgen importado (3 litros)",
+    "category": "Otros",
+    "weightKg": 6.614,
+    "wholesaleCost": 1885,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-otro-019",
+    "name": "Quinoa (16 oz)",
+    "category": "Otros",
+    "weightKg": 1,
+    "wholesaleCost": 292.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-otro-020",
+    "name": "Arroz blanco (400 gr)",
+    "category": "Otros",
+    "weightKg": 0.881,
+    "wholesaleCost": 81.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-otro-021",
+    "name": "Arroz integral (1 libra)",
+    "category": "Otros",
+    "weightKg": 1,
+    "wholesaleCost": 81.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-otro-022",
+    "name": "Lentejas (400 gr)",
+    "category": "Otros",
+    "weightKg": 0.881,
+    "wholesaleCost": 130,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-otro-023",
+    "name": "Habichuelas rojas/negras/blancas (400 gr)",
+    "category": "Otros",
+    "weightKg": 0.881,
+    "wholesaleCost": 113.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-024",
+    "name": "Aguacate",
+    "category": "Frutas",
+    "weightKg": 0.66,
+    "wholesaleCost": 65,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-025",
+    "name": "Mandarina",
+    "category": "Frutas",
+    "weightKg": 0.25,
+    "wholesaleCost": 29.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-026",
+    "name": "Chinola",
+    "category": "Frutas",
+    "weightKg": 0.25,
+    "wholesaleCost": 22.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-027",
+    "name": "PlÃ¡tano maduro",
+    "category": "Frutas",
+    "weightKg": 0.5,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-028",
+    "name": "PiÃ±a pequeÃ±a",
+    "category": "Frutas",
+    "weightKg": 3,
+    "wholesaleCost": 52,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-029",
+    "name": "Fresas (aprox 14-15)",
+    "category": "Frutas",
+    "weightKg": 1,
+    "wholesaleCost": 81.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-030",
+    "name": "Mango",
+    "category": "Frutas",
+    "weightKg": 0.8,
+    "wholesaleCost": 32.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-031",
+    "name": "Coco",
+    "category": "Frutas",
+    "weightKg": 2.5,
+    "wholesaleCost": 48.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-032",
+    "name": "Lechosa",
+    "category": "Frutas",
+    "weightKg": 4,
+    "wholesaleCost": 48.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-033",
+    "name": "Banana",
+    "category": "Frutas",
+    "weightKg": 0.4,
+    "wholesaleCost": 9.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-034",
+    "name": "Cerezas",
+    "category": "Frutas",
+    "weightKg": 1,
+    "wholesaleCost": 81.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-035",
+    "name": "Manzana",
+    "category": "Frutas",
+    "weightKg": 0.55,
+    "wholesaleCost": 55.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-036",
+    "name": "SandÃ­a",
+    "category": "Frutas",
+    "weightKg": 12,
+    "wholesaleCost": 130,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-037",
+    "name": "MelÃ³n",
+    "category": "Frutas",
+    "weightKg": 5,
+    "wholesaleCost": 97.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-038",
+    "name": "MelÃ³n francÃ©s",
+    "category": "Frutas",
+    "weightKg": 3,
+    "wholesaleCost": 71.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-039",
+    "name": "Pitahaya",
+    "category": "Frutas",
+    "weightKg": 0.75,
+    "wholesaleCost": 81.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-040",
+    "name": "Uvas blancas",
+    "category": "Frutas",
+    "weightKg": 1,
+    "wholesaleCost": 178.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-041",
+    "name": "Uvas moradas",
+    "category": "Frutas",
+    "weightKg": 1,
+    "wholesaleCost": 146.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-042",
+    "name": "Naranja",
+    "category": "Frutas",
+    "weightKg": 0.5,
+    "wholesaleCost": 29.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-frut-043",
+    "name": "Carambola",
+    "category": "Frutas",
+    "weightKg": 0.3,
+    "wholesaleCost": 26,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-044",
+    "name": "Tomate bugalÃº",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 29.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-045",
+    "name": "Papas",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 32.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-046",
+    "name": "PlÃ¡tano verde",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 22.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-047",
+    "name": "Lechuga rizada",
+    "category": "Vegetales",
+    "weightKg": 1.2,
+    "wholesaleCost": 32.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-048",
+    "name": "Calabaza",
+    "category": "Vegetales",
+    "weightKg": 5,
+    "wholesaleCost": 195,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-049",
+    "name": "Berenjena",
+    "category": "Vegetales",
+    "weightKg": 0.8,
+    "wholesaleCost": 26,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-050",
+    "name": "Lechuga repollada",
+    "category": "Vegetales",
+    "weightKg": 1.5,
+    "wholesaleCost": 48.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-051",
+    "name": "Lechuga romana",
+    "category": "Vegetales",
+    "weightKg": 1.5,
+    "wholesaleCost": 55.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-052",
+    "name": "RÃ¡bano",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 55.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-053",
+    "name": "Pepino",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-054",
+    "name": "Guineo verde",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 9.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-055",
+    "name": "Yuca",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 29.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-056",
+    "name": "Repollo blanco",
+    "category": "Vegetales",
+    "weightKg": 3,
+    "wholesaleCost": 97.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-057",
+    "name": "Repollo morado",
+    "category": "Vegetales",
+    "weightKg": 3,
+    "wholesaleCost": 91,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-058",
+    "name": "Tomate redondo",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 32.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-059",
+    "name": "Coliflor",
+    "category": "Vegetales",
+    "weightKg": 2.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-060",
+    "name": "BrÃ³coli",
+    "category": "Vegetales",
+    "weightKg": 1.2,
+    "wholesaleCost": 81.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-061",
+    "name": "Ajo",
+    "category": "Vegetales",
+    "weightKg": 1,
+    "wholesaleCost": 29.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-062",
+    "name": "Cebolla morada/amarilla",
+    "category": "Vegetales",
+    "weightKg": 0.5,
+    "wholesaleCost": 22.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-063",
+    "name": "Zanahoria",
+    "category": "Vegetales",
+    "weightKg": 0.2,
+    "wholesaleCost": 9.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-064",
+    "name": "Batata",
+    "category": "Vegetales",
+    "weightKg": 0.5,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-065",
+    "name": "AjÃ­ morrÃ³n",
+    "category": "Vegetales",
+    "weightKg": 0.4,
+    "wholesaleCost": 29.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-066",
+    "name": "MaÃ­z",
+    "category": "Vegetales",
+    "weightKg": 0.7,
+    "wholesaleCost": 26,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-067",
+    "name": "LimÃ³n",
+    "category": "Vegetales",
+    "weightKg": 0.15,
+    "wholesaleCost": 22.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-068",
+    "name": "Ãame",
+    "category": "Vegetales",
+    "weightKg": 1.5,
+    "wholesaleCost": 97.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-069",
+    "name": "Zucchini",
+    "category": "Vegetales",
+    "weightKg": 0.5,
+    "wholesaleCost": 22.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-070",
+    "name": "Cilantro",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.275,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-071",
+    "name": "Jengibre",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.275,
+    "wholesaleCost": 42.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-072",
+    "name": "OrÃ©gano",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.275,
+    "wholesaleCost": 48.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-073",
+    "name": "Perejil",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.275,
+    "wholesaleCost": 22.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-074",
+    "name": "Romero",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.275,
+    "wholesaleCost": 48.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-075",
+    "name": "Apio",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.275,
+    "wholesaleCost": 58.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-076",
+    "name": "AnÃ­s estrellado",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.066,
+    "wholesaleCost": 26,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-077",
+    "name": "Laurel",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.033,
+    "wholesaleCost": 22.75,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-078",
+    "name": "Pimienta negra entera",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.22,
+    "wholesaleCost": 19.5,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-hier-079",
+    "name": "Clavo dulce",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.033,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": []
+  },
+  {
+    "slug": "gd-vege-080",
+    "name": "Ajo baby",
+    "category": "Vegetales",
+    "weightKg": 0.5,
+    "wholesaleCost": 14.62,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-081",
+    "name": "AjÃ­ morrÃ³n baby",
+    "category": "Vegetales",
+    "weightKg": 0.2,
+    "wholesaleCost": 14.62,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-082",
+    "name": "Batata baby",
+    "category": "Vegetales",
+    "weightKg": 0.25,
+    "wholesaleCost": 8.12,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-083",
+    "name": "BrÃ³coli baby",
+    "category": "Vegetales",
+    "weightKg": 0.6,
+    "wholesaleCost": 40.62,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-084",
+    "name": "Cebolla morada/amarilla baby",
+    "category": "Vegetales",
+    "weightKg": 0.25,
+    "wholesaleCost": 11.38,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-frut-085",
+    "name": "Chinola baby",
+    "category": "Frutas",
+    "weightKg": 0.12,
+    "wholesaleCost": 11.38,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-hier-086",
+    "name": "Cilantro baby",
+    "category": "Hierbas y Especias",
+    "weightKg": 0.14,
+    "wholesaleCost": 8.12,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-frut-087",
+    "name": "Lechosa baby",
+    "category": "Frutas",
+    "weightKg": 2,
+    "wholesaleCost": 24.38,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-088",
+    "name": "Lechuga rizada baby",
+    "category": "Vegetales",
+    "weightKg": 0.6,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-089",
+    "name": "Lechuga romana baby",
+    "category": "Vegetales",
+    "weightKg": 0.75,
+    "wholesaleCost": 27.62,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-frut-090",
+    "name": "LimÃ³n baby",
+    "category": "Frutas",
+    "weightKg": 0.07,
+    "wholesaleCost": 11.38,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-frut-091",
+    "name": "Mango baby",
+    "category": "Frutas",
+    "weightKg": 0.4,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-092",
+    "name": "Papas baby",
+    "category": "Vegetales",
+    "weightKg": 0.5,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-093",
+    "name": "Pepino baby",
+    "category": "Vegetales",
+    "weightKg": 0.5,
+    "wholesaleCost": 8.12,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-frut-094",
+    "name": "PiÃ±a pequeÃ±a baby",
+    "category": "Frutas",
+    "weightKg": 1.5,
+    "wholesaleCost": 26,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-frut-095",
+    "name": "PlÃ¡tano maduro baby",
+    "category": "Frutas",
+    "weightKg": 0.25,
+    "wholesaleCost": 8.12,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-frut-096",
+    "name": "PlÃ¡tano verde baby",
+    "category": "Frutas",
+    "weightKg": 0.5,
+    "wholesaleCost": 11.38,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-097",
+    "name": "Tomate redondo baby",
+    "category": "Vegetales",
+    "weightKg": 0.5,
+    "wholesaleCost": 16.25,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  },
+  {
+    "slug": "gd-vege-098",
+    "name": "Zanahoria baby",
+    "category": "Vegetales",
+    "weightKg": 0.1,
+    "wholesaleCost": 4.88,
+    "slotValue": 1,
+    "tags": [
+      "baby-only"
+    ]
+  }
+]

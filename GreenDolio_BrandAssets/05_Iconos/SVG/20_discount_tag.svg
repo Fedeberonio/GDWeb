@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <path d="M16 12l8-8 8 8v16l-8 8-8-8V12z" fill="#E63946"/>
+  <path d="M20 16l4-4 4 4v8l-4 4-4-4v-8z" fill="#FFFFFF"/>
+  <text x="28" y="22" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#E63946" text-anchor="middle">%</text>
+  <path d="M32 32l12 12M44 32L32 44" stroke="#F77F00" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="48" cy="48" r="8" fill="#F77F00"/>
+  <text x="48" y="52" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#FFFFFF" text-anchor="middle">OFF</text>
+</svg>

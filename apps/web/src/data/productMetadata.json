@@ -1,0 +1,634 @@
+[
+  {
+    "slug": "box-1-caribbean-fresh-pack-3-dias",
+    "name": "Box 1 'Caribbean Fresh Pack' (3 días)",
+    "category": "cajas",
+    "weightKg": 3.5,
+    "wholesaleCost": 422.5,
+    "slotValue": 7
+  },
+  {
+    "slug": "box-2-island-weekssential-1-semana",
+    "name": "Box 2 'Island Weekssential' (1 semana)",
+    "category": "cajas",
+    "weightKg": 6,
+    "wholesaleCost": 643.5,
+    "slotValue": 12
+  },
+  {
+    "slug": "box-3-allgreenxclusive-2-semanas",
+    "name": "Box 3 'Allgreenxclusive' (2 semanas)",
+    "category": "cajas",
+    "weightKg": 12,
+    "wholesaleCost": 1293.5,
+    "slotValue": 24
+  },
+  {
+    "slug": "baba-ganoush-16-oz",
+    "name": "Baba Ganoush (16 oz)",
+    "category": "productos-caseros",
+    "weightKg": 0.45,
+    "wholesaleCost": 325,
+    "slotValue": 1
+  },
+  {
+    "slug": "hummus-16-oz",
+    "name": "Hummus (16 oz)",
+    "category": "productos-caseros",
+    "weightKg": 0.45,
+    "wholesaleCost": 325,
+    "slotValue": 1
+  },
+  {
+    "slug": "guacamole-16-oz",
+    "name": "Guacamole (16 oz)",
+    "category": "productos-caseros",
+    "weightKg": 0.45,
+    "wholesaleCost": 325,
+    "slotValue": 1
+  },
+  {
+    "slug": "chimichurri-9-5-oz",
+    "name": "Chimichurri (9.5 oz)",
+    "category": "productos-caseros",
+    "weightKg": 0.5,
+    "wholesaleCost": 227.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "pepinada-1-porcion",
+    "name": "Pepinada (1 porción)",
+    "category": "jugos",
+    "weightKg": 0.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "tropicalote-1-porcion",
+    "name": "Tropicalote (1 porción)",
+    "category": "jugos",
+    "weightKg": 0.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "rosa-maravillosa-1-porcion",
+    "name": "Rosa Maravillosa (1 porción)",
+    "category": "jugos",
+    "weightKg": 0.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "china-chinola-1-porcion",
+    "name": "China Chinola (1 porción)",
+    "category": "jugos",
+    "weightKg": 0.5,
+    "wholesaleCost": 113.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "huevos-blancos-12-unidades",
+    "name": "Huevos Blancos (12 unidades)",
+    "category": "productos-de-granja",
+    "weightKg": 0.68,
+    "wholesaleCost": 113.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "huevos-de-color-12-unidades",
+    "name": "Huevos de color (12 unidades)",
+    "category": "productos-de-granja",
+    "weightKg": 0.68,
+    "wholesaleCost": 146.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "huevos-de-campo-organicos-12-unidades",
+    "name": "Huevos de campo orgánicos (12 unidades)",
+    "category": "productos-de-granja",
+    "weightKg": 0.68,
+    "wholesaleCost": 247,
+    "slotValue": 1
+  },
+  {
+    "slug": "miel-pura-de-abejas-6-5-oz",
+    "name": "Miel pura de abejas (6.5 oz)",
+    "category": "productos-de-granja",
+    "weightKg": 0.18,
+    "wholesaleCost": 162.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "miel-organica-con-panal-12-oz",
+    "name": "Miel orgánica con panal (12 oz)",
+    "category": "productos-de-granja",
+    "weightKg": 0.34,
+    "wholesaleCost": 325,
+    "slotValue": 1
+  },
+  {
+    "slug": "aceite-de-oliva-sabor-ajo-400-cc",
+    "name": "Aceite de oliva sabor ajo (400 cc)",
+    "category": "otros",
+    "weightKg": 0.4,
+    "wholesaleCost": 253.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "aceite-de-oliva-extra-virgen-importado-3-litros",
+    "name": "Aceite de oliva extra virgen importado (3 litros)",
+    "category": "otros",
+    "weightKg": 3,
+    "wholesaleCost": 1885,
+    "slotValue": 6
+  },
+  {
+    "slug": "quinoa-16-oz",
+    "name": "Quinoa (16 oz)",
+    "category": "otros",
+    "weightKg": 0.45,
+    "wholesaleCost": 292.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "arroz-blanco-400-gr",
+    "name": "Arroz blanco (400 gr)",
+    "category": "otros",
+    "weightKg": 0.4,
+    "wholesaleCost": 81.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "arroz-integral-1-libra",
+    "name": "Arroz integral (1 libra)",
+    "category": "otros",
+    "weightKg": 0.45,
+    "wholesaleCost": 81.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "lentejas-400-gr",
+    "name": "Lentejas (400 gr)",
+    "category": "otros",
+    "weightKg": 0.4,
+    "wholesaleCost": 130,
+    "slotValue": 1
+  },
+  {
+    "slug": "habichuelas-rojas-negras-blancas-400-gr",
+    "name": "Habichuelas rojas/negras/blancas (400 gr)",
+    "category": "otros",
+    "weightKg": 0.4,
+    "wholesaleCost": 113.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "aguacate",
+    "name": "Aguacate",
+    "category": "frutas",
+    "weightKg": 0.3,
+    "wholesaleCost": 65,
+    "slotValue": 1
+  },
+  {
+    "slug": "mandarina",
+    "name": "Mandarina",
+    "category": "frutas",
+    "weightKg": 0.14,
+    "wholesaleCost": 29.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "chinola",
+    "name": "Chinola",
+    "category": "frutas",
+    "weightKg": 0.11,
+    "wholesaleCost": 22.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "platano-maduro",
+    "name": "Plátano maduro",
+    "category": "frutas",
+    "weightKg": 0.23,
+    "wholesaleCost": 16.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "pina-pequena",
+    "name": "Piña pequeña ",
+    "category": "frutas",
+    "weightKg": 1.4,
+    "wholesaleCost": 52,
+    "slotValue": 3
+  },
+  {
+    "slug": "fresas-aprox-14-15",
+    "name": "Fresas (aprox 14-15)",
+    "category": "frutas",
+    "weightKg": 0.45,
+    "wholesaleCost": 81.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "mango",
+    "name": "Mango",
+    "category": "frutas",
+    "weightKg": 0.36,
+    "wholesaleCost": 32.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "coco",
+    "name": "Coco",
+    "category": "frutas",
+    "weightKg": 1.1,
+    "wholesaleCost": 48.75,
+    "slotValue": 2
+  },
+  {
+    "slug": "lechosa",
+    "name": "Lechosa",
+    "category": "frutas",
+    "weightKg": 1.8,
+    "wholesaleCost": 48.75,
+    "slotValue": 4
+  },
+  {
+    "slug": "banana",
+    "name": "Banana",
+    "category": "frutas",
+    "weightKg": 0.18,
+    "wholesaleCost": 9.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "cerezas",
+    "name": "Cerezas",
+    "category": "frutas",
+    "weightKg": 0.45,
+    "wholesaleCost": 81.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "manzana",
+    "name": "Manzana",
+    "category": "frutas",
+    "weightKg": 0.25,
+    "wholesaleCost": 55.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "sandia",
+    "name": "Sandía",
+    "category": "frutas",
+    "weightKg": 5.5,
+    "wholesaleCost": 130,
+    "slotValue": 11
+  },
+  {
+    "slug": "melon",
+    "name": "Melón",
+    "category": "frutas",
+    "weightKg": 2.3,
+    "wholesaleCost": 97.5,
+    "slotValue": 5
+  },
+  {
+    "slug": "melon-frances",
+    "name": "Melón francés",
+    "category": "frutas",
+    "weightKg": 1.4,
+    "wholesaleCost": 71.5,
+    "slotValue": 3
+  },
+  {
+    "slug": "pitahaya",
+    "name": "Pitahaya",
+    "category": "frutas",
+    "weightKg": 0.34,
+    "wholesaleCost": 81.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "uvas-blancas",
+    "name": "Uvas blancas",
+    "category": "frutas",
+    "weightKg": 0.45,
+    "wholesaleCost": 178.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "uvas-moradas",
+    "name": "Uvas moradas",
+    "category": "frutas",
+    "weightKg": 0.45,
+    "wholesaleCost": 146.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "naranja",
+    "name": "Naranja",
+    "category": "frutas",
+    "weightKg": 0.23,
+    "wholesaleCost": 29.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "carambola",
+    "name": "Carambola",
+    "category": "frutas",
+    "weightKg": 0.14,
+    "wholesaleCost": 26,
+    "slotValue": 1
+  },
+  {
+    "slug": "tomate-bugalu",
+    "name": "Tomate bugalú",
+    "category": "vegetales",
+    "weightKg": 0.45,
+    "wholesaleCost": 29.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "papas",
+    "name": "Papas",
+    "category": "vegetales",
+    "weightKg": 0.36,
+    "wholesaleCost": 32.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "platano-verde",
+    "name": "Plátano verde",
+    "category": "vegetales",
+    "weightKg": 0.45,
+    "wholesaleCost": 22.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "lechuga-rizada",
+    "name": "Lechuga rizada",
+    "category": "vegetales",
+    "weightKg": 0.54,
+    "wholesaleCost": 32.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "calabaza",
+    "name": "Calabaza",
+    "category": "vegetales",
+    "weightKg": 2.27,
+    "wholesaleCost": 195,
+    "slotValue": 5
+  },
+  {
+    "slug": "berenjena",
+    "name": "Berenjena",
+    "category": "vegetales",
+    "weightKg": 0.36,
+    "wholesaleCost": 26,
+    "slotValue": 1
+  },
+  {
+    "slug": "lechuga-repollada",
+    "name": "Lechuga repollada",
+    "category": "vegetales",
+    "weightKg": 0.68,
+    "wholesaleCost": 48.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "lechuga-romana",
+    "name": "Lechuga romana",
+    "category": "vegetales",
+    "weightKg": 0.68,
+    "wholesaleCost": 55.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "rabano",
+    "name": "Rábano",
+    "category": "vegetales",
+    "weightKg": 0.45,
+    "wholesaleCost": 55.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "pepino",
+    "name": "Pepino",
+    "category": "vegetales",
+    "weightKg": 0.45,
+    "wholesaleCost": 16.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "guineo-verde",
+    "name": "Guineo verde",
+    "category": "vegetales",
+    "weightKg": 0.34,
+    "wholesaleCost": 9.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "yuca",
+    "name": "Yuca",
+    "category": "vegetales",
+    "weightKg": 0.45,
+    "wholesaleCost": 29.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "repollo-blanco",
+    "name": "Repollo blanco",
+    "category": "vegetales",
+    "weightKg": 1.4,
+    "wholesaleCost": 97.5,
+    "slotValue": 3
+  },
+  {
+    "slug": "repollo-morado",
+    "name": "Repollo morado",
+    "category": "vegetales",
+    "weightKg": 1.4,
+    "wholesaleCost": 91,
+    "slotValue": 3
+  },
+  {
+    "slug": "tomate-redondo",
+    "name": "Tomate redondo",
+    "category": "vegetales",
+    "weightKg": 0.45,
+    "wholesaleCost": 32.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "coliflor",
+    "name": "Coliflor",
+    "category": "vegetales",
+    "weightKg": 1.1,
+    "wholesaleCost": 113.75,
+    "slotValue": 2
+  },
+  {
+    "slug": "brocoli",
+    "name": "Brócoli",
+    "category": "vegetales",
+    "weightKg": 0.54,
+    "wholesaleCost": 81.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "ajo",
+    "name": "Ajo",
+    "category": "vegetales",
+    "weightKg": 0.18,
+    "wholesaleCost": 29.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "cebolla-morada-amarilla",
+    "name": "Cebolla morada/amarilla",
+    "category": "vegetales",
+    "weightKg": 0.27,
+    "wholesaleCost": 22.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "zanahoria",
+    "name": "Zanahoria",
+    "category": "vegetales",
+    "weightKg": 0.11,
+    "wholesaleCost": 9.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "batata",
+    "name": "Batata",
+    "category": "vegetales",
+    "weightKg": 0.27,
+    "wholesaleCost": 16.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "aji-morron",
+    "name": "Ají morrón",
+    "category": "vegetales",
+    "weightKg": 0.23,
+    "wholesaleCost": 29.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "maiz",
+    "name": "Maíz",
+    "category": "vegetales",
+    "weightKg": 0.36,
+    "wholesaleCost": 26,
+    "slotValue": 1
+  },
+  {
+    "slug": "limon",
+    "name": "Limón",
+    "category": "vegetales",
+    "weightKg": 0.08,
+    "wholesaleCost": 22.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "name",
+    "name": "Ñame",
+    "category": "vegetales",
+    "weightKg": 0.91,
+    "wholesaleCost": 97.5,
+    "slotValue": 2
+  },
+  {
+    "slug": "zucchini",
+    "name": "Zucchini",
+    "category": "vegetales",
+    "weightKg": 0.27,
+    "wholesaleCost": 22.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "cilantro",
+    "name": "Cilantro",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.12,
+    "wholesaleCost": 16.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "jengibre",
+    "name": "Jengibre",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.12,
+    "wholesaleCost": 42.25,
+    "slotValue": 1
+  },
+  {
+    "slug": "oregano",
+    "name": "Orégano",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.12,
+    "wholesaleCost": 48.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "perejil",
+    "name": "Perejil",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.12,
+    "wholesaleCost": 22.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "romero",
+    "name": "Romero",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.12,
+    "wholesaleCost": 48.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "apio",
+    "name": "Apio",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.12,
+    "wholesaleCost": 58.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "anis-estrellado",
+    "name": "Anís estrellado",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.03,
+    "wholesaleCost": 26,
+    "slotValue": 1
+  },
+  {
+    "slug": "laurel",
+    "name": "Laurel",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.01,
+    "wholesaleCost": 22.75,
+    "slotValue": 1
+  },
+  {
+    "slug": "pimienta-negra-entera",
+    "name": "Pimienta negra entera",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.1,
+    "wholesaleCost": 19.5,
+    "slotValue": 1
+  },
+  {
+    "slug": "clavo-dulce",
+    "name": "Clavo dulce",
+    "category": "hierbas-y-especias",
+    "weightKg": 0.01,
+    "wholesaleCost": 16.25,
+    "slotValue": 1
+  }
+]

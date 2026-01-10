@@ -1,0 +1,126 @@
+═══════════════════════════════════════════════════════════════
+  GREENFOLIO - MAPEO DE ARCHIVOS DE LOGOS
+═══════════════════════════════════════════════════════════════
+
+📋 NOMENCLATURA SEGÚN CHECKLIST EJECUTIVO
+═══════════════════════════════════════════════════════════════
+
+ARCHIVO ACTUAL                                → CHECKLIST
+───────────────────────────────────────────────────────────────
+GreenDolio_Logo_Principal_ColorCompleto.png   → ✅ Versión principal color completo
+GreenDolio_Logo_Horizontal.png                → ✅ Versión horizontal
+GreenDolio_Logo_Vertical.png                  → ✅ Versión vertical
+GreenDolio_Logo_Simplificado_SinFrutas.png    → ✅ Versión simplificada (sin frutas)
+GreenDolio_Favicon_512x512.png                → ✅ Favicon 512x512px
+GreenDolio_Logo_VarianteVerde.png             → ⚠️  Variante adicional (frutas verdes)
+GreenDolio_Logo_FondoOscuro_ColorCompleto.png → ⚠️  Variante adicional (fondo oscuro)
+
+PENDIENTE DE CREAR:
+───────────────────────────────────────────────────────────────
+❌ GreenDolio_Logo_BlancoYNegro.png           → Versión blanco y negro
+❌ GreenDolio_Isotipo.png                     → Isotipo (solo símbolo)
+
+═══════════════════════════════════════════════════════════════
+  ESTRUCTURA DE CARPETAS
+═══════════════════════════════════════════════════════════════
+
+01_Logo/
+├── PNG/
+│   ├── Original/           → Versiones originales (tamaño completo)
+│   ├── 512px/              → Versiones 512x512px (7 archivos)
+│   ├── 1024px/             → Versiones 1024x1024px (7 archivos)
+│   ├── 2048px/             → Versiones 2048x2048px (7 archivos)
+│   └── DESCRIPCION_LOGOS.txt
+├── JPG/                    → Versiones con fondo blanco (6 archivos)
+├── Vector/                 → ⚠️  VACÍO - Pendiente formatos AI, EPS, SVG
+└── MAPEO_ARCHIVOS_LOGOS.txt (este archivo)
+
+═══════════════════════════════════════════════════════════════
+  RESUMEN POR TIPO DE ARCHIVO
+═══════════════════════════════════════════════════════════════
+
+PNG:
+  • Original: 7 archivos
+  • 512px:    7 archivos
+  • 1024px:   7 archivos
+  • 2048px:   7 archivos
+  TOTAL PNG:  28 archivos
+
+JPG (fondo blanco):
+  • Original: 6 archivos
+  TOTAL JPG:  6 archivos
+
+Favicon:
+  • 512x512:  1 archivo
+  TOTAL:      1 archivo
+
+TOTAL GENERAL: 42 archivos de logo generados
+
+═══════════════════════════════════════════════════════════════
+  DESCRIPCIÓN DE CADA VERSIÓN
+═══════════════════════════════════════════════════════════════
+
+1. GreenDolio_Logo_Principal_ColorCompleto
+   • Tipo: Logo principal
+   • Características: Circular, frutas mixtas (aguacate, manzana, 
+     fresa, naranja), fondo beige con cielo turquesa
+   • Uso recomendado: Material principal, web, redes sociales
+   • Formatos: PNG (todas las resoluciones), JPG (fondo blanco)
+
+2. GreenDolio_Logo_Horizontal
+   • Tipo: Logo horizontal (banner)
+   • Características: Formato alargado, frutas + isologo de huerta
+   • Uso recomendado: Headers web, firmas email, banners
+   • Formatos: PNG (todas las resoluciones), JPG (fondo blanco)
+
+3. GreenDolio_Logo_Vertical
+   • Tipo: Logo vertical (igual al principal)
+   • Características: Formato circular completo
+   • Uso recomendado: Packaging, señalética vertical
+   • Formatos: PNG (todas las resoluciones), JPG (fondo blanco)
+
+4. GreenDolio_Logo_Simplificado_SinFrutas
+   • Tipo: Versión simplificada
+   • Características: Sin frutas, solo paisaje tropical con palmeras
+   • Uso recomendado: Aplicaciones pequeñas, marca de agua
+   • Formatos: PNG (todas las resoluciones), JPG (fondo blanco)
+
+5. GreenDolio_Favicon_512x512
+   • Tipo: Favicon
+   • Características: 512x512px optimizado para web
+   • Uso recomendado: Favicon de sitio web, app icon
+   • Formato: PNG 512x512px
+
+6. GreenDolio_Logo_VarianteVerde (VARIANTE ADICIONAL)
+   • Tipo: Variante temática
+   • Características: Solo frutas verdes (aguacate, manzana, lima)
+   • Uso recomendado: Campaña eco-friendly, productos orgánicos
+   • Formatos: PNG (todas las resoluciones), JPG (fondo blanco)
+
+7. GreenDolio_Logo_FondoOscuro_ColorCompleto (VARIANTE ADICIONAL)
+   • Tipo: Variante para fondos oscuros
+   • Características: Optimizado para fondos grises/oscuros
+   • Uso recomendado: Presentaciones modo oscuro, web dark theme
+   • Formatos: PNG (todas las resoluciones), JPG (fondo blanco)
+
+═══════════════════════════════════════════════════════════════
+  TAREAS PENDIENTES
+═══════════════════════════════════════════════════════════════
+
+PRIORIDAD ALTA:
+□ Crear versión blanco y negro
+□ Crear isotipo (solo símbolo sin texto)
+□ Convertir a formato SVG (escalable para web)
+□ Convertir a formato AI (Adobe Illustrator)
+□ Convertir a formato EPS (Encapsulated PostScript)
+
+PRIORIDAD MEDIA:
+□ Optimizar peso de archivos para web
+□ Crear versión con transparencia real (alpha channel)
+□ Generar sprites de iconos
+
+═══════════════════════════════════════════════════════════════
+
+Última actualización: 06 de Noviembre, 2025
+Total de archivos: 42
+Estado: FASE 1 - 75% COMPLETA

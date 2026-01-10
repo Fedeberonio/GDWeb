@@ -1,0 +1,40 @@
+═══════════════════════════════════════════════════════════════
+  GREENFOLIO - DESCRIPCIÓN DE LOGOS
+═══════════════════════════════════════════════════════════════
+
+📁 ARCHIVO: GreenDolio_Logo_Original.png
+   └─ Logo principal con frutas mixtas (aguacate, manzana, 
+      fresa, naranja) sobre fondo beige con cielo tropical.
+   └─ USO: Logo principal para la mayoría de aplicaciones
+
+📁 ARCHIVO: GreenDolio_Logo_Principal_FondoBeige.png  
+   └─ Versión circular completa con frutas mixtas y fondo beige
+   └─ USO: Material impreso, packaging, señalética
+
+📁 ARCHIVO: GreenDolio_Logo_FondoOscuro.png
+   └─ Logo con frutas mixtas optimizado para fondos oscuros/grises
+   └─ USO: Presentaciones oscuras, web con tema dark
+
+📁 ARCHIVO: GreenDolio_Logo_Tropical.png
+   └─ Versión con paisaje tropical (cielo y palmeras, sin frutas)
+   └─ USO: Material promocional con enfoque en frescura tropical
+
+📁 ARCHIVO: GreenDolio_Logo_FrutasVerdes.png
+   └─ Variante solo con frutas verdes (aguacate, manzana, 
+      lima, fruta verde)
+   └─ USO: Campaña eco-friendly, productos orgánicos
+
+📁 ARCHIVO: GreenDolio_Logo_Horizontal.png
+   └─ Versión horizontal en formato banner
+   └─ USO: Headers web, firmas email, banners publicitarios
+
+═══════════════════════════════════════════════════════════════
+  RECOMENDACIONES DE USO
+═══════════════════════════════════════════════════════════════
+
+✓ Para web y redes sociales: GreenDolio_Logo_Original.png
+✓ Para impresos: GreenDolio_Logo_Principal_FondoBeige.png
+✓ Para fondos oscuros: GreenDolio_Logo_FondoOscuro.png
+✓ Para headers/banners: GreenDolio_Logo_Horizontal.png
+
+═══════════════════════════════════════════════════════════════
