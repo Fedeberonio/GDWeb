@@ -22,6 +22,12 @@ let cachedEnv: ClientEnv | null = null;
 export function getClientEnv(): ClientEnv {
   if (cachedEnv) return cachedEnv;
 
+  console.log("DEBUG ENV VARS:", {
+    API_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+    FIREBASE_PROJECT: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    ADMIN_EMAILS: process.env.NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS,
+  });
+
   const runtimeEnv = {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -38,7 +44,18 @@ export function getClientEnv(): ClientEnv {
 
   if (!parsed.success) {
     const details = JSON.stringify(parsed.error.flatten().fieldErrors);
-    throw new Error(`Client environment variables misconfigured: ${details}`);
+    console.error("ENV VALIDATION FAILED:", details);
+    // Fallback instead of throwing to allow debugging in Vercel logs
+    return {
+      NEXT_PUBLIC_API_BASE_URL: "http://mock-fallback",
+      NEXT_PUBLIC_FIREBASE_API_KEY: "mock",
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "mock",
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: "mock",
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "mock",
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "mock",
+      NEXT_PUBLIC_FIREBASE_APP_ID: "mock",
+      NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS: "",
+    } as ClientEnv;
   }
 
   cachedEnv = parsed.data;

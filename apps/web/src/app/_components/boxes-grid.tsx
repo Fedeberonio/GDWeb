@@ -64,7 +64,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3 pt-6">
       {boxes.map((box, index) => {
         const productImages: Record<string, string> = {
           "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
@@ -114,13 +114,34 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
         const sku = BOX_SKU_MAP[box.slug] || BOX_SKU_MAP[box.id];
         const boxDetails = sku ? BOX_DETAILS_BY_SKU[sku] : undefined;
 
+        // Definir badges especiales según la caja
+        const specialBadge = index === 1 ? "MÁS POPULAR" : index === 2 ? "MEJOR VALOR" : null;
+        const isPopular = index === 1;
+
         return (
           <article
             key={box.id}
             {...itemProps}
-            className={`group relative flex h-full flex-col overflow-hidden rounded-[32px] border-2 border-[var(--gd-color-leaf)]/50 bg-gradient-to-br from-white via-[var(--gd-color-sprout)]/20 to-white shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:shadow-[0_30px_60px_rgba(45,80,22,0.25)] hover:border-[var(--gd-color-leaf)] hover:scale-[1.02] ${itemProps.className}`}
+            className={`group relative flex h-full flex-col overflow-hidden rounded-[32px] border-2 ${
+              isPopular
+                ? "border-[var(--gd-color-leaf)] ring-4 ring-[var(--gd-color-leaf)]/30"
+                : "border-[var(--gd-color-leaf)]/50"
+            } bg-gradient-to-br from-white via-[var(--gd-color-sprout)]/20 to-white shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:shadow-[0_30px_60px_rgba(45,80,22,0.25)] hover:border-[var(--gd-color-leaf)] hover:scale-[1.02] ${itemProps.className}`}
             style={itemProps.style}
           >
+            {/* Badge especial superior */}
+            {specialBadge && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                <div className={`rounded-full px-6 py-2 text-xs font-black uppercase tracking-wider shadow-xl border-2 ${
+                  isPopular
+                    ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white border-amber-300"
+                    : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400"
+                }`}>
+                  ⭐ {specialBadge}
+                </div>
+              </div>
+            )}
+
             {/* Efecto de brillo sutil */}
             <div className="absolute inset-0 bg-gradient-to-br from-[var(--gd-color-leaf)]/0 via-transparent to-[var(--gd-color-sky)]/0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none" />
             
@@ -223,20 +244,25 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
                 );
               })()}
 
-              {/* Precio */}
+              {/* Precio con valor por día */}
               <div className="relative rounded-xl bg-gradient-to-br from-[var(--gd-color-leaf)]/40 via-[var(--gd-color-sprout)]/50 to-[var(--gd-color-avocado)]/30 p-4 border-2 border-[var(--gd-color-leaf)]/40 shadow-lg">
-                <div className="relative z-10 text-center">
-                  <p className="text-xs uppercase tracking-[0.3em] text-[var(--gd-color-forest)] font-bold mb-1">
-                    Precio
+                <div className="relative z-10 text-center space-y-1">
+                  <p className="text-xs uppercase tracking-[0.3em] text-[var(--gd-color-forest)] font-bold">
+                    Precio Total
                   </p>
                   <p className="font-display text-3xl font-bold bg-gradient-to-r from-[var(--gd-color-forest)] via-white to-[var(--gd-color-forest)] bg-clip-text text-transparent">
                     RD${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}
                   </p>
+                  {box.durationDays && box.durationDays > 0 && (
+                    <p className="text-xs text-[var(--gd-color-forest)]/70 font-semibold">
+                      ≈ RD${Math.round(box.price.amount / box.durationDays)} por día
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Botones de acción */}
-              <div className="space-y-1.5 pt-1 relative z-20">
+              {/* Botones de acción - CTAs más claros */}
+              <div className="space-y-2 pt-2 relative z-20">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -250,10 +276,16 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
                       window.location.href = `/armar?box=${box.id}`;
                     }
                   }}
-                  className="flex items-center justify-center gap-2 w-full rounded-lg bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-4 py-2.5 text-xs font-bold text-white shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg relative z-20"
+                  className="group/btn flex flex-col items-center justify-center w-full rounded-xl bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-4 py-3 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl relative z-20 overflow-hidden"
                 >
-                  <span>🛒</span>
-                  <span>Agregar al carrito</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
+                  <div className="relative flex items-center gap-2">
+                    <span className="text-lg">🛒</span>
+                    <span className="text-sm font-bold text-white">Agregar al Carrito</span>
+                  </div>
+                  <span className="relative text-[0.65rem] text-white/80 font-medium mt-0.5">
+                    Contenido preseleccionado listo
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -268,10 +300,10 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
                       window.location.href = `/armar?box=${box.id}`;
                     }
                   }}
-                  className="flex items-center justify-center gap-2 w-full rounded-lg border-2 border-[var(--gd-color-leaf)] bg-white px-4 py-2 text-xs font-semibold text-[var(--gd-color-forest)] transition-all duration-300 hover:bg-[var(--gd-color-sprout)]/20 hover:border-[var(--gd-color-forest)] relative z-20"
+                  className="flex items-center justify-center gap-2 w-full rounded-xl border-2 border-[var(--gd-color-leaf)] bg-white px-4 py-2.5 text-xs font-semibold text-[var(--gd-color-forest)] transition-all duration-300 hover:bg-[var(--gd-color-sprout)]/30 hover:border-[var(--gd-color-forest)] hover:scale-[1.02] relative z-20"
                 >
                   <span>✏️</span>
-                  <span>Personalizar</span>
+                  <span>Personalizar Contenido</span>
                 </button>
               </div>
             </div>

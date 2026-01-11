@@ -4,13 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { Container } from "./_components/container";
-import { ProductCatalogGrid } from "./_components/product-catalog-grid";
-import { CategoryCard } from "./_components/category-card";
-import { CategoryHighlightSection } from "./_components/category-highlight-section";
 import { DifferentiatorsBanner } from "./_components/differentiators-banner";
 import { LunchCombosSection } from "./_components/lunch-combos-section";
 import { BoxesGrid } from "./_components/boxes-grid";
 import { HowItWorksAccordion } from "./_components/how-it-works-accordion";
+import { UnifiedCatalogSection } from "./_components/unified-catalog-section";
 import boxRules from "@/data/boxRules.json";
 import productMetadata from "@/data/productMetadata.json";
 import { fetchBoxes, fetchProductCategories, fetchProducts } from "@/modules/catalog/api";
@@ -148,12 +146,8 @@ export default async function HomePage() {
           </Container>
         </section>
 
-        {/* CATEGORÍAS PRINCIPALES - Compacta */}
-        <section className="relative bg-white py-6 md:py-8 overflow-hidden border-t border-[var(--gd-color-leaf)]/10">
-          <Container className="relative z-10">
-            <CategoryHighlightSection categories={categories} />
-          </Container>
-        </section>
+        {/* CATÁLOGO UNIFICADO - Frutas y Vegetales, Granja, Elaborados */}
+        <UnifiedCatalogSection products={products} categories={categories} />
 
         {/* POR QUÉ ELEGIR GREEN DOLIO - Consolidado (elimina redundancias) */}
         <section className="relative bg-gradient-to-br from-[var(--gd-color-sprout)]/30 via-white to-[var(--gd-color-sky)]/20 py-16 overflow-hidden">
@@ -231,100 +225,6 @@ export default async function HomePage() {
                   </div>
                 </article>
               ))}
-            </div>
-          </Container>
-        </section>
-
-
-        {/* CATÁLOGO - Más compacto */}
-        <section id="catalogo" className="relative bg-[var(--color-background-muted)] py-16 overflow-hidden">
-          {/* Imagen de fondo decorativa */}
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-[0.06] hidden lg:block">
-            <Image
-              src="/images/hero/hero-vegetables-left.jpg"
-              alt=""
-              fill
-              sizes="50vw"
-              className="object-cover object-left"
-              aria-hidden="true"
-            />
-          </div>
-          <Container className="relative z-10 space-y-10">
-            <header className="space-y-4">
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[var(--color-brand)]">Catálogo vivo</p>
-                <p className="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs text-[var(--color-muted)]">
-                  {products.length} productos frescos disponibles
-                </p>
-              </div>
-              <div className="grid gap-6 lg:grid-cols-[1.4fr,0.6fr]">
-                <div className="text-center lg:text-left">
-                  <h2 className="font-display text-3xl text-[var(--color-foreground)] sm:text-4xl">
-                    Productos frescos de temporada
-                  </h2>
-                  <p className="mt-2 text-base text-[var(--color-muted)] leading-relaxed">
-                    Filtra por categoría, temporada u orgánico y agrégalos a tu pedido por WhatsApp. Todos los productos provienen de productores locales y están listos para sumar a la caja.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2 rounded-3xl border border-[var(--color-border)] bg-white p-4 text-xs font-semibold text-[var(--color-muted)]">
-                  <span className="rounded-full bg-[color:rgba(212,229,184,0.35)] px-3 py-1">Temporada</span>
-                  <span className="rounded-full bg-[color:rgba(212,229,184,0.35)] px-3 py-1">Orgánico</span>
-                  <span className="rounded-full bg-[color:rgba(212,229,184,0.35)] px-3 py-1">Destacados</span>
-                  <span className="rounded-full bg-white px-3 py-1 text-[var(--color-foreground)]">Sin stock</span>
-                </div>
-              </div>
-            </header>
-
-            <div className="grid gap-6 lg:grid-cols-3">
-              {categoriesWithCounts.map(({ category, productCount }) => (
-                <CategoryCard key={category.id} category={category} productCount={productCount} />
-              ))}
-            </div>
-          </Container>
-        </section>
-
-        {/* A LA CARTA - Combinado con catálogo, más compacto */}
-        <section id="a-la-carta" className="bg-white py-16">
-          <Container className="space-y-8">
-            <header className="space-y-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[var(--gd-color-forest)]">🛒 A la carta</p>
-              <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
-                <div className="space-y-2">
-                  <h2 className="font-display text-2xl text-[var(--color-foreground)] sm:text-3xl">
-                    Arma tu pedido personalizado
-                  </h2>
-                  <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-                    Selecciona los productos que quieras y agrégalos al pedido. También podés usar el builder para combinar la caja completa.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-[var(--gd-color-leaf)]/30 bg-[var(--gd-color-sprout)]/20 p-4 text-xs text-[var(--color-muted)]">
-                  <p className="font-semibold text-[var(--gd-color-forest)] mb-2">💡 Tips rápidos</p>
-                  <ul className="space-y-1">
-                    <li>• Filtra por categoría</li>
-                    <li>• Activa &quot;Solo destacados&quot;</li>
-                    <li>• Agrega múltiples productos</li>
-                  </ul>
-                </div>
-              </div>
-            </header>
-
-            <ProductCatalogGrid products={products} categories={categories} />
-
-            {/* CTA Combos para grupos */}
-            <div className="text-center mt-8">
-              <div className="inline-flex flex-col items-center gap-3 rounded-2xl bg-gradient-to-br from-[var(--gd-color-leaf)]/20 via-white to-[var(--gd-color-sky)]/20 p-6 border-2 border-[var(--gd-color-leaf)]/30 shadow-lg">
-                <p className="text-sm font-semibold text-[var(--gd-color-forest)]">
-                  ¿Necesitas combos para grupos o eventos?
-                </p>
-                <Link
-                  href="#contacto"
-                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)] hover:scale-105 hover:shadow-xl"
-                >
-                  <span>📞</span>
-                  <span>Contactar para pedidos grupales</span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </div>
             </div>
           </Container>
         </section>

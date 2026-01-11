@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/modules/cart/context";
+import toast from "react-hot-toast";
 
 type Combo = {
   id: number;
@@ -337,6 +338,17 @@ export function LunchCombosSection() {
       slotValue: 1,
       weightKg: 0,
       image: combo.image,
+    });
+
+    toast.success(`${combo.name} agregado al carrito 🛒`, {
+      icon: "✅",
+      duration: 3000,
+      style: {
+        background: "var(--gd-color-forest)",
+        color: "#fff",
+        borderRadius: "12px",
+        padding: "12px 20px",
+      },
     });
   };
 
