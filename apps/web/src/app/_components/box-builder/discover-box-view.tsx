@@ -90,7 +90,7 @@ function resolveRuleKey(box: Box): string | undefined {
 export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }: DiscoverBoxViewProps) {
   // Expandir todas las categorías por defecto
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const { t, tData } = useTranslation();
+  const { t, tData, locale } = useTranslation();
   const ruleKey = resolveRuleKey(box) || box.id;
   const rule = getBoxRule(ruleKey);
   const baseContents = useMemo(() => rule?.baseContents ?? [], [rule]);

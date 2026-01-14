@@ -16,6 +16,7 @@ function VariantSelector({
   baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
   onSelectVariant: (variant: VariantType) => void;
 }) {
+  const { t } = useTranslation();
   return (
       <div className="space-y-4">
         <div className="text-center mb-4">
@@ -53,7 +54,7 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
   const [selectedVariant, setSelectedVariant] = useState<VariantType | null>(null);
   const { addItem } = useCart();
   const [isAdding, setIsAdding] = useState(false);
-  const { t, tData } = useTranslation();
+  const { t, tData, locale } = useTranslation();
 
   // Ordenar cajas por días
   const sortedBoxes = [...boxes].sort((a, b) => (a.durationDays || 0) - (b.durationDays || 0));
