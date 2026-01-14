@@ -41,14 +41,3 @@ export default async function CategoryPage({ params }: PageProps) {
     </div>
   );
 }
-
-// Generate static params for all categories
-export async function generateStaticParams() {
-  const categories = await fetchProductCategories();
-
-  return categories
-    .filter((cat) => cat.id !== "cajas")
-    .map((category) => ({
-      slug: category.slug,
-    }));
-}
