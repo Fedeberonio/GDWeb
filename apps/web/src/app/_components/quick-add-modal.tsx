@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useCart } from "@/modules/cart/context";
 import type { Box } from "@/modules/catalog/types";
 import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selector/helpers";
 import productMetadata from "@/data/productMetadata.json";
 import { ProductImageFallback } from "./product-image-fallback";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type QuickAddModalProps = {
   box: Box;
@@ -20,8 +22,17 @@ type QuickAddModalProps = {
 
 export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimensions, weight, onClose, onCustomize }: QuickAddModalProps) {
   const { addItem } = useCart();
+  const { locale } = useTranslation();
   const [selectedVariant, setSelectedVariant] = useState<VariantType>("mix");
   const [isAdding, setIsAdding] = useState(false);
+
+  // Bloquear scroll del body cuando el modal está abierto
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
 
   // Filtrar contenido según variante
   const getFilteredContents = (variant: VariantType) => {
@@ -53,7 +64,7 @@ export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimen
   };
 
   const filteredContents = getFilteredContents(selectedVariant);
-  const variantInfo = getVariantInfo(selectedVariant);
+  const variantInfo = getVariantInfo(selectedVariant, locale);
 
   // Calcular estadísticas
   const totalProducts = filteredContents.length;
@@ -93,9 +104,24 @@ export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimen
     }, 500);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+  // Render using Portal to escape parent stacking contexts
+  if (typeof window === "undefined") return null;
+
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+      onClick={(e) => {
+        // Cerrar al hacer clic en el fondo
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      style={{ position: "fixed" }}
+    >
+      <div 
+        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl z-[10000]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white border-b-2 border-[var(--gd-color-leaf)]/20 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -121,7 +147,7 @@ export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimen
             </p>
             <div className="grid grid-cols-3 gap-3">
               {(["mix", "fruity", "veggie"] as VariantType[]).map((variant) => {
-                const info = getVariantInfo(variant);
+                const info = getVariantInfo(variant, locale);
                 const isSelected = selectedVariant === variant;
                 return (
                   <button
@@ -278,6 +304,7 @@ export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimen
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

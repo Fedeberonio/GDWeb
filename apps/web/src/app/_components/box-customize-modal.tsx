@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect, @typescript-eslint/no-explicit-any */
 
 import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useCart } from "@/modules/cart/context";
 import type { Box, Product } from "@/modules/catalog/types";
@@ -9,6 +10,7 @@ import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selec
 import { getProductMeta, computeSlots, getBoxContentsForVariant, computeBoxPrice, computeWeight } from "@/modules/box-builder/utils";
 import productMetadata from "@/data/productMetadata.json";
 import { SwapProductModal } from "./box-builder/swap-product-modal";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 // Componente para manejar imágenes con fallback (versión mejorada con URLs remotas)
 function ProductImageWithFallback({
@@ -52,7 +54,7 @@ function ProductImageWithFallback({
       alt={productName}
       fill
       sizes="48px"
-      className="object-cover"
+      className="object-contain p-1"
       onError={() => {
         if (currentImageIndex < allImageSources.length - 1) {
           setCurrentImageIndex(currentImageIndex + 1);
@@ -91,10 +93,19 @@ export function BoxCustomizeModal({
   onAddToCart,
 }: BoxCustomizeModalProps) {
   const { addItem } = useCart();
+  const { t, tData, locale } = useTranslation();
   const [selectedVariant, setSelectedVariant] = useState<VariantType>(initialVariant ?? "mix");
   const [isAdding, setIsAdding] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [swappedProducts, setSwappedProducts] = useState<Set<string>>(new Set());
+
+  // Bloquear scroll del body cuando el modal está abierto
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
 
   // Sincronizar la variante inicial si viene de la tarjeta (ej: usuario eligió Fruity)
   useEffect(() => {
@@ -238,7 +249,7 @@ export function BoxCustomizeModal({
   };
 
   const filteredContents = getFilteredContents(selectedVariant);
-  const variantInfo = getVariantInfo(selectedVariant);
+  const variantInfo = getVariantInfo(selectedVariant, locale);
 
   const filteredContentsMap = useMemo(
     () => new Map(filteredContents.map((item) => [item.productSlug, item])),
@@ -315,7 +326,7 @@ export function BoxCustomizeModal({
       "jugos-naturales",
       "productos-de-granja",
       "cajas",
-      "otros", // Excluir TODOS los productos de la categoría "otros" (aceites, granos, etc.)
+      // "otros" se permite ahora (arroz, granos, etc)
     ];
 
     return availableProducts.filter((product) => {
@@ -356,18 +367,18 @@ export function BoxCustomizeModal({
         nameLower.includes("perejil") ||
         nameLower.includes("cilantro");
 
-      // EXCLUIR cualquier producto que no sea claramente fruta o vegetal
-      // Solo categorías válidas: fruit_large, fruit_small, citrus, leafy, root, aromatic
-      const isValidFruitOrVegetable =
+      // Permitir frutas, vegetales Y productos de "otros" (granos)
+      const isValidProduct =
         category === "fruit_large" ||
         category === "fruit_small" ||
         category === "citrus" ||
         category === "leafy" ||
         category === "root" ||
-        category === "aromatic";
+        category === "aromatic" ||
+        category === "otros";
 
-      // Si no es fruta o vegetal válido, excluir
-      if (!isValidFruitOrVegetable) {
+      // Si no es un producto válido, excluir
+      if (!isValidProduct) {
         return false;
       }
 
@@ -442,15 +453,30 @@ export function BoxCustomizeModal({
     }, 500);
   };
 
-  return (
+  // Render using Portal to escape parent stacking contexts
+  if (typeof window === "undefined") return null;
+
+  return createPortal(
     <>
-      <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 backdrop-blur-sm p-4 pt-20">
-        <div className="relative w-full max-w-2xl max-h-[calc(100vh-5rem)] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+      <div 
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+        onClick={(e) => {
+          // Cerrar al hacer clic en el fondo
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+        style={{ position: "fixed" }}
+      >
+        <div 
+          className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl z-[10000]"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header */}
           <div className="sticky top-0 z-10 bg-white border-b-2 border-[var(--gd-color-leaf)]/20 px-6 py-4">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
-                Personaliza tu {box.name.es}
+                {t("box_customize.title")} {tData(box.name)}
               </h2>
               <button
                 type="button"
@@ -467,11 +493,11 @@ export function BoxCustomizeModal({
             {/* Selector de variante */}
             <div className="space-y-3">
               <p className="text-sm font-semibold text-[var(--gd-color-forest)]">
-                Elige tu variante:
+                {t("box_customize.choose_variant")}
               </p>
               <div className="grid grid-cols-3 gap-3">
                 {(["mix", "fruity", "veggie"] as VariantType[]).map((variant) => {
-                  const info = getVariantInfo(variant);
+                  const info = getVariantInfo(variant, locale);
                   const isSelected = selectedVariant === variant;
                   return (
                     <button
@@ -528,7 +554,7 @@ export function BoxCustomizeModal({
                     {slotBudget ? (
                       <div className="col-span-2 rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20">
                         <div className="flex justify-between items-end mb-1">
-                          <p className="text-[0.65rem] uppercase tracking-[0.25em] text-[var(--gd-color-forest)]">capacidad</p>
+                          <p className="text-[0.65rem] uppercase tracking-[0.25em] text-[var(--gd-color-forest)]">{t("box_customize.capacity")}</p>
                           <p className="text-xs font-bold text-[var(--gd-color-forest)]">
                             {slotsUsed} / {slotBudget}
                           </p>
@@ -542,7 +568,7 @@ export function BoxCustomizeModal({
                         </div>
                         {slotsUsed > slotBudget && (
                           <p className="mt-1 text-[10px] text-red-600 font-semibold text-right">
-                            Excedido por {slotsUsed - slotBudget}
+                            {t("box_customize.exceeded_by")} {slotsUsed - slotBudget}
                           </p>
                         )}
                       </div>
@@ -551,7 +577,7 @@ export function BoxCustomizeModal({
                         <p className="text-2xl font-bold text-[var(--gd-color-forest)]">
                           {totalProducts}
                         </p>
-                        <p className="text-xs text-[var(--color-muted)]">productos</p>
+                        <p className="text-xs text-[var(--color-muted)]">{t("box_customize.products")}</p>
                       </div>
                     )}
                     <div className={`${slotBudget ? "col-span-2" : ""} rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20`}>
@@ -559,9 +585,9 @@ export function BoxCustomizeModal({
                         <span className="text-xl">🧺</span>
                         <div>
                           <p className="text-sm font-bold text-[var(--gd-color-forest)]">
-                            {categories} categorías
+                            {categories} {t("box_customize.categories")}
                           </p>
-                          <p className="text-[10px] text-[var(--color-muted)]">en tu selección</p>
+                          <p className="text-[10px] text-[var(--color-muted)]">{t("box_customize.in_selection")}</p>
                         </div>
                       </div>
                     </div>
@@ -573,7 +599,7 @@ export function BoxCustomizeModal({
                       {dimensions && (
                         <div className="rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20">
                           <p className="text-[0.65rem] uppercase tracking-[0.25em] text-[var(--gd-color-forest)] mb-1">
-                            Tamaño
+                            {t("box_customize.size")}
                           </p>
                           <p className="text-sm font-semibold text-[var(--color-foreground)]">
                             {dimensions}
@@ -583,7 +609,7 @@ export function BoxCustomizeModal({
                       {weight && (
                         <div className="rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20">
                           <p className="text-[0.65rem] uppercase tracking-[0.25em] text-[var(--gd-color-forest)] mb-1">
-                            Peso Calculado
+                            {t("box_customize.calculated_weight")}
                           </p>
                           <p className="text-sm font-semibold text-[var(--color-foreground)]">
                             {formattedWeight}
@@ -596,7 +622,7 @@ export function BoxCustomizeModal({
                   {/* Precio con extras */}
                   <div className="pt-3 border-t border-[var(--gd-color-leaf)]/20">
                     <p className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-1">
-                      Precio
+                      {t("box_customize.price")}
                     </p>
                     <div className="space-y-1">
                       <div className="flex items-baseline gap-2">
@@ -612,10 +638,10 @@ export function BoxCustomizeModal({
                       {priceInfo.extras > 0 && (
                         <div className="space-y-0.5">
                           <p className="text-xs text-orange-600 font-semibold">
-                            Extras: +RD${priceInfo.extras.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {t("box_customize.extras")}: +RD${priceInfo.extras.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                           <p className="text-lg font-bold text-[var(--gd-color-forest)]">
-                            Total: RD${totalPrice.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {t("box_customize.total")}: RD${totalPrice.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                       )}
@@ -627,7 +653,7 @@ export function BoxCustomizeModal({
               {/* Grid de productos con botón de swap */}
               <div className="mt-6 pt-6 border-t border-[var(--gd-color-leaf)]/20">
                 <p className="text-xs font-semibold text-[var(--gd-color-forest)] mb-3">
-                  Productos incluidos (haz clic en 🔄 para cambiar):
+                  {t("box_customize.included_products")}
                 </p>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                   {currentProducts.map((item, index) => {
@@ -695,7 +721,7 @@ export function BoxCustomizeModal({
                               });
                             }}
                             className="absolute inset-0 flex items-center justify-center bg-black/5 hover:bg-black/40 transition-all rounded-lg backdrop-blur-[1px]"
-                            title="Cambiar producto"
+                            title={t("box_customize.swap_product")}
                           >
                             <span className="w-8 h-8 rounded-full bg-white/90 text-[var(--gd-color-forest)] text-sm flex items-center justify-center shadow-sm hover:scale-110 hover:bg-[var(--gd-color-leaf)] hover:text-white transition-all transform scale-90 md:scale-75 md:opacity-70 group-hover:scale-100 group-hover:opacity-100">
                               🔄
@@ -723,7 +749,7 @@ export function BoxCustomizeModal({
                 disabled={isAdding}
                 className="flex-1 rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-4 text-base font-bold text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50"
               >
-                {isAdding ? "Agregando..." : "✓ Confirmar y agregar al carrito"}
+                {isAdding ? t("box_customize.adding") : t("box_customize.confirm_add")}
               </button>
             </div>
           </div>
@@ -745,6 +771,7 @@ export function BoxCustomizeModal({
           onSwap={(newSlug, quantity) => handleSwap(productToSwap.slug, newSlug, quantity)}
         />
       )}
-    </>
+    </>,
+    document.body
   );
 }

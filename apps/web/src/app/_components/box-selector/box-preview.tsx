@@ -7,6 +7,7 @@ import type { Box } from "@/modules/catalog/types";
 import { calculateVariantComposition, getVariantInfo, getVisualCategory, type VariantType } from "./helpers";
 import { useState } from "react";
 import productMetadata from "@/data/productMetadata.json";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type BoxPreviewProps = {
   box: Box;
@@ -18,9 +19,10 @@ type BoxPreviewProps = {
 
 export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant }: BoxPreviewProps) {
   const { addItem } = useCart();
+  const { locale, t, tData } = useTranslation();
   const [isAdded, setIsAdded] = useState(false);
 
-  const info = getVariantInfo(variant);
+  const info = getVariantInfo(variant, locale);
   const composition = calculateVariantComposition(baseContents);
 
   // Agrupar productos por categoría visual
@@ -33,19 +35,19 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
   }, {} as Record<string, typeof baseContents>);
 
   const categoryLabels: Record<string, { icon: string; label: string }> = {
-    aromatic: { icon: "🌶️", label: "Aromáticas" },
-    leafy: { icon: "🥬", label: "Hojas verdes" },
-    fruit_large: { icon: "🍎", label: "Frutas" },
-    fruit_small: { icon: "🍎", label: "Frutas" },
-    root: { icon: "🥔", label: "Raíces" },
-    citrus: { icon: "🍊", label: "Cítricos" },
+    aromatic: { icon: "🌶️", label: t("variants.categories.aromatic") },
+    leafy: { icon: "🥬", label: t("variants.categories.leafy") },
+    fruit_large: { icon: "🍎", label: t("variants.categories.fruit") },
+    fruit_small: { icon: "🍎", label: t("variants.categories.fruit") },
+    root: { icon: "🥔", label: t("variants.categories.root") },
+    citrus: { icon: "🍊", label: t("variants.categories.citrus") },
   };
 
   const handleAddToCart = () => {
     addItem({
       slug: `${box.slug}-${variant}`,
       type: "box",
-      name: `${box.name.es} (${variant.toUpperCase()})`,
+      name: `${tData(box.name)} (${variant.toUpperCase()})`,
       quantity: 1,
       price: box.price.amount,
       slotValue: 0,
@@ -60,8 +62,8 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
     (box.id === "box-1" || box.slug.includes("caribbean")
       ? "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png"
       : box.id === "box-2" || box.slug.includes("island")
-      ? "/images/boxes/box-2-island-weekssential-veggie-product.jpg"
-      : "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg");
+        ? "/images/boxes/box-2-island-weekssential-veggie-product.jpg"
+        : "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg");
 
   // Calcular balance visual (simplificado)
   const getBalancePercentage = (current: number, min: number, max: number): number => {
@@ -73,8 +75,8 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
   const rule = box.id === "box-1" || box.slug.includes("caribbean")
     ? { categoryBudget: { aromatic: { min: 1, max: 2 }, leafy: { min: 1, max: 3 }, fruit_large: { min: 1, max: 2 }, root: { min: 2, max: 4 }, citrus: { min: 2, max: 4 } } }
     : box.id === "box-2" || box.slug.includes("island")
-    ? { categoryBudget: { aromatic: { min: 1, max: 3 }, leafy: { min: 2, max: 4 }, fruit_large: { min: 2, max: 3 }, root: { min: 3, max: 6 }, citrus: { min: 3, max: 5 } } }
-    : { categoryBudget: { aromatic: { min: 2, max: 4 }, leafy: { min: 3, max: 6 }, fruit_large: { min: 2, max: 4 }, root: { min: 4, max: 8 }, citrus: { min: 4, max: 6 } } };
+      ? { categoryBudget: { aromatic: { min: 1, max: 3 }, leafy: { min: 2, max: 4 }, fruit_large: { min: 2, max: 3 }, root: { min: 3, max: 6 }, citrus: { min: 3, max: 5 } } }
+      : { categoryBudget: { aromatic: { min: 2, max: 4 }, leafy: { min: 3, max: 6 }, fruit_large: { min: 2, max: 4 }, root: { min: 4, max: 8 }, citrus: { min: 4, max: 6 } } };
 
   return (
     <section className="box-preview space-y-8">
@@ -84,10 +86,10 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
           onClick={onBack}
           className="mb-4 text-sm text-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)] transition-colors flex items-center gap-2 mx-auto"
         >
-          ← Volver a variantes
+          {t("box_preview.back_variants")}
         </button>
         <h2 className="font-display text-3xl md:text-4xl font-bold text-[var(--gd-color-forest)] mb-2">
-          ✓ Tu caja está lista
+          {t("box_preview.box_ready")}
         </h2>
       </div>
 
@@ -97,7 +99,7 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
           <div className="relative h-64 lg:h-full min-h-[300px] rounded-2xl overflow-hidden bg-[var(--color-background-muted)]">
             <Image
               src={boxImage}
-              alt={`${box.name.es} ${info.tagline}`}
+              alt={`${tData(box.name)} ${info.tagline}`}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-contain object-center p-8"
@@ -108,10 +110,10 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
           <div className="box-info space-y-6">
             <div>
               <h3 className="font-display text-3xl font-bold text-[var(--gd-color-forest)] mb-2">
-                {info.icon} {box.name.es} ({variant.toUpperCase()})
+                {info.icon} {tData(box.name)} ({variant.toUpperCase()})
               </h3>
               <p className="text-sm text-[var(--color-muted)] mb-1">
-                ⏱️ {box.durationDays} días • ♻️ Retornable
+                ⏱️ {box.durationDays} {t("boxes.duration_days")} • ♻️ {t("box_preview.returnable")}
               </p>
               <p className="text-base font-semibold text-[var(--gd-color-leaf)] italic">
                 {info.tagline}
@@ -120,24 +122,24 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
 
             <div className="stats space-y-2">
               <p className="text-sm text-[var(--color-foreground)]">
-                ✓ {composition.total} productos frescos
+                ✓ {composition.total} {t("box_preview.fresh_products")}
               </p>
               <p className="text-sm text-[var(--color-foreground)]">
-                📊 Balance: {variant === "mix" ? "Perfecto" : variant === "fruity" ? "Tropical" : "Green Power"}
+                📊 {t("box_preview.balance")} {variant === "mix" ? t("box_preview.balance_perfect") : variant === "fruity" ? t("box_preview.balance_tropical") : t("box_preview.balance_green")}
               </p>
             </div>
 
             {/* Balance visual */}
             <div className="balance-bars space-y-3 pt-4 border-t border-[var(--gd-color-leaf)]/20">
               <h4 className="text-sm font-bold text-[var(--gd-color-forest)] uppercase mb-3">
-                Balance de categorías
+                {t("box_preview.category_balance")}
               </h4>
               {[
-                { key: "aromatic", label: "🌶️ Aromáticas", current: composition.aromatic },
-                { key: "leafy", label: "🥬 Hojas", current: composition.leafy },
-                { key: "fruit", label: "🍎 Frutas", current: composition.fruit },
-                { key: "root", label: "🥔 Raíces", current: composition.root },
-                { key: "citrus", label: "🍊 Cítricos", current: composition.citrus },
+                { key: "aromatic", label: `🌶️ ${t("variants.categories.aromatic")}`, current: composition.aromatic },
+                { key: "leafy", label: `🥬 ${t("variants.categories.leafy")}`, current: composition.leafy },
+                { key: "fruit", label: `🍎 ${t("variants.categories.fruit")}`, current: composition.fruit },
+                { key: "root", label: `🥔 ${t("variants.categories.root")}`, current: composition.root },
+                { key: "citrus", label: `🍊 ${t("variants.categories.citrus")}`, current: composition.citrus },
               ].map(({ key, label, current }) => {
                 const budget = rule.categoryBudget[key as keyof typeof rule.categoryBudget];
                 if (!budget) return null;
@@ -166,18 +168,18 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
             {/* Contenido base resumido */}
             <div className="contents pt-4 border-t border-[var(--gd-color-leaf)]/20">
               <h4 className="text-sm font-bold text-[var(--gd-color-forest)] uppercase mb-3">
-                Incluye:
+                {t("box_preview.includes")}
               </h4>
               <div className="space-y-2">
                 {Object.entries(contentsByCategory).map(([category, items]) => {
-                  const label = categoryLabels[category] || { icon: "📦", label: "Otros" };
+                  const label = categoryLabels[category] || { icon: "📦", label: t("variants.categories.others") };
                   return (
                     <div key={category} className="category flex items-center gap-2 text-sm text-[var(--color-foreground)]">
                       <span>{label.icon}</span>
                       <span className="font-medium">{label.label}:</span>
                       <span className="text-[var(--color-muted)]">
                         {items.slice(0, 3).map((i) => i.name).join(", ")}
-                        {items.length > 3 && ` +${items.length - 3} más`}
+                        {items.length > 3 && ` +${items.length - 3} ${t("box_preview.more")}`}
                       </span>
                     </div>
                   );
@@ -187,7 +189,7 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
 
             <div className="pt-4 border-t border-[var(--gd-color-leaf)]/20">
               <p className="text-center">
-                <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">Precio</span>
+                <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">{t("box_customize.price")}</span>
                 <span className="block font-display text-4xl font-bold bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] to-[var(--gd-color-forest)] bg-clip-text text-transparent mt-2">
                   RD${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}
                 </span>
@@ -201,40 +203,32 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
                 onClick={onChangeVariant}
                 className="w-full rounded-2xl border-2 border-[var(--gd-color-leaf)] bg-white/90 px-4 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition-all duration-300 hover:bg-[var(--gd-color-sprout)]/80 hover:border-[var(--gd-color-forest)]"
               >
-                ✏️ Cambiar variante
+                {t("box_preview.change_variant")}
               </button>
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className={`w-full rounded-2xl px-6 py-4 text-base font-bold text-white shadow-xl transition-all duration-300 ${
-                  isAdded
+                className={`w-full rounded-2xl px-6 py-4 text-base font-bold text-white shadow-xl transition-all duration-300 ${isAdded
                     ? "bg-[var(--gd-color-leaf)]"
                     : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:scale-105 hover:shadow-2xl"
-                }`}
+                  }`}
               >
                 {isAdded ? (
                   <>
                     <span className="text-xl">✓</span>
-                    <span>Agregado al carrito</span>
+                    <span>{t("box_preview.added_to_cart")}</span>
                   </>
                 ) : (
                   <>
                     <span className="text-xl">✅</span>
-                    <span>Agregar al carrito</span>
+                    <span>{t("box_preview.add_to_cart")}</span>
                   </>
                 )}
               </button>
             </div>
 
             {/* Personalización opcional */}
-            <div className="optional pt-4 border-t border-[var(--gd-color-leaf)]/20 text-center">
-              <Link
-                href="/armar"
-                className="text-sm text-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)] transition-colors inline-flex items-center gap-2"
-              >
-                ✨ ¿Quieres personalizar el contenido?
-              </Link>
-            </div>
+
           </div>
         </div>
       </div>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Montserrat, Patua_One } from "next/font/google";
 import { Providers } from "./providers";
+import { WhatsAppFloatButton } from "./_components/whatsapp-float-button";
+import { ProfileFormModal } from "@/modules/user/profile-form-modal";
 import "./globals.css";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/modules/i18n/locales";
 
@@ -38,7 +40,8 @@ export const metadata: Metadata = {
     "Santo Domingo",
   ],
   icons: {
-    icon: "/favicon.ico",
+    icon: "/images/logo/favicon.png",
+    apple: "/images/logo/favicon.png",
   },
   openGraph: {
     title: "Green Dolio | De la huerta a tu puerta",
@@ -71,7 +74,11 @@ export default async function RootLayout({
   return (
     <html lang={initialLocale}>
       <body className={`${montserrat.variable} ${patuaOne.variable} antialiased`}>
-        <Providers initialLocale={initialLocale}>{children}</Providers>
+        <Providers initialLocale={initialLocale}>
+          {children}
+          <WhatsAppFloatButton />
+          <ProfileFormModal />
+        </Providers>
       </body>
     </html>
   );

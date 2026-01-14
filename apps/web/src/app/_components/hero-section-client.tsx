@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import { Container } from "./container";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 export function HeroSectionClient() {
+  const { t } = useTranslation();
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[var(--gd-color-sprout)]/30 via-white to-[var(--gd-color-sky)]/20">
-      {/* Imagen de fondo con productos deliciosos - MÁS PROMINENTE */}
-      <div className="absolute inset-0 opacity-[0.4]">
+      {/* Imagen de fondo con productos deliciosos - VISIBLE PERO NO DOMINANTE */}
+      <div className="absolute inset-0 opacity-[0.35]">
         <Image
           src="/images/hero/hero-rainbow-abundance.jpg"
           alt=""
@@ -19,8 +21,9 @@ export function HeroSectionClient() {
         />
       </div>
       
-      {/* Overlay con gradiente más orgánico */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[var(--gd-color-sprout)]/50 via-white/70 to-white/90" />
+      {/* Overlay balanceado para legibilidad y visibilidad de imagen */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-white/85" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[var(--gd-color-sprout)]/35 via-white/50 to-white/90" />
       
       {/* Elementos decorativos orgánicos - Más visibles */}
       <div className="absolute top-0 right-0 h-[500px] w-[500px] rounded-full bg-[var(--gd-color-leaf)]/15 blur-3xl animate-pulse" />
@@ -33,17 +36,22 @@ export function HeroSectionClient() {
         backgroundSize: '40px 40px'
       }} />
       
-      <Container className="relative z-10 py-8 md:py-12">
-        <div className="text-center space-y-4 mb-6">
-          <div className="inline-flex items-center gap-1.5 rounded-full border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-r from-white/95 via-[var(--gd-color-sprout)]/40 to-white/95 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.3em] text-[var(--gd-color-forest)] shadow-md backdrop-blur-sm">
-            <span className="text-base">🌱</span> 
-            <span>Primera empresa 100% sustentable en República Dominicana</span>
+      <Container className="relative z-10 py-12 md:py-16 lg:py-20">
+        <div className="text-center space-y-6 md:space-y-8 mb-8">
+
+          <div className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gd-color-leaf)]/50 bg-white/98 backdrop-blur-md px-5 py-2.5 md:px-6 md:py-3 text-xs md:text-sm font-bold uppercase tracking-[0.3em] text-[var(--gd-color-forest)] shadow-xl">
+            <span className="text-lg md:text-xl">🌱</span> 
+            <span>{t("hero.badge")}</span>
           </div>
-          <h1 className="font-display text-4xl leading-tight bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] to-[var(--gd-color-forest)] bg-clip-text text-transparent sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-md font-bold">
-            Cajas frescas, ensaladas, jugos naturales y productos caseros del día
+          
+          {/* Título con fondo transparente y blur */}
+          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-[1.1] font-black text-[var(--gd-color-forest)] px-6 py-4 md:px-8 md:py-6 mx-auto max-w-5xl rounded-3xl bg-white/50 backdrop-blur-md shadow-2xl border-2 border-[var(--gd-color-leaf)]/20">
+            {t("hero.title")}
           </h1>
-          <p className="max-w-3xl mx-auto text-lg sm:text-xl md:text-2xl text-[var(--gd-color-forest)] leading-relaxed font-semibold drop-shadow-sm">
-            Directamente de productores locales • Delivery gratis 3 veces por semana • Packaging retornable • Cero plástico
+          
+          {/* Subtítulo con fondo transparente y blur */}
+          <p className="font-display max-w-3xl mx-auto text-xl md:text-2xl lg:text-3xl text-[var(--gd-color-forest)] leading-relaxed font-bold px-6 py-3 md:px-8 md:py-4 rounded-2xl bg-white/45 backdrop-blur-md shadow-xl border-2 border-[var(--gd-color-leaf)]/20">
+            {t("hero.subtitle")}
           </p>
         </div>
       </Container>

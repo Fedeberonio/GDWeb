@@ -2,11 +2,13 @@ import { type FirebaseApp, getApps, initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics, isSupported as isAnalyticsSupported } from "firebase/analytics";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
+import { getFirestore, type Firestore } from "firebase/firestore";
 
 import { getClientEnv } from "../config/env";
 
 let clientApp: FirebaseApp | undefined;
 let storageInstance: FirebaseStorage | undefined;
+let firestoreInstance: Firestore | undefined;
 
 function getFirebaseConfig() {
   const env = getClientEnv();
@@ -48,4 +50,10 @@ export function getFirebaseStorage() {
   if (storageInstance) return storageInstance;
   storageInstance = getStorage(getFirebaseApp());
   return storageInstance;
+}
+
+export function getFirestoreDb() {
+  if (firestoreInstance) return firestoreInstance;
+  firestoreInstance = getFirestore(getFirebaseApp());
+  return firestoreInstance;
 }

@@ -9,14 +9,15 @@ import type { Product, ProductCategory } from "@/modules/catalog/types";
 import { useCart } from "@/modules/cart/context";
 import { ProductSeasonalBadge } from "./product-seasonal-badge";
 import { ProductImageFallback } from "./product-image-fallback";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type ProductCatalogGridProps = {
   products: Product[];
   categories: ProductCategory[];
 };
 
-
 export function ProductCatalogGrid({ products, categories }: ProductCatalogGridProps) {
+  const { t, tData } = useTranslation();
   const { addItem } = useCart();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [query, setQuery] = useState("");
@@ -42,10 +43,10 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
 
   const filteredProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    
+
     // Función para detectar productos baby
     const isBaby = (product: Product) =>
-      product.slug.toLowerCase().includes("baby") || 
+      product.slug.toLowerCase().includes("baby") ||
       product.tags?.some((tag) => tag.toLowerCase() === "baby-only");
 
     return products
@@ -57,8 +58,8 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
         if (onlyFeatured && !product.isFeatured) return false;
         if (normalizedQuery.length > 0) {
           const haystack = [
-            product.name.es,
-            product.description?.es,
+            tData(product.name),
+            tData(product.description),
             product.slug,
             product.tags.join(" "),
           ]
@@ -72,16 +73,16 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
         if (a.isFeatured !== b.isFeatured) {
           return a.isFeatured ? -1 : 1;
         }
-        return a.name.es.localeCompare(b.name.es);
+        return tData(a.name).localeCompare(tData(b.name));
       });
-  }, [products, onlyAvailable, selectedCategory, onlyFeatured, query]);
+  }, [products, onlyAvailable, selectedCategory, onlyFeatured, query, tData]);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP", maximumFractionDigits: 0 }).format(amount);
 
   const categoryFilters = [
-    { id: "all", label: "Todas las categorías" },
-    ...categories.map((category) => ({ id: category.id, label: category.name.es })),
+    { id: "all", label: t("catalog.all_categories") },
+    ...categories.map((category) => ({ id: category.id, label: tData(category.name) })),
   ];
 
   return (
@@ -89,7 +90,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
       {/* Filtros Sticky */}
       <div className="sticky top-0 z-40 rounded-3xl border border-[var(--color-border)] bg-white/95 backdrop-blur-md p-6 shadow-lg space-y-4">
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--color-brand)]">Filtros</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--color-brand)]">{t("catalog.filters")}</p>
           <div className="flex flex-wrap gap-2">
             {categoryFilters.map((category) => {
               const isActive = selectedCategory === category.id;
@@ -98,11 +99,10 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                   key={category.id}
                   type="button"
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                    isActive
-                      ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white shadow-sm"
-                      : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand)]/5"
-                  }`}
+                  className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${isActive
+                    ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-white shadow-sm"
+                    : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand)]/5"
+                    }`}
                 >
                   {category.label}
                 </button>
@@ -118,7 +118,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar producto, categoría o etiqueta..."
+              placeholder={t("catalog.search_placeholder")}
               className="flex-1 border-none bg-transparent text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none"
             />
           </label>
@@ -126,31 +126,29 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
           <button
             type="button"
             onClick={() => setOnlyFeatured((state) => !state)}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-              onlyFeatured
-                ? "bg-[var(--color-brand)] text-white shadow-sm"
-                : "border border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]"
-            }`}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${onlyFeatured
+              ? "bg-[var(--color-brand)] text-white shadow-sm"
+              : "border border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]"
+              }`}
           >
-            ⭐ Solo destacados
+            ⭐ {t("catalog.only_featured")}
           </button>
 
           <button
             type="button"
             onClick={() => setOnlyAvailable((state) => !state)}
-            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-              onlyAvailable
-                ? "bg-[var(--color-success)] text-white shadow-sm"
-                : "border border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-success)] hover:text-[var(--color-success)]"
-            }`}
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${onlyAvailable
+              ? "bg-[var(--color-success)] text-white shadow-sm"
+              : "border border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-success)] hover:text-[var(--color-success)]"
+              }`}
           >
-            {onlyAvailable ? "✓ Activos" : "Incluir inactivos"}
+            {onlyAvailable ? `✓ ${t("catalog.active")}` : t("catalog.include_inactive")}
           </button>
         </div>
-        
+
         {/* Contador de resultados */}
         <div className="text-xs text-[var(--color-muted)] font-medium">
-          {filteredProducts.length} {filteredProducts.length === 1 ? "producto encontrado" : "productos encontrados"}
+          {filteredProducts.length} {filteredProducts.length === 1 ? t("catalog.results_one") : t("catalog.results_many")}
         </div>
       </div>
 
@@ -164,49 +162,49 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
             product.status === "active"
               ? null
               : product.status === "coming_soon"
-                ? "Próximamente"
+                ? t("catalog.status_coming_soon")
                 : product.status === "inactive"
-                  ? "Temporalmente no disponible"
-                  : "Descatalogado";
+                  ? t("catalog.status_temp_unavailable")
+                  : t("catalog.status_discontinued");
 
           const nutritionBadges: Array<{ label: string; tone: "green" | "amber" }> = [];
-          if (product.nutrition?.organic) nutritionBadges.push({ label: "Orgánico", tone: "green" });
-          if (product.nutrition?.vegan) nutritionBadges.push({ label: "Vegano", tone: "green" });
-          if (product.nutrition?.glutenFree) nutritionBadges.push({ label: "Gluten Free", tone: "amber" });
+          if (product.nutrition?.organic) nutritionBadges.push({ label: t("catalog.organic"), tone: "green" });
+          if (product.nutrition?.vegan) nutritionBadges.push({ label: t("catalog.vegan"), tone: "green" });
+          if (product.nutrition?.glutenFree) nutritionBadges.push({ label: t("catalog.gluten_free"), tone: "amber" });
 
           const tagBadges = product.tags.slice(0, 4).map((tag) => ({ label: `#${tag}`, tone: "neutral" as const }));
 
           // Determinar el estilo de imagen basado en el tipo de producto
-          const productName = product.name.es.toLowerCase();
+          const productName = tData(product.name).toLowerCase();
           const productSlug = product.slug.toLowerCase();
           const productTags = product.tags.join(" ").toLowerCase();
-          const isBottleProduct = productName.includes("jugo") || productName.includes("juice") || 
-                                  productName.includes("china chinola") ||
-                                  productSlug.includes("jugo") || productSlug.includes("juice") ||
-                                  productSlug.includes("china-chinola") ||
-                                  productTags.includes("jugo") || productTags.includes("juice");
-          const isPackageProduct = productName.includes("arroz") || productName.includes("habichuela") || 
-                                   productName.includes("frijol") || productName.includes("grano") ||
-                                   productName.includes("lenteja") || productName.includes("quinoa") ||
-                                   productSlug.includes("arroz") || productSlug.includes("habichuela") ||
-                                   productSlug.includes("frijol") || productSlug.includes("grano") ||
-                                   productSlug.includes("lenteja") || productSlug.includes("quinoa") ||
-                                   productTags.includes("arroz") || productTags.includes("habichuela") ||
-                                   productTags.includes("lenteja") || productTags.includes("quinoa");
+          const isBottleProduct = productName.includes("jugo") || productName.includes("juice") ||
+            productName.includes("china chinola") ||
+            productSlug.includes("jugo") || productSlug.includes("juice") ||
+            productSlug.includes("china-chinola") ||
+            productTags.includes("jugo") || productTags.includes("juice");
+          const isPackageProduct = productName.includes("arroz") || productName.includes("habichuela") ||
+            productName.includes("frijol") || productName.includes("grano") ||
+            productName.includes("lenteja") || productName.includes("quinoa") ||
+            productSlug.includes("arroz") || productSlug.includes("habichuela") ||
+            productSlug.includes("frijol") || productSlug.includes("grano") ||
+            productSlug.includes("lenteja") || productSlug.includes("quinoa") ||
+            productTags.includes("arroz") || productTags.includes("habichuela") ||
+            productTags.includes("lenteja") || productTags.includes("quinoa");
           const isOilProduct = productName.includes("aceite") || productName.includes("oil") ||
-                                productSlug.includes("aceite") || productSlug.includes("oil") ||
-                                productTags.includes("aceite") || productTags.includes("oil");
-          
+            productSlug.includes("aceite") || productSlug.includes("oil") ||
+            productTags.includes("aceite") || productTags.includes("oil");
+
           // Detectar si es una ensalada
           const isSalad = productName.includes("ensalada") || productSlug.includes("ensalada") ||
-                          productTags.includes("ensalada") || productTags.includes("salad") ||
-                          product.categoryId?.toLowerCase().includes("ensalada") ||
-                          product.categoryId?.toLowerCase().includes("salad");
-          
+            productTags.includes("ensalada") || productTags.includes("salad") ||
+            product.categoryId?.toLowerCase().includes("ensalada") ||
+            product.categoryId?.toLowerCase().includes("salad");
+
           // Productos que necesitan verse completos (botellas, paquetes, aceites)
           const needsFullView = isBottleProduct || isPackageProduct || isOilProduct;
-          const imageClassName = needsFullView 
-            ? "object-contain object-center bg-white p-6" 
+          const imageClassName = needsFullView
+            ? "object-contain object-center bg-white p-6"
             : "object-cover";
 
           // Si es ensalada, mostrar diseño compacto
@@ -225,31 +223,31 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                   {product.image ? (
                     <Image
                       src={product.image}
-                      alt={product.name.es}
+                      alt={tData(product.name)}
                       fill
                       sizes="(max-width: 768px) 100vw, 400px"
                       className="object-cover"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center bg-[var(--color-background-muted)] text-xs text-[var(--color-muted)]">
-                      Foto en preparación
+                      {t("catalog.photo_coming_soon")}
                     </div>
                   )}
                   {product.isFeatured && (
                     <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-[var(--color-brand)] shadow-sm">
-                      Destacado
+                      {t("category.featured")}
                     </span>
                   )}
                 </div>
-                
+
                 {/* Contenido compacto */}
                 <div className="flex flex-1 flex-col space-y-2 p-4">
                   <div className="space-y-1">
                     <h3 className="font-display text-base font-bold text-[var(--color-foreground)] line-clamp-2">
-                      {product.name.es}
+                      {tData(product.name)}
                     </h3>
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-[var(--color-muted)]">{product.unit?.es || "Porción"}</p>
+                      <p className="text-xs text-[var(--color-muted)]">{tData(product.unit) || t("catalog.unit")}</p>
                       <p className="text-base font-bold text-[var(--color-foreground)]">{price}</p>
                     </div>
                   </div>
@@ -260,13 +258,12 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                       {[...nutritionBadges, ...tagBadges.slice(0, 2)].map((badge) => (
                         <span
                           key={`${product.id}-${badge.label}`}
-                          className={`rounded-full px-2 py-0.5 ${
-                            badge.tone === "green"
-                              ? "bg-[color:rgba(212,229,184,0.5)] text-[var(--color-brand)]"
-                              : badge.tone === "amber"
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-[var(--color-background-muted)] text-[var(--color-muted)]"
-                          }`}
+                          className={`rounded-full px-2 py-0.5 ${badge.tone === "green"
+                            ? "bg-[color:rgba(212,229,184,0.5)] text-[var(--color-brand)]"
+                            : badge.tone === "amber"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-[var(--color-background-muted)] text-[var(--color-muted)]"
+                            }`}
                         >
                           {badge.label}
                         </span>
@@ -281,7 +278,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                         addItem({
                           type: "product",
                           slug: product.slug,
-                          name: product.name.es,
+                          name: tData(product.name),
                           quantity: 1,
                           price: product.price.amount,
                           image: product.image,
@@ -289,26 +286,25 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                           weightKg: product.logistics?.weightKg ?? 0,
                         });
                         setAddedProductId(product.id);
-                        toast.success(`${product.name.es} agregado al carrito 🛒`, {
+                        toast.success(`${tData(product.name)} ${t("common.added").toLowerCase()} 🛒`, {
                           icon: "✅",
                         });
                         setTimeout(() => setAddedProductId(null), 2000);
                       }}
-                      className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-white shadow-sm transition ${
-                        isAdded
-                          ? "bg-[var(--gd-color-leaf)]"
-                          : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)]"
-                      }`}
+                      className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-white shadow-sm transition ${isAdded
+                        ? "bg-[var(--gd-color-leaf)]"
+                        : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)]"
+                        }`}
                     >
                       {isAdded ? (
                         <>
                           <span>✓</span>
-                          <span>Agregado</span>
+                          <span>{t("common.added")}</span>
                         </>
                       ) : (
                         <>
                           <span>🛒</span>
-                          <span>Agregar al carrito</span>
+                          <span>{t("common.add_to_cart")}</span>
                         </>
                       )}
                     </button>
@@ -316,7 +312,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                       onClick={() => setSelectedProductDetails(product)}
                       className="inline-flex items-center justify-center rounded-lg border border-[var(--color-border)] px-3 py-2 text-xs font-semibold text-[var(--color-foreground)] transition hover:border-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)]"
                     >
-                      Ver detalles nutricionales
+                      {t("catalog.view_nutrition")}
                     </button>
                   </div>
                 </div>
@@ -343,13 +339,13 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                 <div className="absolute left-4 top-4 flex flex-col gap-2">
                   {product.isFeatured && (
                     <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[var(--color-brand)] shadow-sm">
-                      Destacado
+                      {t("category.featured")}
                     </span>
                   )}
                   {/* Badge de temporada - productos activos son de temporada por defecto */}
                   {product.status === "active" && (
-                    <ProductSeasonalBadge 
-                      isSeasonal={true} 
+                    <ProductSeasonalBadge
+                      isSeasonal={true}
                       isRefrigerated={product.tags.some(tag => tag.toLowerCase().includes("refrigerado") || tag.toLowerCase().includes("refrigerated"))}
                     />
                   )}
@@ -370,20 +366,20 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-display text-lg text-[var(--color-foreground)]">{product.name.es}</p>
-                      {product.unit?.es && (
-                        <p className="text-xs uppercase tracking-[0.25em] text-[var(--color-muted)]">{product.unit.es}</p>
+                      <p className="font-display text-lg text-[var(--color-foreground)]">{tData(product.name)}</p>
+                      {product.unit && (
+                        <p className="text-xs uppercase tracking-[0.25em] text-[var(--color-muted)]">{tData(product.unit)}</p>
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-[var(--color-foreground)]">{price}</p>
+                      <p className="text-base font-black text-emerald-950">{price}</p>
                       {salePrice && (
                         <p className="text-xs text-[var(--color-muted)] line-through">{salePrice}</p>
                       )}
                     </div>
                   </div>
-                  {product.description?.es && (
-                    <p className="text-sm text-[var(--color-muted)]">{product.description.es}</p>
+                  {product.description && (
+                    <p className="text-sm text-[var(--color-muted)]">{tData(product.description)}</p>
                   )}
                 </div>
 
@@ -392,13 +388,12 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                     {[...nutritionBadges, ...tagBadges].map((badge) => (
                       <span
                         key={`${product.id}-${badge.label}`}
-                        className={`rounded-full px-3 py-1 ${
-                          badge.tone === "green"
-                            ? "bg-[color:rgba(212,229,184,0.5)] text-[var(--color-brand)]"
-                            : badge.tone === "amber"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-[var(--color-background-muted)] text-[var(--color-muted)]"
-                        }`}
+                        className={`rounded-full px-3 py-1 ${badge.tone === "green"
+                          ? "bg-[color:rgba(212,229,184,0.5)] text-[var(--color-brand)]"
+                          : badge.tone === "amber"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-[var(--color-background-muted)] text-[var(--color-muted)]"
+                          }`}
                       >
                         {badge.label}
                       </span>
@@ -414,7 +409,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                       addItem({
                         type: "product",
                         slug: product.slug,
-                        name: product.name.es,
+                        name: tData(product.name),
                         quantity: 1,
                         price: product.price.amount,
                         image: product.image,
@@ -422,26 +417,25 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                         weightKg: product.logistics?.weightKg ?? 0,
                       });
                       setAddedProductId(product.id);
-                      toast.success(`${product.name.es} agregado al carrito 🛒`, {
+                      toast.success(`${tData(product.name)} ${t("common.added").toLowerCase()} 🛒`, {
                         icon: "✅",
                       });
                       setTimeout(() => setAddedProductId(null), 2000);
                     }}
-                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition ${
-                      isAdded
-                        ? "bg-[var(--gd-color-leaf)]"
-                        : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)]"
-                    }`}
+                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition ${isAdded
+                      ? "bg-[var(--gd-color-leaf)]"
+                      : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)]"
+                      }`}
                   >
                     {isAdded ? (
                       <>
                         <span>✓</span>
-                        <span>Agregado</span>
+                        <span>{t("common.added")}</span>
                       </>
                     ) : (
                       <>
                         <span>🛒</span>
-                        <span>Agregar al carrito</span>
+                        <span>{t("common.add_to_cart")}</span>
                       </>
                     )}
                   </motion.button>
@@ -449,7 +443,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                     href="#contacto"
                     className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--color-border)] px-4 py-2 text-sm font-semibold text-[var(--color-foreground)] transition hover:border-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)]"
                   >
-                    Ver detalles
+                    {t("combos.view_details")}
                   </Link>
                 </div>
               </div>
@@ -460,8 +454,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
 
       {filteredProducts.length === 0 && (
         <div className="rounded-3xl border border-[var(--color-border)] bg-white p-8 text-center text-sm text-[var(--color-muted)]">
-          No hay productos que coincidan con los filtros seleccionados. Ajusta la búsqueda o consulta directamente por
-          WhatsApp.
+          {t("catalog.no_results")}
         </div>
       )}
 
@@ -475,33 +468,33 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
             >
               ✕
             </button>
-            
+
             <div className="p-6 space-y-6">
               {/* Imagen */}
               {selectedProductDetails.image && (
                 <div className="relative h-64 w-full overflow-hidden rounded-xl">
                   <Image
                     src={selectedProductDetails.image}
-                    alt={selectedProductDetails.name.es}
+                    alt={tData(selectedProductDetails.name)}
                     fill
                     sizes="(max-width: 768px) 100vw, 800px"
                     className="object-cover"
                   />
                 </div>
               )}
-              
+
               {/* Información principal */}
               <div className="space-y-3">
                 <h2 className="font-display text-2xl font-bold text-[var(--color-foreground)]">
-                  {selectedProductDetails.name.es}
+                  {tData(selectedProductDetails.name)}
                 </h2>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-[var(--color-muted)]">{selectedProductDetails.unit?.es || "Porción"}</p>
+                  <p className="text-sm text-[var(--color-muted)]">{tData(selectedProductDetails.unit) || t("catalog.unit")}</p>
                   <p className="text-xl font-bold text-[var(--color-foreground)]">{formatCurrency(selectedProductDetails.price.amount)}</p>
                 </div>
-                {selectedProductDetails.description?.es && (
+                {selectedProductDetails.description && (
                   <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-                    {selectedProductDetails.description.es}
+                    {tData(selectedProductDetails.description)}
                   </p>
                 )}
               </div>
@@ -510,16 +503,16 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
               {selectedProductDetails.nutrition && (() => {
                 const nutrition = selectedProductDetails.nutrition as
                   | Partial<{
-                      calories: number;
-                      protein: number;
-                      carbs: number;
-                      fats: number;
-                      fiber: number;
-                      sugars: number;
-                      vegan: boolean;
-                      glutenFree: boolean;
-                      organic: boolean;
-                    }>
+                    calories: number;
+                    protein: number;
+                    carbs: number;
+                    fats: number;
+                    fiber: number;
+                    sugars: number;
+                    vegan: boolean;
+                    glutenFree: boolean;
+                    organic: boolean;
+                  }>
                   | undefined;
                 const hasNutritionData =
                   !!nutrition &&
@@ -529,66 +522,66 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                     nutrition.fats ||
                     nutrition.fiber ||
                     nutrition.sugars);
-                
+
                 if (!hasNutritionData) return null;
-                
+
                 return (
                   <div className="rounded-xl bg-gradient-to-br from-[var(--gd-color-sprout)]/40 to-white p-4 border-2 border-[var(--gd-color-leaf)]/30 space-y-4">
-                    <h3 className="text-sm font-bold text-[var(--gd-color-forest)] uppercase">Información Nutricional</h3>
+                    <h3 className="text-sm font-bold text-[var(--gd-color-forest)] uppercase">{t("catalog.nutrition_info")}</h3>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       {nutrition.calories && (
                         <div>
-                          <span className="text-[var(--color-muted)]">Calorías:</span>
+                          <span className="text-[var(--color-muted)]">{t("combos.calories")}:</span>
                           <span className="font-semibold ml-2">{nutrition.calories}</span>
                         </div>
                       )}
                       {nutrition.protein && (
                         <div>
-                          <span className="text-[var(--color-muted)]">Proteínas:</span>
+                          <span className="text-[var(--color-muted)]">{t("combos.protein")}:</span>
                           <span className="font-semibold ml-2">{nutrition.protein}g</span>
                         </div>
                       )}
                       {nutrition.carbs && (
                         <div>
-                          <span className="text-[var(--color-muted)]">Carbohidratos:</span>
+                          <span className="text-[var(--color-muted)]">{t("combos.carbs")}:</span>
                           <span className="font-semibold ml-2">{nutrition.carbs}g</span>
                         </div>
                       )}
                       {nutrition.fats && (
                         <div>
-                          <span className="text-[var(--color-muted)]">Grasas:</span>
+                          <span className="text-[var(--color-muted)]">{t("combos.fats")}:</span>
                           <span className="font-semibold ml-2">{nutrition.fats}g</span>
                         </div>
                       )}
                       {nutrition.fiber && (
                         <div>
-                          <span className="text-[var(--color-muted)]">Fibra:</span>
+                          <span className="text-[var(--color-muted)]">{t("category.fiber")}:</span>
                           <span className="font-semibold ml-2">{nutrition.fiber}g</span>
                         </div>
                       )}
                       {nutrition.sugars && (
                         <div>
-                          <span className="text-[var(--color-muted)]">Azúcares:</span>
+                          <span className="text-[var(--color-muted)]">{t("category.sugars")}:</span>
                           <span className="font-semibold ml-2">{nutrition.sugars}g</span>
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Badges nutricionales */}
                     <div className="flex flex-wrap gap-2 pt-2">
                       {selectedProductDetails.nutrition.organic && (
                         <span className="rounded-full bg-[color:rgba(212,229,184,0.5)] px-3 py-1 text-xs font-semibold text-[var(--color-brand)]">
-                          Orgánico
+                          {t("catalog.organic")}
                         </span>
                       )}
                       {selectedProductDetails.nutrition.vegan && (
                         <span className="rounded-full bg-[color:rgba(212,229,184,0.5)] px-3 py-1 text-xs font-semibold text-[var(--color-brand)]">
-                          Vegano
+                          {t("catalog.vegan")}
                         </span>
                       )}
                       {selectedProductDetails.nutrition.glutenFree && (
                         <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                          Gluten Free
+                          {t("catalog.gluten_free")}
                         </span>
                       )}
                     </div>
@@ -602,7 +595,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                   addItem({
                     type: "product",
                     slug: selectedProductDetails.slug,
-                    name: selectedProductDetails.name.es,
+                    name: tData(selectedProductDetails.name),
                     quantity: 1,
                     price: selectedProductDetails.price.amount,
                     image: selectedProductDetails.image,
@@ -615,16 +608,15 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                     setSelectedProductDetails(null);
                   }, 1500);
                 }}
-                className={`w-full rounded-lg px-4 py-3 text-sm font-semibold text-white shadow-lg transition ${
-                  addedProductId === selectedProductDetails.id
-                    ? "bg-[var(--gd-color-leaf)]"
-                    : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)]"
-                }`}
+                className={`w-full rounded-lg px-4 py-3 text-sm font-semibold text-white shadow-lg transition ${addedProductId === selectedProductDetails.id
+                  ? "bg-[var(--gd-color-leaf)]"
+                  : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)]"
+                  }`}
               >
                 {addedProductId === selectedProductDetails.id ? (
-                  "✓ Agregado al carrito"
+                  `✓ ${t("common.added")}`
                 ) : (
-                  "🛒 Agregar al carrito"
+                  `🛒 ${t("common.add_to_cart")}`
                 )}
               </button>
             </div>

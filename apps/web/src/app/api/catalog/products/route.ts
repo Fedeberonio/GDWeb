@@ -88,7 +88,7 @@ function getImagePath(slug: string, name?: string): string {
   if (IMAGE_MAPPING[slug]) {
     return IMAGE_MAPPING[slug];
   }
-  
+
   // Generar variaciones del nombre si está disponible
   if (name) {
     const nameNormalized = name
@@ -98,36 +98,42 @@ function getImagePath(slug: string, name?: string): string {
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
-    
+
     // Intentar con el nombre capitalizado
     const nameVariations = [
       `/images/products/${nameCapitalized}.jpg`,
       `/images/products/${nameNormalized.toLowerCase()}.jpg`,
       `/images/products/${nameNormalized.toLowerCase().replace(/\s+/g, "-")}.jpg`,
     ];
-    
+
     // El componente ProductImageFallback intentará todas estas variaciones
     return nameVariations[0];
   }
-  
+
   // Fallback: intentar con el slug directamente
   // El componente Image manejará el error si no existe y mostrará fallback
   return `/images/products/${slug}.jpg`;
 }
 
+import { PRODUCT_TRANSLATIONS } from "./translations";
+
+// ... existing code ...
+
 // Convertir productMetadata a formato Product
 const staticProducts = productMetadata.map((item) => {
+  const englishName = PRODUCT_TRANSLATIONS[item.slug] || item.name;
+
   return {
     id: item.slug,
     slug: item.slug,
     sku: item.slug, // Usar slug como SKU ya que no existe en productMetadata
     name: {
       es: item.name,
-      en: item.name,
+      en: englishName,
     },
     description: {
       es: `${item.name} frescos de alta calidad.`,
-      en: `Fresh high quality ${item.name}.`,
+      en: `Fresh high quality ${englishName}.`,
     },
     unit: {
       es: "unidad",

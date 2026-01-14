@@ -1,0 +1,36 @@
+import type { CartItem } from "./types";
+import type { CartItemFromFirestore } from "@/modules/user/types";
+
+/**
+ * Convierte un CartItem del formato actual al formato de Firestore
+ */
+export function cartItemToFirestore(item: CartItem): CartItemFromFirestore {
+  if (item.type === "box" && item.configuration) {
+    return {
+      tipo: "caja",
+      nombre: item.name,
+      precio: item.configuration.price?.final ?? item.price,
+      variedad: item.configuration.variant || item.configuration.mix || "mix",
+      preferencias: {
+        like: item.configuration.likes || [],
+        dislike: item.configuration.dislikes || [],
+      },
+      cantidad: item.quantity,
+      autoMode: item.configuration.likes.length === 0 && item.configuration.dislikes.length === 0,
+    };
+  }
+
+  return {
+    tipo: "producto",
+    nombre: item.name,
+    precio: item.price,
+    cantidad: item.quantity,
+  };
+}
+
+/**
+ * Convierte un array de CartItems al formato de Firestore
+ */
+export function cartItemsToFirestore(items: CartItem[]): CartItemFromFirestore[] {
+  return items.map(cartItemToFirestore);
+}

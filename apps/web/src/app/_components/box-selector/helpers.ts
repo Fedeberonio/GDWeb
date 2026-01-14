@@ -1,4 +1,6 @@
 import productMetadata from "@/data/productMetadata.json";
+import { translations } from "@/modules/i18n/translations";
+import type { Locale } from "@/modules/i18n/locales";
 
 // Función para determinar categoría visual basada en el nombre del producto
 export function getVisualCategory(slug: string, name: string, catalogCategory?: string): string {
@@ -116,21 +118,21 @@ export function calculateVariantComposition(
 /**
  * Obtiene la descripción y tagline de una variante
  */
-export function getVariantInfo(variant: VariantType): { tagline: string; description: string; icon: string } {
+export function getVariantInfo(variant: VariantType, locale: Locale = "es"): { tagline: string; description: string; icon: string } {
   const info = {
     mix: {
-      tagline: "Equilibrado",
-      description: "Lo mejor de todo: vegetales, frutas e hierbas en balance perfecto",
+      tagline: translations[locale]["variants.mix_tagline"],
+      description: translations[locale]["variants.mix_description"],
       icon: "🍎",
     },
     fruity: {
-      tagline: "Tropical",
-      description: "Énfasis en frutas tropicales frescas y jugosas",
+      tagline: translations[locale]["variants.fruity_tagline"],
+      description: translations[locale]["variants.fruity_description"],
       icon: "🍊",
     },
     veggie: {
-      tagline: "Green Power",
-      description: "Vegetales premium y hojas verdes, sin frutas",
+      tagline: translations[locale]["variants.veggie_tagline"],
+      description: translations[locale]["variants.veggie_description"],
       icon: "🥬",
     },
   };

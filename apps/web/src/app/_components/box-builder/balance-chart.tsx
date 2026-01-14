@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { getBoxRule } from "@/modules/box-builder/utils";
 import productMetadata from "@/data/productMetadata.json";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type BalanceChartProps = {
   boxId: string;
@@ -20,6 +21,7 @@ type CategoryCount = {
 };
 
 export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
+  const { t } = useTranslation();
   const rule = getBoxRule(boxId);
   const categoryBudget = useMemo(() => rule?.categoryBudget ?? {}, [rule]);
 
@@ -54,11 +56,11 @@ export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
     });
 
     const labels: Record<string, { label: string; icon: string; color: string }> = {
-      leafy: { label: "Hojas", icon: "🥬", color: "bg-green-500" },
-      fruit_large: { label: "Frutas", icon: "🍎", color: "bg-red-500" },
-      aromatic: { label: "Aromáticas", icon: "🌿", color: "bg-yellow-500" },
-      root: { label: "Raíces", icon: "🥔", color: "bg-amber-600" },
-      citrus: { label: "Cítricos", icon: "🍋", color: "bg-yellow-400" },
+      leafy: { label: t("variants.categories.leafy"), icon: "🥬", color: "bg-green-500" },
+      fruit_large: { label: t("variants.categories.fruit"), icon: "🍎", color: "bg-red-500" },
+      aromatic: { label: t("variants.categories.aromatic"), icon: "🌿", color: "bg-yellow-500" },
+      root: { label: t("variants.categories.root"), icon: "🥔", color: "bg-amber-600" },
+      citrus: { label: t("variants.categories.citrus"), icon: "🍋", color: "bg-yellow-400" },
     };
 
     return Object.entries(categoryBudget).map(([category, budget]) => {
@@ -81,9 +83,9 @@ export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
   };
 
   const getStatusText = (current: number, min: number, max: number) => {
-    if (current < min) return "Falta";
-    if (current > max) return "Exceso";
-    return "Perfecto";
+    if (current < min) return t("balance.lack");
+    if (current > max) return t("balance.excess");
+    return t("balance.perfect");
   };
 
   // Calcular si todas las categorías están en balance perfecto
@@ -112,20 +114,20 @@ export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
           <div className="bg-white rounded-2xl p-6 shadow-2xl border-2 border-[var(--gd-color-leaf)] text-center">
             <div className="text-4xl mb-2">🎉</div>
             <p className="font-display text-xl font-bold text-[var(--gd-color-forest)]">
-              ¡Balance Perfecto!
+              {t("balance.perfect_title")}
             </p>
             <p className="text-sm text-[var(--color-muted)] mt-1">
-              Tu caja está equilibrada y lista
+              {t("balance.perfect_desc")}
             </p>
           </div>
         </div>
       )}
       <div className="flex items-center gap-2 mb-4">
         <span className="text-2xl">🌱</span>
-        <h3 className="font-display text-lg font-bold text-[var(--gd-color-forest)]">Balance de tu caja</h3>
+        <h3 className="font-display text-lg font-bold text-[var(--gd-color-forest)]">{t("balance.title")}</h3>
         {isPerfectlyBalanced && (
           <span className="ml-auto text-xs font-bold px-3 py-1 rounded-full bg-gradient-to-r from-green-400 to-[var(--gd-color-leaf)] text-white animate-pulse">
-            ✓ Perfecto
+            ✓ {t("balance.perfect")}
           </span>
         )}
       </div>
@@ -144,9 +146,9 @@ export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-bold px-2 py-1 rounded-full transition-all ${
-                    statusText === "Perfecto" 
+                    cat.current >= cat.min && cat.current <= cat.max
                       ? "bg-gradient-to-r from-green-400 to-[var(--gd-color-leaf)] text-white shadow-sm" 
-                      : statusText === "Falta"
+                      : cat.current < cat.min
                       ? "bg-red-100 text-red-700"
                       : "bg-orange-100 text-orange-700"
                   }`}>
@@ -199,12 +201,12 @@ export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
               </div>
               {cat.current < cat.min && (
                 <p className="text-xs text-red-600 font-medium">
-                  ⚠️ Necesitas al menos {cat.min} {cat.label.toLowerCase()}
+                  {t("balance.need_at_least")} {cat.min} {cat.label.toLowerCase()}
                 </p>
               )}
               {cat.current > cat.max && (
                 <p className="text-xs text-orange-600 font-medium">
-                  ⚠️ Máximo {cat.max} {cat.label.toLowerCase()} permitidos
+                  {t("balance.max_allowed")} {cat.max} {cat.label.toLowerCase()} {t("balance.allowed")}
                 </p>
               )}
             </div>
@@ -213,7 +215,7 @@ export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
       </div>
       <div className="mt-4 pt-4 border-t border-[var(--gd-color-leaf)]/20">
         <p className="text-xs text-[var(--color-muted)]">
-          <strong className="text-[var(--gd-color-forest)]">💡 Tip:</strong> Mantén el balance dentro del rango recomendado para una caja equilibrada y deliciosa. <span className="text-sm">✨</span>
+          <strong className="text-[var(--gd-color-forest)]">{t("balance.tip")}</strong> {t("balance.tip_desc")} <span className="text-sm">✨</span>
         </p>
       </div>
     </div>

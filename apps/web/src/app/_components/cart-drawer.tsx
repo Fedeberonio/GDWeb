@@ -5,7 +5,9 @@ import { useCart } from "@/modules/cart/context";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type CartDrawerProps = {
   isOpen: boolean;
@@ -13,6 +15,7 @@ type CartDrawerProps = {
 };
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+  const { t } = useTranslation();
   const { items, metrics, removeItem, updateQuantity, clear } = useCart();
   const total = metrics.totalCost;
 
@@ -29,6 +32,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   }, [isOpen]);
 
   const handleWhatsAppClick = () => {
+    const greeting = t("cart.whatsapp_greeting") || "Hola! Quiero hacer este pedido:"; // Fallback if key missing
+    const totalLabel = t("common.total");
+
     const message = items
       .map((item) => {
         const unitPrice = item.configuration?.price?.final ?? item.price;
@@ -37,17 +43,17 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         return `${item.quantity}x ${item.name} - RD$${(unitPrice * item.quantity).toLocaleString("es-DO")} ${extrasText}`.trim();
       })
       .join("\n");
-    const totalText = `Total: RD$${total.toLocaleString("es-DO")}`;
-    const whatsappUrl = `https://wa.me/18098234567?text=${encodeURIComponent(`Hola! Quiero hacer este pedido:\n\n${message}\n\n${totalText}`)}`;
+    const totalText = `${totalLabel}: RD$${total.toLocaleString("es-DO")}`;
+    const whatsappUrl = `https://wa.me/18493757338?text=${encodeURIComponent(`${greeting}\n\n${message}\n\n${totalText}`)}`;
     window.open(whatsappUrl, "_blank");
-    toast.success("¡Pedido enviado por WhatsApp! 🎉");
+    toast.success(t("cart.notification_sent"));
     clear();
     onClose();
   };
 
   const handleRemoveItem = (slug: string, name: string) => {
     removeItem(slug);
-    toast.success(`${name} eliminado del carrito`);
+    toast.success(`${name} ${t("cart.notification_removed")}`);
   };
 
   const handleUpdateQuantity = (slug: string, quantity: number) => {
@@ -59,7 +65,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }
   };
 
-  return (
+  // Render using Portal to escape parent stacking contexts
+  if (!isOpen) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -69,7 +78,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
           {/* Drawer */}
@@ -78,10 +87,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-white shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 z-[9999] h-full w-full max-w-md bg-white shadow-2xl flex flex-col"
           >
             <div className="flex items-center justify-between border-b border-[var(--color-border)] p-6">
-              <h2 className="font-display text-2xl text-[var(--color-foreground)]">Tu pedido</h2>
+              <h2 className="font-display text-2xl text-[var(--color-foreground)]">{t("cart.title")}</h2>
               <button
                 onClick={onClose}
                 className="rounded-full p-2 hover:bg-[var(--color-background-muted)] transition-colors"
@@ -121,8 +130,8 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   >
                     🛒
                   </motion.div>
-                  <p className="text-lg text-[var(--color-muted)]">Tu carrito está vacío</p>
-                  <p className="text-sm text-[var(--color-muted)]">Agrega productos para comenzar</p>
+                  <p className="text-lg text-[var(--color-muted)]">{t("common.empty_cart")}</p>
+                  <p className="text-sm text-[var(--color-muted)]">{t("common.empty_cart_msg")}</p>
                 </motion.div>
               ) : (
                 <AnimatePresence mode="popLayout">
@@ -157,14 +166,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <div className="flex items-start justify-between">
                           <div>
                             <h3 className="font-semibold text-[var(--color-foreground)]">{item.name}</h3>
-                            <p className="text-xs text-[var(--color-muted)]">{item.type === "box" ? "Caja" : "Producto"}</p>
+                            <p className="text-xs text-[var(--color-muted)]">{item.type === "box" ? t("cart.type_box") : t("cart.type_product")}</p>
                           </div>
                           <motion.button
                             whileHover={{ scale: 1.1, rotate: 90 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => handleRemoveItem(item.slug, item.name)}
                             className="text-[var(--color-muted)] hover:text-[var(--gd-color-apple)] transition-colors"
-                            aria-label="Eliminar"
+                            aria-label={t("common.remove")}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -231,20 +240,20 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             </p>
                             {item.configuration?.price?.extras ? (
                               <p className="text-[10px] text-orange-600">
-                                Incluye extras: RD${item.configuration.price.extras.toLocaleString("es-DO", { maximumFractionDigits: 2 })}
+                                {t("cart.extras")}: RD${item.configuration.price.extras.toLocaleString("es-DO", { maximumFractionDigits: 2 })}
                               </p>
                             ) : null}
                           </div>
                         </div>
                         {item.configuration && (
                           <div className="rounded-xl bg-white/80 border border-[var(--color-border)] p-3 text-[11px] text-[var(--color-muted)] space-y-1">
-                            <p className="font-semibold text-[var(--color-foreground)]">Personalización</p>
-                            <p>Mix: {item.configuration.mix || item.configuration.variant || "mix"}</p>
-                            <p>Entrega: {item.configuration.deliveryZone || "Por definir"} · {item.configuration.deliveryDay || "Día a convenir"}</p>
+                            <p className="font-semibold text-[var(--color-foreground)]">{t("cart.customization")}</p>
+                            <p>{t("cart.mix")}: {item.configuration.mix || item.configuration.variant || "mix"}</p>
+                            <p>{t("cart.delivery_zone")}: {item.configuration.deliveryZone || "Por definir"} · {t("cart.delivery_day")}: {item.configuration.deliveryDay || "Día a convenir"}</p>
                             <p className="text-[var(--color-foreground)] font-semibold">
-                              Total caja: RD${item.configuration.price?.final.toLocaleString("es-DO", { minimumFractionDigits: 2 }) ?? (item.configuration.price?.base ?? 0)}
+                              {t("cart.total_box")}: RD${item.configuration.price?.final.toLocaleString("es-DO", { minimumFractionDigits: 2 }) ?? (item.configuration.price?.base ?? 0)}
                             </p>
-                            {item.configuration.notes && <p>Notas: {item.configuration.notes}</p>}
+                            {item.configuration.notes && <p>{t("cart.notes")}: {item.configuration.notes}</p>}
                           </div>
                         )}
                       </div>
@@ -256,46 +265,38 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
             <div className="border-t border-[var(--color-border)] p-6 space-y-4">
               <div className="flex items-center justify-between text-lg">
-                <span className="font-semibold text-[var(--color-foreground)]">Total:</span>
+                <span className="font-semibold text-[var(--color-foreground)]">{t("common.total")}:</span>
                 <span className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
                   RD${total.toLocaleString("es-DO")}
                 </span>
               </div>
-              
+
               <Link href="/checkout" onClick={onClose} className="w-full">
                 <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    disabled={items.length === 0}
-                    className={`w-full rounded-2xl bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-4 text-base font-bold text-white shadow-xl transition-all duration-300 hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)] hover:shadow-2xl flex items-center justify-center gap-2 ${items.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={items.length === 0}
+                  className={`w-full rounded-2xl bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-4 text-base font-bold text-white shadow-xl transition-all duration-300 hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)] hover:shadow-2xl flex items-center justify-center gap-2 ${items.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                    <span>💳</span>
-                    <span>Ir a Pagar</span>
+                  <span>✅</span>
+                  <span>Confirmar Pedido</span>
                 </motion.button>
               </Link>
-              
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleWhatsAppClick}
-                className="w-full rounded-2xl border-2 border-[var(--gd-color-leaf)] bg-white px-6 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition-all duration-300 hover:bg-[var(--gd-color-leaf)]/10"
-              >
-                <span>📱 Pedir por WhatsApp</span>
-              </motion.button>
-              
+
               <button
                 onClick={() => {
                   clear();
-                  toast.success("Carrito vaciado");
+                  toast.success(t("cart.notification_cleared"));
                 }}
                 className="w-full text-center text-xs text-[var(--color-muted)] hover:underline"
               >
-                Vaciar carrito
+                {t("common.clear_cart")}
               </button>
             </div>
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

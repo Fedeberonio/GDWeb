@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Box } from "@/modules/catalog/types";
 import { calculateVariantComposition, getVariantInfo, type VariantType } from "./helpers";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type VariantSelectorProps = {
   box: Box;
@@ -12,6 +13,7 @@ type VariantSelectorProps = {
 };
 
 export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: VariantSelectorProps) {
+  const { locale, tData, t } = useTranslation();
   const [selectedVariant, setSelectedVariant] = useState<VariantType | null>(null);
 
   const variants: VariantType[] = ["mix", "fruity", "veggie"];
@@ -34,19 +36,19 @@ export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: 
           onClick={onBack}
           className="mb-4 text-sm text-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)] transition-colors flex items-center gap-2 mx-auto"
         >
-          ← Volver a tamaños
+          {t("guided_flow.back_sizes")}
         </button>
         <h2 className="font-display text-3xl md:text-4xl font-bold text-[var(--gd-color-forest)] mb-2">
-          ¿Qué variante prefieres?
+          {t("guided_flow.step2_title")}
         </h2>
         <p className="text-sm text-[var(--color-muted)]">
-          Para tu {box.name.es} ({box.durationDays} días)
+          Para tu {tData(box.name)} ({box.durationDays} {box.durationDays === 1 ? t("boxes.duration_days").split(" ")[0] : t("boxes.duration_days")})
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {variants.map((variant) => {
-          const info = getVariantInfo(variant);
+          const info = getVariantInfo(variant, locale);
           const composition = calculateVariantComposition(baseContents);
           const isSelected = selectedVariant === variant;
 
@@ -87,23 +89,23 @@ export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: 
                 <div className="pt-4 border-t border-[var(--gd-color-leaf)]/20 space-y-2">
                   <ul className="space-y-1.5 text-xs text-[var(--color-foreground)]">
                     <li className="flex items-center justify-between">
-                      <span>🌶️ Aromáticas</span>
+                      <span>🌶️ {t("variants.categories.aromatic")}</span>
                       <span className="font-semibold">{composition.aromatic}</span>
                     </li>
                     <li className="flex items-center justify-between">
-                      <span>🥬 Hojas verdes</span>
+                      <span>🥬 {t("variants.categories.leafy")}</span>
                       <span className="font-semibold">{composition.leafy}</span>
                     </li>
                     <li className="flex items-center justify-between">
-                      <span>🍎 Frutas</span>
+                      <span>🍎 {t("variants.categories.fruit")}</span>
                       <span className="font-semibold">{composition.fruit}</span>
                     </li>
                     <li className="flex items-center justify-between">
-                      <span>🥔 Raíces</span>
+                      <span>🥔 {t("variants.categories.root")}</span>
                       <span className="font-semibold">{composition.root}</span>
                     </li>
                     <li className="flex items-center justify-between">
-                      <span>🍊 Cítricos</span>
+                      <span>🍊 {t("variants.categories.citrus")}</span>
                       <span className="font-semibold">{composition.citrus}</span>
                     </li>
                   </ul>
@@ -111,9 +113,9 @@ export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: 
 
                 <div className="pt-4 border-t border-[var(--gd-color-leaf)]/20">
                   <p className="text-center">
-                    <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">Total</span>
+                    <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">{t("common.total")}</span>
                     <span className="block font-display text-2xl font-bold text-[var(--gd-color-forest)] mt-1">
-                      {composition.total} productos
+                      {composition.total} {t("box_customize.products")}
                     </span>
                   </p>
                   <p className="text-center mt-2 font-display text-xl font-bold bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] to-[var(--gd-color-forest)] bg-clip-text text-transparent">
@@ -144,7 +146,7 @@ export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: 
               : "bg-gray-400 cursor-not-allowed opacity-50"
           }`}
         >
-          Continuar →
+          {t("guided_flow.continue")}
         </button>
       </div>
     </section>

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { adminFetch } from "@/modules/admin/api/client";
 import { ImageUploadField } from "@/modules/admin/components/image-upload-field";
+import { ProductImageFallback } from "@/app/_components/product-image-fallback";
 import type { Product, ProductCategory } from "@/modules/catalog/types";
 
 const STATUS_OPTIONS: Product["status"][] = ["active", "inactive", "coming_soon", "discontinued"];
@@ -486,7 +487,7 @@ export function ProductManager({ initialProducts, categories, onProductCreated }
     return products.filter((product) => {
       const matchesQuery = query
         ? product.name.es.toLowerCase().includes(query.toLowerCase()) ||
-          product.name.en.toLowerCase().includes(query.toLowerCase())
+        product.name.en.toLowerCase().includes(query.toLowerCase())
         : true;
       const matchesCategory = categoryFilter === "all" ? true : product.categoryId === categoryFilter;
       const matchesStatus = statusFilter === "all" ? true : product.status === statusFilter;
@@ -535,9 +536,9 @@ export function ProductManager({ initialProducts, categories, onProductCreated }
       unit:
         formState.unitEs || formState.unitEn
           ? {
-              es: formState.unitEs || formState.unitEn,
-              en: formState.unitEn || formState.unitEs,
-            }
+            es: formState.unitEs || formState.unitEn,
+            en: formState.unitEn || formState.unitEs,
+          }
           : undefined,
       image: formState.image || undefined,
       tags,
@@ -592,132 +593,124 @@ export function ProductManager({ initialProducts, categories, onProductCreated }
           onProductCreated(product);
         }}
       />
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:flex-row sm:items-center">
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar producto"
+            className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm outline-none transition focus:border-green-500"
+          />
+          <select
+            value={categoryFilter}
+            onChange={(event) => setCategoryFilter(event.target.value)}
+            className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm outline-none transition focus:border-green-500 sm:w-48"
+          >
+            <option value="all">Todas las categorías</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name.es}
+              </option>
+            ))}
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm outline-none transition focus:border-green-500 sm:w-40"
+          >
+            <option value="all">Todos los estados</option>
+            {STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="space-y-4">
-          <div className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-soft sm:flex-row sm:items-center">
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar producto"
-              className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm outline-none transition focus:border-green-500"
-            />
-            <select
-              value={categoryFilter}
-              onChange={(event) => setCategoryFilter(event.target.value)}
-              className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm outline-none transition focus:border-green-500 sm:w-48"
-            >
-              <option value="all">Todas las categorías</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name.es}
-                </option>
-              ))}
-            </select>
-            <select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm outline-none transition focus:border-green-500 sm:w-40"
-            >
-              <option value="all">Todos los estados</option>
-              {STATUS_OPTIONS.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-          </div>
+          {filteredProducts.map((product) => {
+            const isSelected = selectedId === product.id;
+            const isBusy = quickActionProductId === product.id;
 
-          <div className="space-y-4">
-            {filteredProducts.map((product) => {
-              const isSelected = selectedId === product.id;
-              const isBusy = quickActionProductId === product.id;
-
-              return (
-                <div
-                  key={product.id}
-                  className={`rounded-3xl border bg-white p-4 shadow-soft transition ${
-                    isSelected ? "border-green-500 ring-2 ring-green-100" : "border-slate-200 hover:border-green-200"
+            return (
+              <div
+                key={product.id}
+                className={`rounded-3xl border bg-white p-4 shadow-soft transition ${isSelected ? "border-green-500 ring-2 ring-green-100" : "border-slate-200 hover:border-green-200"
                   }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(product.id)}
+                  className="flex w-full items-center gap-4 text-left"
                 >
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(product.id)}
-                    className="flex w-full items-center gap-4 text-left"
-                  >
-                    <div className="h-14 w-14 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                      {product.image ? (
-                        <Image
-                          src={product.image}
-                          alt={product.name.es}
-                          width={56}
-                          height={56}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[10px] font-medium text-slate-400">
-                          Sin imagen
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-900">{product.name.es}</p>
-                      <p className="text-xs text-slate-500">{categoriesMap[product.categoryId] ?? "Sin categoría"}</p>
-                      <p className="text-xs text-slate-400">{product.tags.slice(0, 3).join(" · ")}</p>
-                    </div>
-                    <div className="text-right text-sm text-slate-600">
-                      <p className="font-semibold text-slate-900">RD${product.price.amount.toLocaleString("es-DO")}</p>
-                      <p className="text-xs uppercase text-slate-400">{product.status}</p>
-                    </div>
-                  </button>
+                  <div className="h-14 w-14 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 relative">
+                    <ProductImageFallback
+                      product={product}
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-900">{product.name.es}</p>
+                    <p className="text-xs text-slate-500">{categoriesMap[product.categoryId] ?? "Sin categoría"}</p>
+                    <p className="text-xs text-slate-400">{product.tags.slice(0, 3).join(" · ")}</p>
+                  </div>
+                  <div className="text-right text-sm text-slate-600">
+                    <p className="font-semibold text-slate-900">RD${product.price.amount.toLocaleString("es-DO")}</p>
+                    <p className="text-xs uppercase text-slate-400">{product.status}</p>
+                  </div>
+                </button>
 
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleToggleFeatured(product);
-                      }}
-                      disabled={isBusy}
-                      className="rounded-full border border-slate-300 px-3 py-1 font-semibold text-slate-600 transition hover:border-green-500 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {product.isFeatured ? "Quitar destacado" : "Destacar"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleToggleStatus(product);
-                      }}
-                      disabled={isBusy}
-                      className="rounded-full border border-slate-300 px-3 py-1 font-semibold text-slate-600 transition hover:border-green-500 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {product.status === "active" ? "Desactivar" : "Activar"}
-                    </button>
-                  </div>
-                  {isSelected && (
-                    <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-inner">
-                      <ProductForm
-                        selectedProduct={selectedProduct}
-                        formState={formState}
-                        categories={categories}
-                        saving={saving}
-                        error={error}
-                        message={message}
-                        onSubmit={handleSubmit}
-                        setFormState={setFormState}
-                      />
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleToggleFeatured(product);
+                    }}
+                    disabled={isBusy}
+                    className="rounded-full border border-slate-300 px-3 py-1 font-semibold text-slate-600 transition hover:border-green-500 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {product.isFeatured ? "Quitar destacado" : "Destacar"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleToggleStatus(product);
+                    }}
+                    disabled={isBusy}
+                    className="rounded-full border border-slate-300 px-3 py-1 font-semibold text-slate-600 transition hover:border-green-500 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {product.status === "active" ? "Desactivar" : "Activar"}
+                  </button>
                 </div>
+                {isSelected && (
+                  <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-inner">
+                    <ProductForm
+                      selectedProduct={selectedProduct}
+                      formState={formState}
+                      categories={categories}
+                      saving={saving}
+                      error={error}
+                      message={message}
+                      onSubmit={handleSubmit}
+                      setFormState={setFormState}
+                    />
+                  </div>
+                )}
+              </div>
             );
           })}
-            {!filteredProducts.length && (
-              <p className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
-                No se encontraron productos para los filtros seleccionados.
-              </p>
-            )}
-          </div>
+          {!filteredProducts.length && (
+            <p className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
+              No se encontraron productos para los filtros seleccionados.
+            </p>
+          )}
         </div>
+      </div>
     </>
   );
 }

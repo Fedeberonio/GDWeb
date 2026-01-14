@@ -9,6 +9,7 @@ import type { Product, ProductCategory } from "@/modules/catalog/types";
 import { useCart } from "@/modules/cart/context";
 import { ProductSeasonalBadge } from "@/app/_components/product-seasonal-badge";
 import { ProductImageFallback } from "@/app/_components/product-image-fallback";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type CategoryProductGridProps = {
   category: ProductCategory;
@@ -18,6 +19,7 @@ type CategoryProductGridProps = {
 
 export function CategoryProductGrid({ category, products, allCategories }: CategoryProductGridProps) {
   const { addItem } = useCart();
+  const { t, tData } = useTranslation();
   const [query, setQuery] = useState("");
   const [onlyFeatured, setOnlyFeatured] = useState(false);
   const [onlyAvailable, setOnlyAvailable] = useState(true);
@@ -54,8 +56,8 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
         if (onlyFeatured && !product.isFeatured) return false;
         if (normalizedQuery.length > 0) {
           const haystack = [
-            product.name.es,
-            product.description?.es,
+            tData(product.name),
+            tData(product.description),
             product.slug,
             product.tags.join(" "),
           ]
@@ -69,7 +71,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
         if (a.isFeatured !== b.isFeatured) {
           return a.isFeatured ? -1 : 1;
         }
-        return a.name.es.localeCompare(b.name.es);
+        return tData(a.name).localeCompare(tData(b.name));
       });
   }, [products, onlyAvailable, onlyFeatured, query]);
 
@@ -93,36 +95,36 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
           {/* Breadcrumb */}
           <nav className="mb-4 flex items-center gap-2 text-sm text-white/80">
             <Link href="/" className="hover:text-white transition">
-              Inicio
+              {t("category.breadcrumb_home")}
             </Link>
             <span>→</span>
             <Link href="/#catalogo" className="hover:text-white transition">
-              Catálogo
+              {t("category.breadcrumb_catalog")}
             </Link>
             <span>→</span>
-            <span className="text-white font-semibold">{category.name.es}</span>
+            <span className="text-white font-semibold">{tData(category.name)}</span>
           </nav>
 
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
             <div className="text-6xl md:text-7xl">{categoryIcon}</div>
             <div className="flex-1 space-y-3">
               <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-white drop-shadow-lg">
-                {category.name.es}
+                {tData(category.name)}
               </h1>
-              {category.description?.es && (
+              {category.description && (
                 <p className="text-base md:text-lg text-white/90 max-w-3xl leading-relaxed">
-                  {category.description.es}
+                  {tData(category.description)}
                 </p>
               )}
               <div className="flex flex-wrap items-center gap-2 text-white/80">
                 <span className="rounded-full bg-white/20 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm">
-                  {filteredProducts.length} {filteredProducts.length === 1 ? "producto" : "productos"}
+                  {filteredProducts.length} {filteredProducts.length === 1 ? t("category.product") : t("category.product_plural")}
                 </span>
                 <span className="rounded-full bg-white/20 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm">
-                  ✓ Frescos del día
+                  {t("category.fresh_today")}
                 </span>
                 <span className="rounded-full bg-white/20 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm">
-                  🌱 Orgánicos
+                  {t("category.organic")}
                 </span>
               </div>
             </div>
@@ -141,7 +143,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={`Buscar en ${category.name.es.toLowerCase()}...`}
+                placeholder={`${t("category.search_placeholder")} ${tData(category.name).toLowerCase()}...`}
                 className="flex-1 border-none bg-transparent text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-muted)] focus:outline-none"
               />
             </label>
@@ -155,7 +157,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                   : "border border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]"
               }`}
             >
-              ⭐ Solo destacados
+              ⭐ {t("catalog.only_featured")}
             </button>
 
             <button
@@ -167,20 +169,20 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                   : "border border-[var(--color-border)] text-[var(--color-muted)] hover:border-[var(--color-success)] hover:text-[var(--color-success)]"
               }`}
             >
-              {onlyAvailable ? "✓ Activos" : "Incluir inactivos"}
+              {onlyAvailable ? t("category.active") : t("category.include_inactive")}
             </button>
           </div>
 
           {/* Contador de resultados */}
           <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
             <span className="text-xs text-[var(--color-muted)] font-medium">
-              {filteredProducts.length} {filteredProducts.length === 1 ? "producto encontrado" : "productos encontrados"}
+              {filteredProducts.length} {filteredProducts.length === 1 ? t("category.product_found") : t("category.products_found")}
             </span>
             <Link
               href="/#catalogo"
               className="text-xs font-semibold text-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)] transition"
             >
-              ← Todas las categorías
+              {t("category.back_all_categories")}
             </Link>
           </div>
         </div>
@@ -195,24 +197,24 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
               product.status === "active"
                 ? null
                 : product.status === "coming_soon"
-                  ? "Próximamente"
+                  ? t("catalog.status_coming_soon")
                   : product.status === "inactive"
-                    ? "Temporalmente no disponible"
-                    : "Descatalogado";
+                    ? t("catalog.status_temp_unavailable")
+                    : t("catalog.status_discontinued");
 
             const nutritionBadges: Array<{ label: string; tone: "green" | "amber" }> = [];
-            if (product.nutrition?.organic) nutritionBadges.push({ label: "Orgánico", tone: "green" });
-            if (product.nutrition?.vegan) nutritionBadges.push({ label: "Vegano", tone: "green" });
-            if (product.nutrition?.glutenFree) nutritionBadges.push({ label: "Gluten Free", tone: "amber" });
+            if (product.nutrition?.organic) nutritionBadges.push({ label: t("catalog.organic"), tone: "green" });
+            if (product.nutrition?.vegan) nutritionBadges.push({ label: t("catalog.vegan"), tone: "green" });
+            if (product.nutrition?.glutenFree) nutritionBadges.push({ label: t("catalog.gluten_free"), tone: "amber" });
 
             const tagBadges = product.tags.slice(0, 4).map((tag) => ({ label: `#${tag}`, tone: "neutral" as const }));
 
             // Determinar el estilo de imagen
-            const productName = product.name.es.toLowerCase();
+            const productName = tData(product.name).toLowerCase();
             const productSlug = product.slug.toLowerCase();
             const productTags = product.tags.join(" ").toLowerCase();
-            const isBottleProduct = productName.includes("jugo") || productSlug.includes("jugo");
-            const isPackageProduct = productName.includes("arroz") || productName.includes("habichuela");
+            const isBottleProduct = productName.includes("jugo") || productName.includes("juice") || productSlug.includes("jugo");
+            const isPackageProduct = productName.includes("arroz") || productName.includes("habichuela") || productName.includes("rice");
             const needsFullView = isBottleProduct || isPackageProduct;
             const imageClassName = needsFullView
               ? "object-contain object-center bg-white p-6"
@@ -236,7 +238,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                   <div className="absolute left-4 top-4 flex flex-col gap-2">
                     {product.isFeatured && (
                       <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[var(--color-brand)] shadow-sm">
-                        Destacado
+                        {t("category.featured")}
                       </span>
                     )}
                     {product.status === "active" && (
@@ -257,9 +259,9 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-display text-lg text-[var(--color-foreground)]">{product.name.es}</p>
-                        {product.unit?.es && (
-                          <p className="text-xs uppercase tracking-[0.25em] text-[var(--color-muted)]">{product.unit.es}</p>
+                        <p className="font-display text-lg text-[var(--color-foreground)]">{tData(product.name)}</p>
+                        {product.unit && (
+                          <p className="text-xs uppercase tracking-[0.25em] text-[var(--color-muted)]">{tData(product.unit)}</p>
                         )}
                       </div>
                       <div className="text-right">
@@ -269,8 +271,8 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                         )}
                       </div>
                     </div>
-                    {product.description?.es && (
-                      <p className="text-sm text-[var(--color-muted)] line-clamp-2">{product.description.es}</p>
+                    {product.description && (
+                      <p className="text-sm text-[var(--color-muted)] line-clamp-2">{tData(product.description)}</p>
                     )}
                   </div>
 
@@ -301,7 +303,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                         addItem({
                           type: "product",
                           slug: product.slug,
-                          name: product.name.es,
+                          name: tData(product.name),
                           quantity: 1,
                           price: product.price.amount,
                           image: product.image,
@@ -309,7 +311,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                           weightKg: product.logistics?.weightKg ?? 0,
                         });
                         setAddedProductId(product.id);
-                        toast.success(`${product.name.es} agregado al carrito 🛒`, {
+                        toast.success(`${tData(product.name)} ${t("common.added").toLowerCase()} 🛒`, {
                           icon: "✅",
                         });
                         setTimeout(() => setAddedProductId(null), 2000);
@@ -323,12 +325,12 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                       {isAdded ? (
                         <>
                           <span>✓</span>
-                          <span>Agregado</span>
+                          <span>{t("common.added")}</span>
                         </>
                       ) : (
                         <>
                           <span>🛒</span>
-                          <span>Agregar</span>
+                          <span>{t("common.add_to_cart")}</span>
                         </>
                       )}
                     </motion.button>
@@ -342,9 +344,9 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
         {filteredProducts.length === 0 && (
           <div className="rounded-3xl border border-[var(--color-border)] bg-white p-12 text-center space-y-3">
             <p className="text-2xl">🔍</p>
-            <p className="text-lg font-semibold text-[var(--color-foreground)]">No hay productos que coincidan</p>
+            <p className="text-lg font-semibold text-[var(--color-foreground)]">{t("category.no_matches")}</p>
             <p className="text-sm text-[var(--color-muted)]">
-              Ajusta la búsqueda o consulta directamente por WhatsApp
+              {t("category.no_matches_desc")}
             </p>
           </div>
         )}
@@ -354,13 +356,13 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
           <div className="rounded-2xl border border-[var(--color-border)] bg-gradient-to-br from-[var(--gd-color-sprout)]/10 to-white p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-xl font-bold text-[var(--gd-color-forest)]">
-                Explorar otras categorías
+                {t("category.explore_other")}
               </h2>
               <Link
                 href="/#catalogo"
                 className="text-sm font-semibold text-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)] transition"
               >
-                Ver todas →
+                {t("category.view_all")}
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -374,7 +376,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                   >
                     <span className="text-3xl">{icon}</span>
                     <span className="text-xs font-semibold text-[var(--gd-color-forest)] group-hover:text-[var(--gd-color-leaf)] line-clamp-2">
-                      {cat.name.es}
+                      {tData(cat.name)}
                     </span>
                   </Link>
                 );
@@ -390,7 +392,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
           >
             <span>←</span>
-            <span>Volver al Catálogo Completo</span>
+            <span>{t("category.back_full_catalog")}</span>
           </Link>
         </div>
       </div>

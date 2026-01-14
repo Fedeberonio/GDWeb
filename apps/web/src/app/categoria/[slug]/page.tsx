@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { fetchProducts, fetchProductCategories } from "@/modules/catalog/api";
 import { CategoryProductGrid } from "./_components/category-product-grid";
 import { PrimaryNav } from "@/app/_components/primary-nav";
-import { HomePageClient } from "@/app/_components/home-page-client";
+
 
 export const dynamic = "force-dynamic";
 
@@ -30,16 +30,14 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <div className="relative">
-      <HomePageClient>
-        <PrimaryNav />
-        <main className="min-h-screen bg-gradient-to-b from-white via-[var(--gd-color-leaf)]/5 to-white pt-20">
-          <CategoryProductGrid
-            category={category}
-            products={categoryProducts}
-            allCategories={categories}
-          />
-        </main>
-      </HomePageClient>
+      <PrimaryNav />
+      <main className="min-h-screen bg-gradient-to-b from-white via-[var(--gd-color-leaf)]/5 to-white pt-20">
+        <CategoryProductGrid
+          category={category}
+          products={categoryProducts}
+          allCategories={categories}
+        />
+      </main>
     </div>
   );
 }

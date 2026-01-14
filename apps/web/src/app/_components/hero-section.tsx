@@ -1,67 +1,97 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
 import { Container } from "./container";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 export function HeroSection() {
+  const { t } = useTranslation();
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[var(--gd-color-sprout)]/30 via-white to-[var(--gd-color-sky)]/20">
-      {/* Imagen de fondo con productos deliciosos - MÁS PROMINENTE */}
-      <div className="absolute inset-0 opacity-[0.4]">
+    <section className="relative overflow-hidden bg-[var(--gd-color-beige)]">
+      {/* Imagen de fondo con productos - más visible */}
+      <div className="absolute inset-0 opacity-30">
         <Image
           src="/images/hero/hero-rainbow-abundance.jpg"
           alt=""
           fill
           sizes="100vw"
-          className="object-cover object-center scale-105"
+          className="object-cover object-center"
           priority
           aria-hidden="true"
         />
       </div>
-      
-      {/* Overlay con gradiente más orgánico */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[var(--gd-color-sprout)]/50 via-white/70 to-white/90" />
-      
-      {/* Elementos decorativos orgánicos - Más visibles */}
-      <div className="absolute top-0 right-0 h-[500px] w-[500px] rounded-full bg-[var(--gd-color-leaf)]/15 blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-[var(--gd-color-sky)]/15 blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-[var(--gd-color-avocado)]/10 blur-3xl" />
-      
-      {/* Patrón decorativo sutil */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `radial-gradient(circle at 2px 2px, var(--gd-color-forest) 1px, transparent 0)`,
-        backgroundSize: '40px 40px'
-      }} />
-      
-      <Container className="relative z-10 py-10 md:py-16">
-        <div className="text-center space-y-5 mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-r from-white/95 via-[var(--gd-color-sprout)]/40 to-white/95 px-5 py-2 text-xs font-bold uppercase tracking-[0.4em] text-[var(--gd-color-forest)] shadow-lg backdrop-blur-sm">
-            <span className="text-xl animate-bounce">🌱</span> 
-            <span>Primera empresa 100% sustentable en República Dominicana</span>
+
+      {/* Overlay más fuerte para contraste */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[var(--gd-color-beige)]/95 via-[var(--gd-color-beige)]/85 to-[var(--gd-color-beige)]" />
+
+      {/* Un solo elemento decorativo sutil */}
+      <div className="absolute top-0 right-0 h-96 w-96 rounded-full bg-[var(--gd-color-leaf)]/10 blur-3xl" />
+
+      <Container className="relative z-10 py-12 md:py-20">
+        <div className="text-center space-y-6 mb-10">
+          {/* Logo prominente en hero */}
+          <div className="flex justify-center mb-8">
+            <div className="relative h-40 w-40 md:h-52 md:w-52 filter drop-shadow-xl hover:scale-105 transition-transform duration-500">
+              <Image
+                src="/images/logo/logo-principal-large.png"
+                alt="Green Dolio"
+                fill
+                sizes="(max-width: 768px) 160px, 208px"
+                className="object-contain"
+                priority
+              />
+            </div>
           </div>
-          <h1 className="font-display text-4xl leading-tight bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] via-[var(--gd-color-avocado)] to-[var(--gd-color-forest)] bg-clip-text text-transparent sm:text-5xl md:text-6xl lg:text-7xl drop-shadow-sm">
-            Cajas frescas, ensaladas, jugos naturales y productos caseros del día
+
+          {/* Badge de diferenciador principal */}
+          <div className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gd-color-leaf)] bg-white px-5 py-2.5 text-sm font-bold text-[var(--gd-color-forest)] shadow-md">
+            <span className="text-base">🌱</span>
+            <span>{t("hero.badge")}</span>
+          </div>
+
+          {/* Título principal - Color más oscuro y drop-shadow para legibilidad */}
+          <h1 className="font-display text-4xl leading-tight text-emerald-950 drop-shadow-sm sm:text-5xl md:text-6xl max-w-4xl mx-auto">
+            {t("hero.title")}
           </h1>
-          <p className="max-w-2xl mx-auto text-lg text-[var(--gd-color-forest)] leading-relaxed font-semibold drop-shadow-sm">
-            Directamente de productores locales • Delivery gratis 3 veces por semana • Packaging retornable • Cero plástico
+
+          {/* Subtítulo con información clave - Color más oscuro */}
+          <p className="max-w-2xl mx-auto text-lg text-gray-800 font-medium leading-relaxed">
+            {t("hero.subtitle")}
+            <span className="font-bold text-emerald-900"> {t("hero.delivery")}</span>{t("hero.delivery_details")}
+            {" "}{t("hero.packaging")}
           </p>
+
+          {/* Diferenciadores en línea */}
+          <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-[var(--gd-color-forest)]">
+            <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full">
+              🚚 {t("hero.feature_delivery")}
+            </span>
+            <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full">
+              ♻️ {t("hero.feature_packaging")}
+            </span>
+            <span className="flex items-center gap-1.5 bg-white/80 px-3 py-1.5 rounded-full">
+              🌿 {t("hero.feature_local")}
+            </span>
+          </div>
         </div>
 
-        {/* CTA principal - Más impactante */}
+        {/* CTAs - simplificados */}
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Link
-            href="/armar"
-            className="group inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--gd-color-forest)] bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] to-[var(--gd-color-forest)] px-8 py-4 text-base font-bold text-white shadow-2xl transition-all duration-300 hover:from-[var(--gd-color-leaf)] hover:via-[var(--gd-color-avocado)] hover:to-[var(--gd-color-leaf)] hover:scale-110 hover:shadow-[0_20px_40px_rgba(45,80,22,0.4)] hover:-translate-y-1"
+            href="/#cajas"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--gd-color-forest)] px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-300 hover:bg-[var(--gd-color-leaf)] hover:shadow-xl hover:-translate-y-1"
           >
-            <span className="text-xl group-hover:rotate-12 transition-transform">✨</span>
-            <span>Arma tu caja ahora</span>
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
+            <span>{t("hero.cta_build_box")}</span>
+            <span>→</span>
           </Link>
           <Link
             href="#catalogo"
-            className="inline-flex items-center justify-center rounded-full border-2 border-[var(--gd-color-leaf)] bg-white/95 px-8 py-4 text-base font-bold text-[var(--gd-color-forest)] backdrop-blur-sm transition-all duration-300 hover:border-[var(--gd-color-forest)] hover:bg-[var(--gd-color-sprout)]/80 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
+            className="inline-flex items-center justify-center rounded-full border-2 border-[var(--gd-color-forest)] bg-white px-8 py-4 text-base font-bold text-[var(--gd-color-forest)] transition-all duration-300 hover:bg-[var(--gd-color-sprout)] hover:shadow-lg"
           >
-            Ver todos los productos
+            {t("hero.cta_catalog")}
           </Link>
         </div>
       </Container>

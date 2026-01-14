@@ -10,15 +10,16 @@ type CategoryCardProps = {
 };
 
 // Mapeo de categorías a imágenes representativas
+// Mapeo de categorías a imágenes representativas
 const categoryImages: Record<string, string> = {
-  "jugos-naturales": "/images/products/jugos-naturales-set.png",
-  "cajas": "/images/boxes/box-1-caribbean-fresh-pack-3-dias.jpg",
-  "productos-caseros": "/images/products/hummus.jpg",
-  "productos-de-granja": "/images/products/huevos-marrones.png",
-  "otros": "/images/products/arroz-blanco.jpg",
-  "frutas": "/images/products/mango.jpg",
-  "vegetales": "/images/products/tomate-redondo.jpg",
-  "hierbas-y-especias": "/images/products/ajo.jpg",
+  "jugos-naturales": "/images/categories/Jugos.png",
+  "cajas": "/images/categories/Gemini_Generated_Image_5cai8k5cai8k5cai.png",
+  "productos-caseros": "/images/categories/productos_caseros.png",
+  "productos-de-granja": "/images/categories/Productos_de_granja.png",
+  "otros": "/images/categories/Otros.png",
+  "frutas": "/images/categories/Frutas.png",
+  "vegetales": "/images/categories/Vegetales.png",
+  "hierbas-y-especias": "/images/categories/hierbas_y_especias.png",
 };
 
 export function CategoryCard({ category, productCount }: CategoryCardProps) {
@@ -43,43 +44,57 @@ export function CategoryCard({ category, productCount }: CategoryCardProps) {
     <Link
       href={href}
       onClick={handleClick}
-      className="group block rounded-3xl border-2 border-[var(--color-brand-soft)] bg-white/95 p-6 shadow-soft transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-[var(--color-brand)] cursor-pointer overflow-hidden"
+      className="group relative block w-full overflow-hidden rounded-3xl bg-[var(--color-background-muted)] shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1"
     >
-      {categoryImage && (
-        <div className="relative h-40 w-full -mx-6 -mt-6 mb-4 overflow-hidden bg-[var(--color-background-muted)] rounded-t-3xl">
+      {/* Background Image with Zoom Effect */}
+      <div className="aspect-[4/5] w-full overflow-hidden">
+        {categoryImage ? (
           <Image
             src={categoryImage}
             alt={category.name.es}
             fill
-            sizes="(max-width: 768px) 100vw, 400px"
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 50vw, 300px"
+            className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
           />
-        </div>
-      )}
-      <div className="flex items-center justify-between">
-        <p className="text-xs uppercase tracking-[0.35em] text-[var(--color-muted)]">{category.slug}</p>
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-            productCount > 0 ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
-          }`}
-        >
-          {productCount > 0 ? `${productCount} items` : "Próximamente"}
-        </span>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--gd-color-leaf)]/20 to-[var(--gd-color-sprout)]/20" />
+        )}
+
+        {/* Gradient Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--gd-color-forest)]/90 via-[var(--gd-color-forest)]/40 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
       </div>
-      <h3 className="mt-3 font-display text-xl text-[var(--color-foreground)] group-hover:text-[var(--color-brand)] transition">
-        {category.name.es}
-      </h3>
-      {category.description?.es && (
-        <p className="mt-3 text-sm text-[var(--color-muted)]">{category.description.es}</p>
-      )}
-      {isDevelopment && (
-        <div className="mt-6 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-          <span className="rounded-full bg-[color:rgba(212,229,184,0.35)] px-3 py-1">Slug: {category.slug}</span>
-          <span className="rounded-full bg-[color:rgba(212,229,184,0.35)] px-3 py-1">
-            Estado: {category.status === "active" ? "Activa" : "Inactiva"}
-          </span>
+
+      {/* Content Overlay */}
+      <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
+        <div className="translate-y-2 transition-transform duration-300 group-hover:translate-y-0">
+          <div className="flex items-center justify-between mb-2">
+            <span
+              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[0.65rem] uppercase tracking-wider font-bold backdrop-blur-md ${productCount > 0
+                ? "bg-white/20 text-white border border-white/30"
+                : "bg-amber-500/80 text-white border border-white/20"
+                }`}
+            >
+              {productCount > 0 ? `${productCount} items` : "Próximamente"}
+            </span>
+          </div>
+
+          <h3 className="font-display text-2xl leading-tight text-white mb-1 drop-shadow-sm">
+            {category.name.es}
+          </h3>
+
+          {category.description?.es && (
+            <p className="text-xs text-white/80 line-clamp-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 delay-75">
+              {category.description.es}
+            </p>
+          )}
+
+          {isDevelopment && (
+            <div className="mt-2 text-[10px] text-white/50 font-mono">
+              {category.slug}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </Link>
   );
 }

@@ -7,6 +7,7 @@ import productMetadata from "@/data/productMetadata.json";
 import type { Box } from "@/modules/catalog/types";
 import { getVariantInfo, type VariantType } from "../box-selector/helpers";
 import { ProductImageFallback } from "../product-image-fallback";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type DiscoverBoxViewProps = {
   box: Box;
@@ -89,10 +90,11 @@ function resolveRuleKey(box: Box): string | undefined {
 export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }: DiscoverBoxViewProps) {
   // Expandir todas las categorías por defecto
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const { t, tData } = useTranslation();
   const ruleKey = resolveRuleKey(box) || box.id;
   const rule = getBoxRule(ruleKey);
   const baseContents = useMemo(() => rule?.baseContents ?? [], [rule]);
-  const variantInfo = getVariantInfo(variant);
+  const variantInfo = getVariantInfo(variant, locale);
 
   // Filtrar contenido según variante
   const filteredContents = useMemo(() => {
@@ -219,13 +221,13 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
   const boxImage = boxImages[box.id] || boxImages[box.slug] || box.heroImage || "/images/boxes/placeholder.jpg";
 
   const categoryLabels: Record<string, string> = {
-    leafy: "🥬 Hojas Verdes",
-    fruit_large: "🍊 Frutas Grandes",
-    fruit_small: "🍓 Frutas Pequeñas",
-    root: "🥕 Raíces y Tubérculos",
-    aromatic: "🌿 Aromáticas",
-    citrus: "🍋 Cítricos",
-    otros: "📦 Otros",
+    leafy: `🥬 ${t("variants.categories.leafy")}`,
+    fruit_large: `🍊 ${t("variants.categories.fruit")}`,
+    fruit_small: `🍓 ${t("variants.categories.fruit")}`,
+    root: `🥕 ${t("variants.categories.root")}`,
+    aromatic: `🌿 ${t("variants.categories.aromatic")}`,
+    citrus: `🍋 ${t("variants.categories.citrus")}`,
+    otros: `📦 ${t("variants.categories.others")}`,
   };
 
   return (
@@ -235,11 +237,11 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
         <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-sprout)]/40 to-[var(--gd-color-leaf)]/40 px-6 py-2 border-2 border-[var(--gd-color-leaf)]/30">
           <span className="text-2xl">📦</span>
           <span className="text-sm font-bold text-[var(--gd-color-forest)] uppercase tracking-wider">
-            Descubre tu caja
+            {t("discover.title")}
           </span>
         </div>
         <h2 className="font-display text-3xl text-[var(--color-foreground)]">
-          {box.name.es}
+          {tData(box.name)}
         </h2>
         {/* Badge de variante */}
         <div className="inline-flex items-center gap-2 rounded-full bg-[var(--gd-color-leaf)]/20 px-4 py-2 border-2 border-[var(--gd-color-leaf)]/30">
@@ -249,8 +251,7 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
           </span>
         </div>
         <p className="text-sm text-[var(--color-muted)] max-w-2xl mx-auto leading-relaxed">
-          Tu caja viene <strong className="text-[var(--gd-color-forest)]">pre-armada con productos frescos</strong> seleccionados especialmente para ti el mismo día. 
-          Todos los productos son de temporada y provienen de productores locales. 💚
+          {t("discover.box_description")}
         </p>
       </div>
 
@@ -258,26 +259,26 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
       {baseItems.length > 0 && (
         <div className="rounded-2xl bg-gradient-to-br from-[var(--gd-color-sprout)]/20 to-white p-6 border-2 border-[var(--gd-color-leaf)]/30">
           <h3 className="text-sm font-bold text-[var(--gd-color-forest)] mb-4 uppercase">
-            📦 Resumen rápido
+            📦 {t("discover.quick_summary")}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-[var(--gd-color-forest)]">{totalItems}</p>
-              <p className="text-xs text-[var(--color-muted)]">productos</p>
+              <p className="text-xs text-[var(--color-muted)]">{t("discover.products")}</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-[var(--gd-color-forest)]">{categoryCount}</p>
-              <p className="text-xs text-[var(--color-muted)]">categorías</p>
+              <p className="text-xs text-[var(--color-muted)]">{t("discover.categories")}</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-[var(--gd-color-forest)]">{totalWeight.toFixed(1)}</p>
-              <p className="text-xs text-[var(--color-muted)]">kg</p>
+              <p className="text-xs text-[var(--color-muted)]">{t("discover.kg")}</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-[var(--gd-color-forest)]">
                 RD${box.price.amount.toLocaleString("es-DO")}
               </p>
-              <p className="text-xs text-[var(--color-muted)]">precio</p>
+              <p className="text-xs text-[var(--color-muted)]">{t("discover.price")}</p>
             </div>
           </div>
           {/* Grid de productos principales */}
@@ -306,7 +307,7 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
               <div className="flex flex-col items-center justify-center rounded-lg bg-[var(--gd-color-sprout)]/20 p-2 border-2 border-dashed border-[var(--gd-color-leaf)]/30">
                 <p className="text-2xl mb-1">+</p>
                 <p className="text-xs text-center font-medium text-[var(--gd-color-forest)]">
-                  {baseItems.length - 6} más
+                  {baseItems.length - 6} {t("discover.more")}
                 </p>
               </div>
             )}
@@ -335,15 +336,15 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
           <div className="absolute -top-4 -right-4 flex flex-col gap-3 z-10">
             <div className="rounded-2xl bg-white/95 backdrop-blur-sm border-2 border-[var(--gd-color-leaf)]/40 shadow-xl px-4 py-3 text-center min-w-[120px] opacity-0 animate-[fadeIn_0.5s_ease-out_0s_forwards]">
               <p className="text-2xl font-bold text-[var(--gd-color-forest)]">{totalItems}</p>
-              <p className="text-xs text-[var(--color-muted)] font-medium">productos</p>
+              <p className="text-xs text-[var(--color-muted)] font-medium">{t("discover.products")}</p>
             </div>
             <div className="rounded-2xl bg-white/95 backdrop-blur-sm border-2 border-[var(--gd-color-leaf)]/40 shadow-xl px-4 py-3 text-center min-w-[120px] opacity-0 animate-[fadeIn_0.5s_ease-out_0.1s_forwards]">
               <p className="text-2xl font-bold text-[var(--gd-color-forest)]">{categoryCount}</p>
-              <p className="text-xs text-[var(--color-muted)] font-medium">categorías</p>
+              <p className="text-xs text-[var(--color-muted)] font-medium">{t("discover.categories")}</p>
             </div>
             <div className="rounded-2xl bg-white/95 backdrop-blur-sm border-2 border-[var(--gd-color-leaf)]/40 shadow-xl px-4 py-3 text-center min-w-[120px] opacity-0 animate-[fadeIn_0.5s_ease-out_0.2s_forwards]">
               <p className="text-2xl font-bold text-[var(--gd-color-forest)]">{totalWeight.toFixed(1)}</p>
-              <p className="text-xs text-[var(--color-muted)] font-medium">kg</p>
+              <p className="text-xs text-[var(--color-muted)] font-medium">{t("discover.kg")}</p>
             </div>
           </div>
         </div>
@@ -353,13 +354,13 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
           {/* Stats destacados */}
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-2xl bg-gradient-to-br from-[var(--gd-color-sprout)]/30 to-white p-4 border-2 border-[var(--gd-color-leaf)]/20">
-              <p className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-1">Duración</p>
+              <p className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-1">{t("discover.duration")}</p>
               <p className="text-xl font-bold text-[var(--gd-color-forest)]">
-                {box.durationDays ? `${box.durationDays} días` : "Flexible"}
+                {box.durationDays ? `${box.durationDays} ${t("boxes.duration_days")}` : t("discover.flexible")}
               </p>
             </div>
             <div className="rounded-2xl bg-gradient-to-br from-[var(--gd-color-sprout)]/30 to-white p-4 border-2 border-[var(--gd-color-leaf)]/20">
-              <p className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-1">Precio</p>
+              <p className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-1">{t("discover.price")}</p>
               <p className="text-xl font-bold text-[var(--gd-color-forest)]">
                 RD${box.price.amount.toLocaleString("es-DO")}
               </p>
@@ -370,11 +371,11 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-bold text-[var(--gd-color-forest)]">
-                Contenido de tu caja
+                {t("discover.box_content")}
               </h3>
               <div className="flex items-center gap-3">
                 <span className="text-xs text-[var(--color-muted)]">
-                  {baseItems.length} tipos de productos
+                  {baseItems.length} {t("discover.product_types")}
                 </span>
                 <button
                   type="button"
@@ -387,7 +388,7 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
                   }}
                   className="text-xs font-semibold text-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)] transition-colors"
                 >
-                  {expandedCategories.size === itemsByCategory.size ? "Ocultar todo" : "Ver todo"}
+                  {expandedCategories.size === itemsByCategory.size ? t("discover.hide_all") : t("discover.view_all")}
                 </button>
               </div>
             </div>
@@ -416,7 +417,7 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
                             {categoryLabels[category]?.split(" ").slice(1).join(" ") || category}
                           </p>
                           <p className="text-xs text-[var(--color-muted)]">
-                            {items.length} {items.length === 1 ? "producto" : "productos"} · {categoryTotal} unidades
+                            {items.length} {items.length === 1 ? t("discover.product") : t("discover.product_plural")} · {categoryTotal} {t("discover.units")}
                           </p>
                         </div>
                       </div>
@@ -446,7 +447,7 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
                                 {item.name}
                               </p>
                               <p className="text-xs text-[var(--color-muted)]">
-                                Cantidad: <strong className="text-[var(--gd-color-forest)]">x{item.quantity}</strong>
+                                {t("discover.quantity")} <strong className="text-[var(--gd-color-forest)]">x{item.quantity}</strong>
                               </p>
                             </div>
                           </div>
@@ -465,10 +466,10 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
               <span className="text-xl">✨</span>
               <div className="space-y-1">
                 <p className="font-semibold text-sm text-[var(--gd-color-forest)]">
-                  Seleccionados el mismo día
+                  {t("discover.selected_same_day")}
                 </p>
                 <p className="text-xs text-[var(--color-muted)] leading-relaxed">
-                  Todos los productos son elegidos el mismo día de tu pedido, garantizando máxima frescura y calidad.
+                  {t("discover.selected_same_day_desc")}
                 </p>
               </div>
             </div>
@@ -476,10 +477,10 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
               <span className="text-xl">🌱</span>
               <div className="space-y-1">
                 <p className="font-semibold text-sm text-[var(--gd-color-forest)]">
-                  Productos de temporada
+                  {t("discover.seasonal")}
                 </p>
                 <p className="text-xs text-[var(--color-muted)] leading-relaxed">
-                  Solo incluimos productos que están en su mejor momento, respetando los ciclos naturales de la tierra.
+                  {t("discover.seasonal_desc")}
                 </p>
               </div>
             </div>
@@ -494,14 +495,14 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
           onClick={onAccept}
           className="flex-1 rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)] to-[var(--gd-color-avocado)] px-8 py-4 text-base font-bold text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
         >
-          💚 Me encanta así, continuar
+          {t("discover.love_it")}
         </button>
         <button
           type="button"
           onClick={onCustomize}
           className="flex-1 rounded-full border-2 border-[var(--gd-color-leaf)] bg-white/90 px-8 py-4 text-base font-bold text-[var(--gd-color-forest)] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 hover:bg-[var(--gd-color-sprout)]/20"
         >
-          ✏️ Quiero personalizarla
+          {t("discover.customize")}
         </button>
       </div>
     </div>

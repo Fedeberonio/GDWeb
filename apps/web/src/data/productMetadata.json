@@ -58,7 +58,7 @@
   {
     "slug": "pepinada-1-porcion",
     "name": "Pepinada (1 porción)",
-    "category": "jugos",
+    "category": "jugos-naturales",
     "weightKg": 0.5,
     "wholesaleCost": 113.75,
     "slotValue": 1
@@ -66,7 +66,7 @@
   {
     "slug": "tropicalote-1-porcion",
     "name": "Tropicalote (1 porción)",
-    "category": "jugos",
+    "category": "jugos-naturales",
     "weightKg": 0.5,
     "wholesaleCost": 113.75,
     "slotValue": 1
@@ -74,7 +74,7 @@
   {
     "slug": "rosa-maravillosa-1-porcion",
     "name": "Rosa Maravillosa (1 porción)",
-    "category": "jugos",
+    "category": "jugos-naturales",
     "weightKg": 0.5,
     "wholesaleCost": 113.75,
     "slotValue": 1
@@ -82,7 +82,7 @@
   {
     "slug": "china-chinola-1-porcion",
     "name": "China Chinola (1 porción)",
-    "category": "jugos",
+    "category": "jugos-naturales",
     "weightKg": 0.5,
     "wholesaleCost": 113.75,
     "slotValue": 1

@@ -3,11 +3,13 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Product } from "@/modules/catalog/types";
 import { getProductMeta } from "@/modules/box-builder/utils";
 import { ProductSeasonalBadge } from "../product-seasonal-badge";
 import productMetadata from "@/data/productMetadata.json";
 import { getVisualCategory, type VariantType } from "../box-selector/helpers";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 // Componente para manejar imágenes con múltiples fallbacks
 function ProductImageWithFallback({ 
@@ -200,6 +202,7 @@ export function SwapProductModal({
   boxId,
   onSwap,
 }: SwapProductModalProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [swapQuantity, setSwapQuantity] = useState<number>(1);
@@ -213,6 +216,9 @@ export function SwapProductModal({
   }, [productToSwap]);
 
   if (!isOpen || !productToSwap) return null;
+
+  // Render using Portal to escape parent stacking contexts
+  if (typeof window === "undefined") return null;
 
   const productMeta = getProductMeta(productToSwap.slug);
   const currentCategory = productMeta?.category;
@@ -490,13 +496,14 @@ export function SwapProductModal({
     };
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
       onClick={onClose}
+      style={{ position: "fixed" }}
     >
       <div
-        className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col z-[151]"
+        className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col z-[10002]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -504,7 +511,7 @@ export function SwapProductModal({
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <h2 className="font-display text-2xl text-[var(--gd-color-forest)] mb-2">
-                Intercambiar producto
+                {t("swap.title")}
               </h2>
               <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-[var(--gd-color-leaf)]/20">
                 <div className="relative h-12 w-12 flex-shrink-0 rounded-lg overflow-hidden bg-[var(--color-background-muted)] border border-[var(--gd-color-leaf)]/20">
@@ -519,7 +526,7 @@ export function SwapProductModal({
                     {productToSwap.name}
                   </p>
                   <p className="text-xs text-[var(--color-muted)]">
-                    Cantidad: x{productToSwap.quantity} · {productToSwap.slotValue} espacio{productToSwap.slotValue !== 1 ? "s" : ""} · {productToSwap.weightKg.toFixed(2)} kg
+                    {t("swap.quantity")} x{productToSwap.quantity} · {productToSwap.slotValue} {productToSwap.slotValue !== 1 ? t("swap.spaces_plural") : t("swap.spaces")} · {productToSwap.weightKg.toFixed(2)} kg
                   </p>
                 </div>
                 <span className="text-2xl">→</span>
@@ -529,12 +536,12 @@ export function SwapProductModal({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1">
                       <span className="text-xs font-semibold text-[var(--gd-color-forest)] block mb-1">
-                        Cantidad a intercambiar
+                        {t("swap.swap_quantity")}
                       </span>
                       <p className="text-xs text-[var(--color-muted)]">
                         {swapQuantity < productToSwap.quantity 
-                          ? `Intercambiarás ${swapQuantity} unidad${swapQuantity !== 1 ? "es" : ""} y quedarán ${productToSwap.quantity - swapQuantity} del producto original`
-                          : `Intercambiarás todas las ${productToSwap.quantity} unidades`}
+                          ? `${t("swap.swap_will")} ${swapQuantity} ${swapQuantity !== 1 ? t("swap.swap_will_units_plural") : t("swap.swap_will_units")} ${t("swap.swap_will_remain")} ${productToSwap.quantity - swapQuantity} del producto original`
+                          : `${t("swap.swap_will_all")} ${productToSwap.quantity} ${t("swap.swap_will_all_units")}`}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -574,7 +581,7 @@ export function SwapProductModal({
             <div className="flex-1 relative">
               <input
                 type="text"
-                placeholder="Buscar producto..."
+                placeholder={t("swap.search_placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-xl border-2 border-[var(--gd-color-leaf)]/30 bg-white px-4 pr-10 py-2.5 text-sm focus:border-[var(--gd-color-leaf)] focus:outline-none focus:ring-2 focus:ring-[var(--gd-color-leaf)]/20"
@@ -587,7 +594,7 @@ export function SwapProductModal({
                 onChange={(e) => setFilterCategory(e.target.value || null)}
                 className="rounded-xl border-2 border-[var(--gd-color-leaf)]/30 bg-white px-4 py-2.5 text-sm focus:border-[var(--gd-color-leaf)] focus:outline-none focus:ring-2 focus:ring-[var(--gd-color-leaf)]/20"
               >
-                <option value="">Todas las categorías</option>
+                <option value="">{t("swap.all_categories")}</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
@@ -599,7 +606,7 @@ export function SwapProductModal({
           <div className="flex items-center gap-2 mt-2">
             <span className="text-xs text-[var(--color-muted)]">💡</span>
             <p className="text-xs text-[var(--color-muted)]">
-              Los productos están ordenados por relevancia. Los marcados con <span className="font-semibold text-[var(--gd-color-forest)]">⭐ Sugerido</span> son de la misma categoría y peso similar.
+              {t("swap.tip")} <span className="font-semibold text-[var(--gd-color-forest)]">{t("swap.suggested")}</span> {t("swap.suggested_desc")}
             </p>
           </div>
         </div>
@@ -608,9 +615,9 @@ export function SwapProductModal({
         <div className="flex-1 overflow-y-auto p-6 relative z-0">
           {filteredProducts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-lg text-[var(--color-muted)] mb-2">No se encontraron productos</p>
+              <p className="text-lg text-[var(--color-muted)] mb-2">{t("swap.no_results")}</p>
               <p className="text-sm text-[var(--color-muted)]">
-                Intenta con otros términos de búsqueda o cambia el filtro de categoría
+                {t("swap.no_results_desc")}
               </p>
             </div>
           ) : (
@@ -641,7 +648,7 @@ export function SwapProductModal({
                     <div className="relative h-32 w-full overflow-hidden bg-[var(--color-background-muted)] rounded-t-2xl">
                       {isSuggested && (
                         <div className="absolute top-2 left-2 z-20 rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)] to-[var(--gd-color-avocado)] px-2 py-1 text-[10px] font-bold text-white shadow-lg">
-                          ⭐ Sugerido
+                          ⭐ {t("swap.suggested")}
                         </div>
                       )}
                       <ProductImageWithFallback
@@ -677,14 +684,14 @@ export function SwapProductModal({
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-[var(--color-muted)]">
-                            {slotValue} espacio{slotValue !== 1 ? "s" : ""} · {weight.toFixed(2)} kg
+                            {slotValue} {slotValue !== 1 ? t("swap.spaces_plural") : t("swap.spaces")} · {weight.toFixed(2)} kg
                           </span>
                           <span className="font-semibold text-[var(--gd-color-forest)]">
                             RD${product.price?.amount?.toLocaleString("es-DO") ?? "N/A"}
                           </span>
                         </div>
                         <p className="text-xs text-[var(--color-muted)]">
-                          Sugerido: <strong className="text-[var(--gd-color-forest)]">x{validation.recommendedQuantity}</strong> para equilibrar peso/precio
+                          {t("swap.suggested_qty")} <strong className="text-[var(--gd-color-forest)]">x{validation.recommendedQuantity}</strong> {t("swap.to_balance")}
                         </p>
                         
                         {/* Mensajes de validación mejorados - con contenedor para evitar superposiciones */}
@@ -693,27 +700,27 @@ export function SwapProductModal({
                             <>
                               {validation.weightCompatible && (
                                 <p className="text-xs text-green-600 font-semibold">
-                                  ✅ Peso compatible
+                                  ✅ {t("swap.weight_compatible")}
                                 </p>
                               )}
                               {validation.weightWarning && (
                                 <p className="text-xs text-orange-600 font-semibold">
-                                  ⚠️ Peso ligeramente diferente ({validation.weightDiff > 0 ? "+" : ""}{validation.weightDiff.toFixed(2)} kg)
+                                  ⚠️ {t("swap.weight_different")} ({validation.weightDiff > 0 ? "+" : ""}{validation.weightDiff.toFixed(2)} kg)
                                 </p>
                               )}
                               {validation.needsExtra && (
                                 <p className="text-xs text-orange-700 font-semibold bg-orange-50 px-2 py-1 rounded">
-                                  💡 Costo adicional: +RD${Math.abs(validation.extraCost).toFixed(0)}
+                                  💡 {t("swap.extra_cost")} +RD${Math.abs(validation.extraCost).toFixed(0)}
                                 </p>
                               )}
                               {/* Ocultar mensaje de ahorro - solo mostrar costos extra */}
                               {validation.wasAlreadyExceeding && validation.doesNotWorsen && (
                                 <p className="text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded">
-                                  ℹ️ Ya excedías el presupuesto, pero este cambio no lo empeora
+                                  ℹ️ {t("swap.already_exceeding")}
                                 </p>
                               )}
                               <p className="text-xs text-green-600 font-semibold">
-                                ✅ Listo para intercambiar
+                                ✅ {t("swap.ready_to_swap")}
                               </p>
                             </>
                           )}
@@ -722,17 +729,17 @@ export function SwapProductModal({
                             <>
                               {validation.slotsExceeded && (
                                 <p className="text-xs text-red-600 font-semibold bg-red-50 px-2 py-1 rounded">
-                                  ❌ No cabe: necesitas {validation.slotsOverflow} espacio{validation.slotsOverflow !== 1 ? "s" : ""} más
+                                  ❌ {t("swap.not_fit")} {validation.slotsOverflow} {validation.slotsOverflow !== 1 ? t("swap.more_spaces_plural") : t("swap.more_spaces")} {t("swap.more_needed")}
                                 </p>
                               )}
                               {validation.canFitSlots && !validation.weightSimilar && (
                                 <p className="text-xs text-red-600 font-semibold bg-red-50 px-2 py-1 rounded">
-                                  ❌ Peso muy diferente ({validation.weightDiff > 0 ? "+" : ""}{validation.weightDiff.toFixed(2)} kg) - fuera de tolerancia
+                                  ❌ {t("swap.weight_too_different")} ({validation.weightDiff > 0 ? "+" : ""}{validation.weightDiff.toFixed(2)} kg) {t("swap.out_of_tolerance")}
                                 </p>
                               )}
                               {validation.canFitSlots && validation.weightSimilar && validation.isPriceHigher && (
                                 <p className="text-xs text-red-600 font-semibold bg-red-50 px-2 py-1 rounded">
-                                  ❌ Precio demasiado alto: +RD${Math.abs(validation.priceDiff).toFixed(0)} (máximo permitido: RD${PRICE_TOLERANCE})
+                                  ❌ {t("swap.price_too_high")} +RD${Math.abs(validation.priceDiff).toFixed(0)} {t("swap.max_allowed")} RD${PRICE_TOLERANCE})
                                 </p>
                               )}
                             </>
@@ -754,22 +761,22 @@ export function SwapProductModal({
               {slotBudget ? (
                 <div className="space-y-1">
                   <span className="text-[var(--color-muted)]">
-                    Espacios usados: <strong className="text-[var(--gd-color-forest)]">{slotsUsed}</strong> / <strong className="text-[var(--gd-color-forest)]">{slotBudget}</strong>
+                    {t("swap.spaces_used")} <strong className="text-[var(--gd-color-forest)]">{slotsUsed}</strong> / <strong className="text-[var(--gd-color-forest)]">{slotBudget}</strong>
                   </span>
                   {slotsUsed > slotBudget && (
                     <p className="text-orange-600 font-semibold">
-                      ⚠️ Excedido por {slotsUsed - slotBudget} espacio{slotsUsed - slotBudget !== 1 ? "s" : ""}
+                      {t("swap.exceeded_by")} {slotsUsed - slotBudget} {slotsUsed - slotBudget !== 1 ? t("swap.spaces_plural") : t("swap.spaces")}
                     </p>
                   )}
                   {slotsUsed <= slotBudget && (
                     <p className="text-green-600">
-                      Disponibles: <strong>{slotBudget - slotsUsed}</strong> espacio{slotBudget - slotsUsed !== 1 ? "s" : ""}
+                      {t("swap.available")} <strong>{slotBudget - slotsUsed}</strong> {slotBudget - slotsUsed !== 1 ? t("swap.available_spaces_plural") : t("swap.available_spaces")}
                     </p>
                   )}
                 </div>
               ) : (
                 <span className="text-[var(--color-muted)]">
-                  Espacios: <strong className="text-[var(--gd-color-forest)]">Sin límite</strong>
+                  {t("swap.no_limit")} <strong className="text-[var(--gd-color-forest)]">{t("swap.no_limit_desc")}</strong>
                 </span>
               )}
             </div>
@@ -778,11 +785,12 @@ export function SwapProductModal({
               onClick={onClose}
               className="px-4 py-2 rounded-full border border-[var(--color-border)] hover:border-[var(--gd-color-leaf)] hover:bg-white transition-colors"
             >
-              Cancelar
+              {t("swap.cancel")}
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

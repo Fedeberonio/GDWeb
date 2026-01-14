@@ -6,6 +6,7 @@ import { useCart } from "@/modules/cart/context";
 import type { Box } from "@/modules/catalog/types";
 import { getVariantInfo, type VariantType } from "./box-selector/helpers";
 import { BoxVariantsDisplay } from "./box-variants-display";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 // Componente selector de variante para el flujo guiado
 function VariantSelector({
@@ -16,12 +17,12 @@ function VariantSelector({
   onSelectVariant: (variant: VariantType) => void;
 }) {
   return (
-    <div className="space-y-4">
-      <div className="text-center mb-4">
-        <p className="text-sm text-[var(--color-muted)]">
-          💡 <strong className="text-[var(--gd-color-forest)]">Consejo:</strong> Haz clic en cada variante para ver su contenido específico
-        </p>
-      </div>
+      <div className="space-y-4">
+        <div className="text-center mb-4">
+          <p className="text-sm text-[var(--color-muted)]">
+            💡 <strong className="text-[var(--gd-color-forest)]">{t("guided_flow.tip")}</strong> {t("guided_flow.variant_tip")}
+          </p>
+        </div>
       <BoxVariantsDisplay 
         baseContents={baseContents} 
         compact={false} 
@@ -52,6 +53,7 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
   const [selectedVariant, setSelectedVariant] = useState<VariantType | null>(null);
   const { addItem } = useCart();
   const [isAdding, setIsAdding] = useState(false);
+  const { t, tData } = useTranslation();
 
   // Ordenar cajas por días
   const sortedBoxes = [...boxes].sort((a, b) => (a.durationDays || 0) - (b.durationDays || 0));
@@ -105,10 +107,10 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
         <div className="sticky top-0 z-10 bg-white border-b-2 border-[var(--gd-color-leaf)]/20 px-6 py-4 rounded-t-3xl">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
-              {step === "size" && "Paso 1: Elige tu tamaño ideal"}
-              {step === "variant" && "Paso 2: Elige la variedad"}
-              {step === "preview" && "Paso 3: Revisa tu caja"}
-              {step === "customize" && "Personaliza tu caja"}
+              {step === "size" && t("guided_flow.step1_title")}
+              {step === "variant" && t("guided_flow.step2_title")}
+              {step === "preview" && t("guided_flow.step3_title")}
+              {step === "customize" && t("guided_flow.customize_title")}
             </h2>
             <button
               type="button"
@@ -134,7 +136,7 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
             <div className="space-y-6">
               <div className="text-center mb-6">
                 <p className="text-sm text-[var(--color-muted)] mb-2">
-                  💡 <strong className="text-[var(--gd-color-forest)]">Consejo:</strong> Elige el tamaño según cuántos días quieres abastecer
+                  💡 <strong className="text-[var(--gd-color-forest)]">{t("guided_flow.tip")}</strong> {t("guided_flow.size_tip")}
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -148,13 +150,13 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                     <div className="text-center space-y-3">
                       <div className="text-5xl mb-2">📦</div>
                       <h3 className="font-display text-xl font-bold text-[var(--gd-color-forest)]">
-                        {box.durationDays} DÍAS
+                        {box.durationDays} {t("guided_flow.days")}
                       </h3>
                       <p className="text-sm font-semibold text-[var(--gd-color-leaf)]">
-                        {box.name.es}
+                        {tData(box.name)}
                       </p>
                       <div className="pt-3 border-t border-[var(--gd-color-leaf)]/30">
-                        <p className="text-xs text-[var(--color-muted)] mb-1">Precio</p>
+                        <p className="text-xs text-[var(--color-muted)] mb-1">{t("guided_flow.price")}</p>
                         <p className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
                           RD${box.price.amount.toLocaleString("es-DO")}
                         </p>
@@ -175,13 +177,13 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                   onClick={() => setStep("size")}
                   className="text-sm text-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)] mb-4 inline-flex items-center gap-2"
                 >
-                  ← Volver a tamaños
+                  {t("guided_flow.back_sizes")}
                 </button>
                 <p className="text-sm text-[var(--color-muted)] mb-2">
-                  💡 <strong className="text-[var(--gd-color-forest)]">Consejo:</strong> Haz clic en cada variante para ver su contenido específico
+                  💡 <strong className="text-[var(--gd-color-forest)]">{t("guided_flow.tip")}</strong> {t("guided_flow.variant_tip")}
                 </p>
                 <h3 className="font-display text-xl font-bold text-[var(--gd-color-forest)]">
-                  {selectedBox.name.es} ({selectedBox.durationDays} días)
+                  {tData(selectedBox.name)} ({selectedBox.durationDays} {t("boxes.duration_days")})
                 </h3>
               </div>
               
@@ -206,7 +208,7 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                       : "bg-gray-400 cursor-not-allowed opacity-50"
                   }`}
                 >
-                  Continuar →
+                  {t("guided_flow.continue")}
                 </button>
               </div>
             </div>
@@ -221,16 +223,16 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                   onClick={() => setStep("variant")}
                   className="text-sm text-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)] mb-4 inline-flex items-center gap-2"
                 >
-                  ← Volver a variantes
+                  {t("guided_flow.back_variants")}
                 </button>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[var(--gd-color-leaf)]/20 px-4 py-2 mb-2">
-                  <span className="text-xl">{getVariantInfo(selectedVariant).icon}</span>
+                  <span className="text-xl">{getVariantInfo(selectedVariant, locale).icon}</span>
                   <span className="text-sm font-bold text-[var(--gd-color-forest)] uppercase">
-                    {selectedVariant.toUpperCase()} - {getVariantInfo(selectedVariant).tagline}
+                    {selectedVariant.toUpperCase()} - {getVariantInfo(selectedVariant, locale).tagline}
                   </span>
                 </div>
                 <h3 className="font-display text-xl font-bold text-[var(--gd-color-forest)]">
-                  ✓ Tu {selectedBox.name.es} está lista
+                  {t("guided_flow.box_ready")} {tData(selectedBox.name)} {t("guided_flow.is_ready")}
                 </h3>
               </div>
 
@@ -249,20 +251,20 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                 <div className="space-y-4">
                   <div className="rounded-xl bg-gradient-to-br from-[var(--gd-color-sprout)]/20 to-white p-4 border-2 border-[var(--gd-color-leaf)]/30">
                     <p className="text-xs uppercase tracking-wider text-[var(--color-muted)] mb-2">
-                      Resumen
+                      {t("guided_flow.summary")}
                     </p>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-2xl font-bold text-[var(--gd-color-forest)]">
                           {baseContents.length}
                         </p>
-                        <p className="text-xs text-[var(--color-muted)]">productos</p>
+                        <p className="text-xs text-[var(--color-muted)]">{t("box_customize.products")}</p>
                       </div>
                       <div>
                         <p className="text-2xl font-bold text-[var(--gd-color-forest)]">
                           RD${selectedBox.price.amount.toLocaleString("es-DO")}
                         </p>
-                        <p className="text-xs text-[var(--color-muted)]">precio</p>
+                        <p className="text-xs text-[var(--color-muted)]">{t("guided_flow.price")}</p>
                       </div>
                     </div>
                   </div>
@@ -285,14 +287,14 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                   disabled={isAdding}
                   className="flex-1 rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-4 text-base font-bold text-white shadow-xl hover:scale-105 transition-all disabled:opacity-50"
                 >
-                  {isAdding ? "Agregando..." : "✓ Agregar al carrito"}
+                  {isAdding ? t("guided_flow.adding") : t("guided_flow.add_to_cart")}
                 </button>
                 <button
                   type="button"
                   onClick={handleCustomize}
                   className="flex-1 rounded-full border-2 border-[var(--gd-color-leaf)] bg-white px-6 py-4 text-base font-semibold text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-sprout)]/20 transition-colors"
                 >
-                  ✏️ Cambiar productos
+                  {t("guided_flow.customize_products")}
                 </button>
               </div>
             </div>

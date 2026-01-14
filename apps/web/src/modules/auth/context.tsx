@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type PropsWith
 import { onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
 
 import { getFirebaseAuth, googleAuthProvider } from "@/lib/firebase";
+import { UserProvider } from "@/modules/user/context";
 
 export type AuthContextValue = {
   user: User | null;
@@ -83,7 +84,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     [user, loading, error],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <UserProvider user={user}>{children}</UserProvider>
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
