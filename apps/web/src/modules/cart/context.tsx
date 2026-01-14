@@ -41,7 +41,7 @@ function calculateMetrics(items: CartItem[]): CartMetrics {
 
 export function CartProvider({ children }: PropsWithChildren) {
   const { user } = useAuth();
-  const { profile, syncCart: syncCartToFirestore } = useUser();
+  const { profile, syncCart: syncCartToFirestore, loading: profileLoading } = useUser();
   const [items, setItems] = useState<CartItem[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -72,14 +72,14 @@ export function CartProvider({ children }: PropsWithChildren) {
 
   // Sincronizar con Firestore cuando el usuario está autenticado
   useEffect(() => {
-    if (user && !profile?.loading && syncCartToFirestore) {
+    if (user && !profileLoading && syncCartToFirestore) {
       const firestoreCart = cartItemsToFirestore(items);
       syncCartToFirestore(firestoreCart).catch((error) => {
         console.error("Error al sincronizar carrito con Firestore:", error);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, user, profile?.loading]);
+  }, [items, user, profileLoading]);
 
   const metrics = useMemo(() => calculateMetrics(items), [items]);
 
