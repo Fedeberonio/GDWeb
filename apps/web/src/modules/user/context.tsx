@@ -16,9 +16,8 @@ import {
   createUserProfile,
   updateUserProfile,
   syncCartToFirestore,
-  type UserProfile as UserProfileType,
 } from "./firestore";
-import type { CartItemFromFirestore } from "./types";
+import type { UserProfile as UserProfileType, CartItemFromFirestore } from "./types";
 
 type UserContextValue = {
   profile: UserProfileType | null;
