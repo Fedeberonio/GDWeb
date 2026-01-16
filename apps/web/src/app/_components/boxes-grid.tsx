@@ -252,11 +252,6 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
                         <p className="font-display text-3xl md:text-4xl font-black text-emerald-950">
                           RD${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}
                         </p>
-                        {box.durationDays && box.durationDays > 0 && (
-                          <p className="text-sm md:text-base text-[var(--color-muted)] mt-1">
-                            ≈ RD${Math.round(box.price.amount / box.durationDays)} {t("boxes.per_day")}
-                          </p>
-                        )}
                         {/* Disclaimer de peso y cantidad */}
                         <div className="pt-1 mt-1">
                           <p className="text-xs text-[var(--color-muted)] italic leading-tight">

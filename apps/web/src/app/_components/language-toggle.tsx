@@ -2,6 +2,11 @@
 
 import { useLocale } from "@/modules/i18n/context";
 
+const LOCALE_FLAGS: Record<string, string> = {
+  es: "🇩🇴",
+  en: "🇺🇸",
+};
+
 export function LanguageToggle() {
   const { locale, locales, labels, setLocale } = useLocale();
 
@@ -14,11 +19,13 @@ export function LanguageToggle() {
             key={code}
             type="button"
             onClick={() => setLocale(code)}
+            aria-label={labels[code]}
+            title={labels[code]}
             className={`rounded-full px-3 py-1 font-medium transition ${
               active ? "bg-green-600 text-white" : "text-slate-600 hover:bg-slate-100"
             }`}
           >
-            {labels[code]}
+            <span className="text-base leading-none">{LOCALE_FLAGS[code] ?? "🌐"}</span>
           </button>
         );
       })}

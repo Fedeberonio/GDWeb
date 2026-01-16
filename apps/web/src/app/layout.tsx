@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Montserrat, Patua_One } from "next/font/google";
 import { Providers } from "./providers";
 import { WhatsAppFloatButton } from "./_components/whatsapp-float-button";
+import { InstagramFloatButton } from "./_components/instagram-float-button";
 import { ProfileFormModal } from "@/modules/user/profile-form-modal";
 import "./globals.css";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/modules/i18n/locales";
@@ -77,6 +78,7 @@ export default async function RootLayout({
         <Providers initialLocale={initialLocale}>
           {children}
           <WhatsAppFloatButton />
+          <InstagramFloatButton />
           <ProfileFormModal />
         </Providers>
       </body>

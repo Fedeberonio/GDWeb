@@ -14,8 +14,10 @@ export const translations = {
         "nav.login": "Acceso",
 
         // Hero
-        "hero.badge": "Primera empresa 100% sustentable en República Dominicana",
-        "hero.title": "Cajas frescas, ensaladas, jugos naturales y productos caseros del día",
+        "hero.badge": "Primera empresa 100% sustentable en Juan Dolio",
+        "hero.title": "Ya pediste tu cajita? Fresh boxes, jugos naturales y productos caseros del día.",
+        "hero.title_primary": "Ya pediste tu cajita?",
+        "hero.title_secondary": "Fresh boxes, jugos naturales y productos caseros del día.",
         "hero.subtitle": "Directamente de productores locales • Delivery gratis 3 veces por semana • Packaging retornable • Cero plástico",
         "hero.delivery": "Delivery gratis",
         "hero.delivery_details": " 3 veces por semana.",
@@ -470,8 +472,10 @@ export const translations = {
         "nav.login": "Login",
 
         // Hero
-        "hero.badge": "First 100% sustainable company in Dominican Republic",
-        "hero.title": "Fresh boxes, salads, natural juices and daily homemade products",
+        "hero.badge": "First 100% sustainable company in Juan Dolio",
+        "hero.title": "Have you ordered your box yet? Fresh boxes, natural juices and daily homemade products.",
+        "hero.title_primary": "Have you ordered your box yet?",
+        "hero.title_secondary": "Fresh boxes, natural juices and daily homemade products.",
         "hero.subtitle": "Directly from local producers • Free delivery 3 times a week • Returnable packaging • Zero plastic",
         "hero.delivery": "Free delivery",
         "hero.delivery_details": " 3 times a week.",

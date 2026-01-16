@@ -21,32 +21,36 @@ export function PrimaryNav() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/98 shadow-lg backdrop-blur-md border-b-2 border-[var(--gd-color-leaf)]/20">
-      <Container className="flex items-center justify-between py-4 md:py-5">
-        <Link href="/" className="flex items-center gap-4 md:gap-5 group hover:opacity-90 transition-opacity">
-          {/* Logo vertical - MÁS GRANDE Y VISIBLE */}
-          <div className="relative h-20 w-20 md:h-24 md:w-24 overflow-hidden -my-1 drop-shadow-md">
+      <Container className="flex items-center gap-4 py-4 md:py-5">
+        <Link href="/" className="flex items-center gap-3 md:gap-4 group hover:opacity-90 transition-opacity shrink-0">
+          <div className="relative h-16 w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 overflow-hidden rounded-2xl bg-white/95 shadow-lg ring-1 ring-[var(--gd-color-leaf)]/25">
             <Image
               src="/images/logo/logo-vertical.png"
               alt="Green Dolio logo"
               fill
-              sizes="(max-width: 768px) 80px, 96px"
-              className="object-contain"
+              sizes="(max-width: 768px) 64px, (max-width: 1024px) 80px, 96px"
+              className="object-contain p-2"
               priority
             />
           </div>
-          <div className="hidden sm:block">
-            <p className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-[var(--gd-color-forest)] leading-tight tracking-tight drop-shadow-sm">
+          <div className="flex flex-col leading-tight">
+            <p className="font-display text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-[var(--gd-color-forest)] tracking-tight drop-shadow-sm">
               Green Dolio
             </p>
-            <p className="text-sm md:text-base text-[var(--gd-color-leaf)] font-semibold mt-0.5">{t("nav.tagline")}</p>
+            <p className="hidden sm:block text-xs md:text-sm text-[var(--gd-color-leaf)] font-semibold mt-0.5">
+              {t("nav.tagline")}
+            </p>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:gap-8 text-base md:text-lg font-display font-semibold text-[var(--gd-color-forest)] lg:flex">
+        <nav
+          className="hidden lg:flex flex-1 items-center justify-center gap-6 xl:gap-8 text-base md:text-lg font-display font-semibold text-[var(--gd-color-forest)]"
+          aria-label="Primary"
+        >
           {NAV_LINKS.map((item) => (
-            <Link 
-              key={item.href} 
-              href={item.href} 
+            <Link
+              key={item.href}
+              href={item.href}
               className="transition-all hover:text-[var(--gd-color-leaf)] hover:scale-105 relative group"
             >
               {item.label}
@@ -55,16 +59,10 @@ export function PrimaryNav() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="ml-auto flex items-center gap-2 md:gap-3 shrink-0">
           <CartNavButton />
           <UserAuthButton />
           <LanguageToggle />
-          <Link
-            href="#contacto"
-            className="hidden items-center rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-2.5 text-sm md:text-base font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl md:inline-flex"
-          >
-            {t("nav.contact")}
-          </Link>
         </div>
       </Container>
     </header>

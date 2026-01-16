@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
@@ -14,6 +15,7 @@ export function HowItWorksAccordion() {
       icon: "📦",
       title: t("how_it_works.step1_title"),
       description: t("how_it_works.step1_desc"),
+      image: "/images/how%20it%20works/step-1.jpg",
       color: "from-[var(--gd-color-leaf)] to-[var(--gd-color-sprout)]",
       borderColor: "border-[var(--gd-color-leaf)]",
     },
@@ -22,6 +24,7 @@ export function HowItWorksAccordion() {
       icon: "🎨",
       title: t("how_it_works.step2_title"),
       description: t("how_it_works.step2_desc"),
+      image: "/images/how%20it%20works/step-2.jpg",
       color: "from-[var(--gd-color-sky)] to-[var(--gd-color-sprout)]",
       borderColor: "border-[var(--gd-color-sky)]",
     },
@@ -30,6 +33,7 @@ export function HowItWorksAccordion() {
       icon: "➕",
       title: t("how_it_works.step3_title"),
       description: t("how_it_works.step3_desc"),
+      image: "/images/how%20it%20works/step-3.jpg",
       color: "from-[var(--gd-color-avocado)] to-[var(--gd-color-leaf)]",
       borderColor: "border-[var(--gd-color-avocado)]",
     },
@@ -38,6 +42,7 @@ export function HowItWorksAccordion() {
       icon: "✅",
       title: t("how_it_works.step4_title"),
       description: t("how_it_works.step4_desc"),
+      image: "/images/how%20it%20works/step-4.jpg",
       color: "from-[var(--gd-color-leaf)] to-[var(--gd-color-avocado)]",
       borderColor: "border-[var(--gd-color-leaf)]",
     },
@@ -46,6 +51,7 @@ export function HowItWorksAccordion() {
       icon: "🚚",
       title: t("how_it_works.step5_title"),
       description: t("how_it_works.step5_desc"),
+      image: "/images/how%20it%20works/step-5.jpg",
       color: "from-[var(--gd-color-sky)] to-[var(--gd-color-leaf)]",
       borderColor: "border-[var(--gd-color-sky)]",
     },
@@ -68,31 +74,61 @@ export function HowItWorksAccordion() {
       </div>
 
       {/* 3D Card Slider - Diseño Horizontal Compacto */}
-      <div className="relative mx-auto max-w-lg h-[130px] mb-2 perspective-[1000px]">
+      <div className="relative mx-auto w-full max-w-2xl h-[180px] md:h-[200px] lg:h-[210px] mb-4 overflow-visible perspective-[1000px]">
         {steps.map((item, index) => {
-          const isActive = index === activeStep;
+          const position = (index - activeStep + steps.length) % steps.length;
+          const isVisible = position <= 2;
+          const isActive = position === 0;
+          const offsetX = position * 26;
+          const offsetY = position * 10;
+          const scale = 1 - position * 0.035;
+          const opacity = isVisible ? 1 - position * 0.22 : 0;
+          const transform = isVisible
+            ? `translateX(calc(-50% + ${offsetX}px)) translateY(${offsetY}px) scale(${scale})`
+            : "translateX(calc(-50% - 90px)) translateY(28px) scale(0.9)";
+
           return (
             <div
               key={item.step}
-              className={`absolute inset-0 flex items-center p-4 rounded-[2rem] bg-white border-2 border-b-[6px] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isActive
-                ? `opacity-100 translate-y-0 scale-100 z-10 shadow-xl ${item.borderColor}`
-                : "opacity-0 translate-y-4 scale-95 z-0 border-transparent"
-                }`}
+              className={`absolute left-1/2 top-0 h-full w-[92%] sm:w-[520px] md:w-[640px] inline-flex items-center gap-4 p-4 md:p-5 rounded-[2rem] bg-white border-2 border-b-[6px] overflow-visible transition-[transform,opacity] duration-700 ease-out ${
+                isActive ? `shadow-2xl ${item.borderColor}` : "shadow-lg border-transparent"
+              }`}
+              style={{
+                transform,
+                opacity,
+                zIndex: 10 - position,
+                pointerEvents: isVisible ? "auto" : "none",
+              }}
             >
-              {/* Contenedor Icono */}
-              <div className={`shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg transform transition-transform duration-500 ${isActive ? "scale-100 rotate-0" : "scale-75 -rotate-12"}`}>
-                <span className="text-4xl drop-shadow-md">{item.icon}</span>
+              {/* Imagen + Icono */}
+              <div
+                className={`relative shrink-0 transform transition-transform duration-700 ${isActive ? "scale-100 rotate-0" : "scale-95 -rotate-2"}`}
+              >
+                <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-2xl overflow-hidden shadow-lg ring-2 ring-white/80">
+                  <Image
+                    src={item.image}
+                    alt={`${item.title} - Paso ${item.step}`}
+                    fill
+                    sizes="96px"
+                    className="object-cover object-center"
+                    priority={index === 0}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/10" />
+                  <div className={`absolute bottom-2 left-2 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br ${item.color} text-lg shadow-md`}>
+                    <span className="drop-shadow">{item.icon}</span>
+                  </div>
+                </div>
                 <div className="absolute -top-2 -left-2 w-6 h-6 bg-[var(--gd-color-forest)] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                   {item.step}
                 </div>
               </div>
 
               {/* Texto - Maximizado */}
-              <div className="flex-1 pl-3 text-left flex flex-col justify-center">
-                <h4 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-[var(--gd-color-forest)] leading-none mb-1 tracking-tight">
+              <div className="flex-1 pr-2 text-left flex flex-col justify-center min-w-0">
+                <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[var(--gd-color-forest)] leading-tight mb-1 tracking-tight">
                   {item.title}
                 </h4>
-                <p className="font-display text-base md:text-lg font-medium text-[var(--color-muted)] leading-tight">
+                <p className="font-display text-base sm:text-lg font-medium text-[var(--color-muted)] leading-snug">
                   {item.description}
                 </p>
               </div>

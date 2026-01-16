@@ -199,14 +199,47 @@ export function HomeSections() {
                                 </div>
                             </div>
                         </div>
-                        <div className="rounded-3xl border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-br from-white via-[var(--gd-color-sprout)]/30 to-white p-8 shadow-xl">
-                            <p className="text-xs uppercase tracking-[0.35em] text-[var(--gd-color-forest)] font-bold mb-4">🚚 {t("home.about_delivery_badge")}</p>
-                            <p className="text-base leading-relaxed text-[var(--color-muted)] font-medium">
-                                <strong className="text-[var(--gd-color-forest)]">{t("home.about_delivery_strong")}</strong> {t("home.about_delivery_desc")}
-                            </p>
-                            <p className="mt-5 text-sm font-bold text-[var(--gd-color-forest)] border-t-2 border-[var(--gd-color-leaf)]/30 pt-4">
-                                {t("home.about_schedules")}
-                            </p>
+                        <div className="space-y-4">
+                            <div className="rounded-3xl border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-br from-white via-[var(--gd-color-sprout)]/30 to-white p-8 shadow-xl">
+                                <p className="text-xs uppercase tracking-[0.35em] text-[var(--gd-color-forest)] font-bold mb-4">🚚 {t("home.about_delivery_badge")}</p>
+                                <p className="text-base leading-relaxed text-[var(--color-muted)] font-medium">
+                                    <strong className="text-[var(--gd-color-forest)]">{t("home.about_delivery_strong")}</strong> {t("home.about_delivery_desc")}
+                                </p>
+                                <p className="mt-5 text-sm font-bold text-[var(--gd-color-forest)] border-t-2 border-[var(--gd-color-leaf)]/30 pt-4">
+                                    {t("home.about_schedules")}
+                                </p>
+                            </div>
+
+                            <div className="rounded-3xl border-2 border-[var(--gd-color-leaf)]/30 bg-white/95 p-6 shadow-lg">
+                                <p className="text-xs uppercase tracking-[0.35em] text-[var(--gd-color-forest)] font-bold">
+                                    📞 {t("home.contact_badge")}
+                                </p>
+                                <div className="mt-4 space-y-3 text-sm font-semibold text-[var(--gd-color-forest)]">
+                                    <a
+                                        href="tel:+18493757338"
+                                        className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--gd-color-leaf)]/20 bg-white/80 px-4 py-3 transition hover:shadow-sm"
+                                    >
+                                        <span className="flex items-center gap-2">📞 {t("home.contact_tel")}</span>
+                                        <span className="text-[var(--gd-color-text-muted)]">+1 (849) 375-7338</span>
+                                    </a>
+                                    <a
+                                        href="mailto:greendolioexpress@gmail.com?subject=Consulta%20GreenDolio"
+                                        className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--gd-color-leaf)]/20 bg-white/80 px-4 py-3 transition hover:shadow-sm"
+                                    >
+                                        <span className="flex items-center gap-2">📧 {t("home.contact_email")}</span>
+                                        <span className="text-[var(--gd-color-text-muted)]">greendolioexpress@gmail.com</span>
+                                    </a>
+                                    <a
+                                        href="https://instagram.com/green_dolio"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--gd-color-leaf)]/20 bg-white/80 px-4 py-3 transition hover:shadow-sm"
+                                    >
+                                        <span className="flex items-center gap-2">📱 {t("home.contact_insta")}</span>
+                                        <span className="text-[var(--gd-color-text-muted)]">@green_dolio</span>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </Container>
