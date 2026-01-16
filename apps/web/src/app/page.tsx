@@ -78,14 +78,14 @@ export default async function HomePage() {
       <main>
         <HomePageClient />
 
-        {/* SECCIÓN UNIFICADA: CAJAS + CÓMO FUNCIONA - MUY COMPACTA PARA VERSE INMEDIATAMENTE */}
+        {/* SECCIÓN UNIFICADA: CAJAS + CÓMO FUNCIONA */}
         <section id="cajas" className="relative bg-gradient-to-b from-white via-[var(--gd-color-sprout)]/20 to-white py-3 md:py-4 overflow-hidden">
           <Container className="relative z-10 space-y-3">
-            {/* Banner y Pasos (Interactivos) */}
-            <HowItWorksAccordion />
-
             {/* Grid de Cajas */}
             <BoxesGrid boxes={boxes} prebuiltBoxes={prebuiltBoxes} products={products} />
+
+            {/* Banner y Pasos (Interactivos) */}
+            <HowItWorksAccordion />
           </Container>
         </section>
 

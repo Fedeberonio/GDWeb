@@ -44,18 +44,18 @@ export function HeroSectionClient() {
             <span>{t("hero.badge")}</span>
           </div>
           
-          {/* Título con fondo transparente y blur */}
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-[1.1] font-black text-[var(--gd-color-forest)] px-6 py-4 md:px-8 md:py-6 mx-auto max-w-5xl rounded-3xl bg-white/50 backdrop-blur-md shadow-2xl border-2 border-[var(--gd-color-leaf)]/20">
-            {t("hero.title")}
+          {/* Título con jerarquía visual */}
+          <h1 className="font-display leading-[1.1] text-[var(--gd-color-forest)] px-6 py-4 md:px-8 md:py-6 mx-auto max-w-5xl rounded-3xl bg-white/50 backdrop-blur-md shadow-2xl border-2 border-[var(--gd-color-leaf)]/20">
+            <span className="block text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black">
+              {t("hero.title_primary")}
+            </span>
+            <span className="mt-2 block text-2xl md:text-3xl lg:text-4xl font-semibold text-[var(--gd-color-forest)]/90">
+              {t("hero.title_secondary")}
+            </span>
           </h1>
           
-          {/* Subtítulo con fondo transparente y blur */}
-          <p className="font-display max-w-3xl mx-auto text-xl md:text-2xl lg:text-3xl text-[var(--gd-color-forest)] leading-relaxed font-bold px-6 py-3 md:px-8 md:py-4 rounded-2xl bg-white/45 backdrop-blur-md shadow-xl border-2 border-[var(--gd-color-leaf)]/20">
-            {t("hero.subtitle")}
-          </p>
         </div>
       </Container>
     </section>
   );
 }
-

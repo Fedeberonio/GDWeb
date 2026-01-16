@@ -52,17 +52,15 @@ export function HeroSection() {
             <span>{t("hero.badge")}</span>
           </div>
 
-          {/* Título principal - Color más oscuro y drop-shadow para legibilidad */}
-          <h1 className="font-display text-4xl leading-tight text-emerald-950 drop-shadow-sm sm:text-5xl md:text-6xl max-w-4xl mx-auto">
-            {t("hero.title")}
+          {/* Título principal con jerarquía */}
+          <h1 className="font-display leading-tight text-emerald-950 drop-shadow-sm max-w-4xl mx-auto">
+            <span className="block text-4xl sm:text-5xl md:text-6xl font-bold">
+              {t("hero.title_primary")}
+            </span>
+            <span className="mt-2 block text-xl sm:text-2xl md:text-3xl font-semibold text-emerald-900/90">
+              {t("hero.title_secondary")}
+            </span>
           </h1>
-
-          {/* Subtítulo con información clave - Color más oscuro */}
-          <p className="max-w-2xl mx-auto text-lg text-gray-800 font-medium leading-relaxed">
-            {t("hero.subtitle")}
-            <span className="font-bold text-emerald-900"> {t("hero.delivery")}</span>{t("hero.delivery_details")}
-            {" "}{t("hero.packaging")}
-          </p>
 
           {/* Diferenciadores en línea */}
           <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-[var(--gd-color-forest)]">
