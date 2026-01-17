@@ -1,6 +1,6 @@
 # Green Dolio Pro — Reporte de Avance
 
-**Última actualización:** 2025-11-28
+**Última actualización:** 2025-01-17
 
 ## 1. Panorama General
 
@@ -38,7 +38,7 @@
 - **Precio de swaps no visible**: cuando se agrega una caja personalizada con extras (swap que encarece), el exceso no se refleja en el carrito ni en el flujo de checkout.
 - **Integración de pagos**: sigue pendiente.
 - **Persistencia en backend**: carrito solo en cliente; pedidos se guardan como borrador en Firestore pero sin cálculo de extras robusto.
-- **Rutas de deploy**: falta reconfigurar Vercel apuntando a `GreenDolio-Pro/apps/web` (branch de staging `test-build`) y confirmar subdominio de pruebas.
+- **Rutas de deploy**: ✅ **COMPLETADO** - Vercel configurado correctamente con cuenta greendolioexpress. Ver `DEPLOY.md` para instrucciones.
 
 ### ⚠️ Bloqueos de build (detalles)
 - Web: error de prerender en `/404` y `/500` (styled-jsx useContext null). Se requiere página de error mínima sin dependencias.
@@ -85,6 +85,33 @@
 - Cada nuevo asset debe copiarse a `public/` o configurarse en `next.config.ts` (remotePatterns) y reiniciar `npm run dev:web`.
 - Registrar cambios relevantes en este archivo (fecha + puntos clave) al finalizar cada sesión.
 - GitHub Pages usa `legacy-ghpages` para la web estática; `test-build`/`main` quedan para la nueva app (Next.js + Vercel). `.DS_Store` y artefactos generados ya se ignoran.
+
+## 6. Deploy y Configuración
+
+### ✅ Deploy Configurado
+- **Cuenta Vercel:** greendolioexpress-1091 (Team: GD's projects)
+- **URL Preview:** https://web-c8c53nqaa-gds-projects-1bbb6204.vercel.app
+- **Variables de entorno:** Todas configuradas (Firebase, API, etc.)
+- **Scripts:** `apps/web/deploy.sh` y `configurar-vars-vercel.sh` disponibles
+
+### 📋 Para Hacer Deploy
+```bash
+# Opción 1: Script automatizado (recomendado)
+cd apps/web && ./deploy.sh
+
+# Opción 2: Manual
+cd apps/web
+vercel --token BlHxzfmDnnCzS6vEXvEh5HbA --scope gds-projects-1bbb6204 --prod=false
+```
+
+**⚠️ IMPORTANTE:** Siempre usar cuenta greendolioexpress. Ver `DEPLOY.md` para guía completa.
+
+### 🔧 Configurar Variables de Entorno
+```bash
+./configurar-vars-vercel.sh
+```
+
+**Nota:** El proyecto está completamente separado de producción (www.greendolio.shop) y listo para pruebas.
 
 ---
 
