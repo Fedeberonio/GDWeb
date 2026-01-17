@@ -108,10 +108,10 @@ a {
   0% {
     opacity: 0;
   }
-  15% {
+  12% {
     opacity: 1;
   }
-  70% {
+  90% {
     opacity: 1;
   }
   100% {
@@ -130,7 +130,7 @@ a {
   }
   100% {
     opacity: 0;
-    transform: scale(1.04);
+    transform: scale(1.02);
   }
 }
 
@@ -209,13 +209,13 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.96);
-  animation: splash-fade 3.2s ease-out forwards;
+  background: #fff;
+  animation: splash-fade 6s ease-out forwards;
 }
 
 .logo-splash__logo {
   position: relative;
-  width: min(92vw, 720px);
-  height: min(92vw, 720px);
-  animation: splash-logo 3s ease-out forwards;
+  width: 100vw;
+  height: 100vh;
+  animation: splash-logo 6s ease-out forwards;
 }

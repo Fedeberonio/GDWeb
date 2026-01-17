@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 import { useCart } from "@/modules/cart/context";
 import { useAuth } from "@/modules/auth/context";
@@ -11,6 +12,32 @@ import { saveOrderToFirestore } from "@/modules/orders/firestore";
 import { cartItemsToFirestore } from "@/modules/cart/firestore-sync";
 import type { CartItem } from "@/modules/cart/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import productMetadata from "@/data/productMetadata.json";
+
+type TranslateFn = ReturnType<typeof useTranslation>["t"];
+
+const productNameMap = new Map(productMetadata.map((item) => [item.slug, item.name]));
+
+const resolvePreferenceLabel = (value: string) => productNameMap.get(value) ?? value;
+
+const resolveVariantKey = (variant?: string, mix?: string) => {
+  if (variant === "fruity" || variant === "veggie" || variant === "mix") return variant;
+  if (mix === "frutas") return "fruity";
+  if (mix === "vegetales") return "veggie";
+  return "mix";
+};
+
+const getCatalogHrefForVariant = (variantKey: string) => {
+  if (variantKey === "fruity") return "/categoria/frutas";
+  if (variantKey === "veggie") return "/categoria/vegetales";
+  return "/#catalogo";
+};
+
+const getVariantLabel = (variantKey: string, t: TranslateFn) => {
+  if (variantKey === "fruity") return t("cart.variant_fruity");
+  if (variantKey === "veggie") return t("cart.variant_veggie");
+  return t("cart.variant_mix");
+};
 
 type FormState = {
   contactName: string;
@@ -24,7 +51,7 @@ type FormState = {
 
 export function CheckoutClient() {
   const { items, clear, metrics } = useCart();
-  const { user } = useAuth();
+  const { user, loginWithGoogle } = useAuth();
   const { profile } = useUser();
   const { t } = useTranslation();
   const [form, setForm] = useState<FormState>({
@@ -38,21 +65,47 @@ export function CheckoutClient() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [showSummary, setShowSummary] = useState(false); // Nuevo estado para mostrar resumen
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
 
   // Pre-llenar formulario con datos del perfil
   useEffect(() => {
     if (user && profile) {
       setForm((prev) => ({
         ...prev,
-        contactName: user.displayName || prev.contactName,
-        contactPhone: profile.telefono || prev.contactPhone,
-        contactEmail: user.email || prev.contactEmail,
-        direccion: profile.direccion || prev.direccion,
-        metodoPago: profile.pagoPreferido || prev.metodoPago,
-        notes: buildNotesFromProfile(profile),
+        contactName: prev.contactName || user.displayName || "",
+        contactPhone: prev.contactPhone || profile.telefono || "",
+        contactEmail: prev.contactEmail || user.email || "",
+        direccion: prev.direccion || profile.direccion || "",
+        metodoPago: prev.metodoPago || profile.pagoPreferido || "",
+        notes: prev.notes || buildNotesFromProfile(profile),
       }));
     }
   }, [user, profile]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const rawDraft = window.sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+      if (rawDraft) {
+        const draft = JSON.parse(rawDraft) as Partial<FormState>;
+        setForm((prev) => ({ ...prev, ...draft }));
+      }
+    } catch {
+      // ignore draft errors
+    } finally {
+      setDraftLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded || typeof window === "undefined") return;
+    try {
+      window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
+    } catch {
+      // ignore storage errors
+    }
+  }, [form, draftLoaded]);
 
   const subtotal = useMemo(
     () =>
@@ -62,6 +115,18 @@ export function CheckoutClient() {
       }, 0),
     [items],
   );
+  const boxItems = useMemo(
+    () => items.filter((item) => item.type === "box" && item.configuration),
+    [items]
+  );
+  const hasPreferences = boxItems.some(
+    (item) => (item.configuration?.likes?.length ?? 0) > 0 || (item.configuration?.dislikes?.length ?? 0) > 0
+  );
+  const catalogVariant =
+    boxItems.length === 1
+      ? resolveVariantKey(boxItems[0].configuration?.variant, boxItems[0].configuration?.mix)
+      : "mix";
+  const catalogHref = getCatalogHrefForVariant(catalogVariant);
 
   // Calcular valores del pedido
   const orderCalculations = useMemo(() => {
@@ -115,7 +180,15 @@ export function CheckoutClient() {
     }
 
     if (!user) {
-      toast.error("Debes iniciar sesión para completar el pedido.");
+      try {
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
+        }
+      } catch {
+        // ignore storage errors
+      }
+      toast.error(t("checkout.login_required"));
+      void loginWithGoogle();
       return;
     }
 
@@ -134,7 +207,15 @@ export function CheckoutClient() {
   // Paso 2: Enviar pedido por WhatsApp
   const handleSendOrder = async () => {
     if (!user) {
-      toast.error("Debes iniciar sesión para completar el pedido.");
+      try {
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
+        }
+      } catch {
+        // ignore storage errors
+      }
+      toast.error(t("checkout.login_required"));
+      void loginWithGoogle();
       return;
     }
 
@@ -159,12 +240,28 @@ export function CheckoutClient() {
           let linea = `• ${item.name} (x${item.quantity}) - DOP ${(unitPrice * item.quantity).toFixed(2)}`;
 
           if (item.type === "box" && item.configuration) {
-            const variant = item.configuration.variant || item.configuration.mix || "mix";
-            linea += `\n  - Variedad: ${variant}`;
+            const variantKey = resolveVariantKey(item.configuration.variant, item.configuration.mix);
+            const variantLabel = getVariantLabel(variantKey, t);
+            linea += `\n  - ${t("cart.mix")}: ${variantLabel}`;
 
             if (item.configuration.likes?.length > 0 || item.configuration.dislikes?.length > 0) {
-              linea += `\n  - Gustos: 👍 ${item.configuration.likes?.join(", ") || "ninguno"}`;
-              linea += `\n  - Disgustos: 👎 ${item.configuration.dislikes?.join(", ") || "ninguno"}`;
+              const likes = (item.configuration.likes || []).map(resolvePreferenceLabel).filter(Boolean);
+              const dislikes = (item.configuration.dislikes || []).map(resolvePreferenceLabel).filter(Boolean);
+              if (likes.length > 0) {
+                linea += `\n  - ${t("cart.likes")}: 👍 ${likes.join(", ")}`;
+              }
+              if (dislikes.length > 0) {
+                linea += `\n  - ${t("cart.dislikes")}: 👎 ${dislikes.join(", ")}`;
+              }
+            }
+          }
+
+          if (item.notes || (item.excludedIngredients?.length ?? 0) > 0) {
+            if (item.excludedIngredients?.length) {
+              linea += `\n  - ${t("cart.excluded_ingredients")}: ${item.excludedIngredients.join(", ")}`;
+            }
+            if (item.notes) {
+              linea += `\n  - ${t("cart.notes")}: ${item.notes}`;
             }
           }
 
@@ -348,6 +445,9 @@ ${metodoPago}`;
       
       // Limpiar carrito y redirigir después de enviar
       clear();
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+      }
       setTimeout(() => {
         window.location.href = "/";
       }, 2000);
@@ -418,6 +518,9 @@ ${metodoPago}`;
                   <CartLine key={`${item.slug}-${item.configuration ? "box" : "simple"}`} item={item} />
                 ))}
               </div>
+              {boxItems.length > 0 && (
+                <AlaCarteReminder catalogHref={catalogHref} hasPreferences={hasPreferences} />
+              )}
               <OrderSummary 
                 subtotal={subtotal} 
                 deliveryDay={form.deliveryDay} 
@@ -566,6 +669,9 @@ ${metodoPago}`;
                 <CartLine key={`${item.slug}-${item.configuration ? "box" : "simple"}`} item={item} />
               ))}
             </div>
+            {boxItems.length > 0 && (
+              <AlaCarteReminder catalogHref={catalogHref} hasPreferences={hasPreferences} />
+            )}
             <OrderSummary 
               subtotal={subtotal} 
               deliveryDay={form.deliveryDay} 
@@ -581,22 +687,32 @@ ${metodoPago}`;
 function CartLine({ item }: { item: CartItem }) {
   const { t } = useTranslation();
   const isBox = item.type === "box" && item.configuration;
+  const unitPrice = item.configuration?.price?.final ?? item.price;
+  const variantKey = item.configuration
+    ? resolveVariantKey(item.configuration.variant, item.configuration.mix)
+    : "mix";
+  const variantLabel = isBox ? getVariantLabel(variantKey, t) : "";
+  const likes = (item.configuration?.likes || []).map(resolvePreferenceLabel).filter(Boolean);
+  const dislikes = (item.configuration?.dislikes || []).map(resolvePreferenceLabel).filter(Boolean);
+  const showProductNotes = item.type === "product" && (Boolean(item.notes) || (item.excludedIngredients?.length ?? 0) > 0);
   return (
     <div className="rounded-2xl border border-[var(--color-border)] p-4 bg-[var(--color-background-muted)]/60">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="font-semibold text-[var(--color-foreground)]">{item.name}</p>
           <p className="text-xs text-[var(--color-muted)]">
-            {item.quantity} x RD${item.price.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
+            {item.quantity} x RD${unitPrice.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </p>
         </div>
         <p className="text-sm font-semibold text-[var(--color-foreground)]">
-          RD${(item.price * item.quantity).toLocaleString("es-DO", { minimumFractionDigits: 2 })}
+          RD${(unitPrice * item.quantity).toLocaleString("es-DO", { minimumFractionDigits: 2 })}
         </p>
       </div>
       {isBox && (
         <div className="mt-2 space-y-2 text-xs text-[var(--color-muted)]">
-          <p>{t("checkout.mix")} {item.configuration?.mix || item.configuration?.variant || "mix"}</p>
+          <p>{t("cart.mix")}: {variantLabel}</p>
+          {likes.length > 0 && <p>👍 {t("cart.likes")}: {likes.join(", ")}</p>}
+          {dislikes.length > 0 && <p>👎 {t("cart.dislikes")}: {dislikes.join(", ")}</p>}
           <p>{t("cart.delivery_zone")}: {item.configuration?.deliveryZone || t("checkout.delivery_to_define")} · {t("cart.delivery_day")}: {item.configuration?.deliveryDay || t("checkout.day_to_agree")}</p>
           {item.configuration?.selectedProducts && (
             <div className="flex flex-wrap gap-1">
@@ -605,7 +721,7 @@ function CartLine({ item }: { item: CartItem }) {
                 .slice(0, 6)
                 .map(([slug, qty]) => (
                   <span key={slug} className="rounded-full bg-white px-2 py-1">
-                    {slug} x{qty}
+                    {resolvePreferenceLabel(slug)} x{qty}
                   </span>
                 ))}
             </div>
@@ -616,6 +732,14 @@ function CartLine({ item }: { item: CartItem }) {
               {item.configuration.price.final.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
             </p>
           )}
+        </div>
+      )}
+      {showProductNotes && (
+        <div className="mt-2 space-y-1 text-xs text-[var(--color-muted)]">
+          {item.excludedIngredients?.length ? (
+            <p>{t("cart.excluded_ingredients")}: {item.excludedIngredients.join(", ")}</p>
+          ) : null}
+          {item.notes ? <p>{t("cart.notes")}: {item.notes}</p> : null}
         </div>
       )}
     </div>
@@ -740,12 +864,14 @@ function OrderSummaryView({
                 </div>
                 {item.type === "box" && item.configuration && (
                   <div className="mt-2 space-y-2 text-xs text-[var(--color-muted)] border-t border-[var(--color-border)] pt-2">
-                    <p>{t("checkout.mix")} {item.configuration?.mix || item.configuration?.variant || "mix"}</p>
+                    <p>
+                      {t("cart.mix")}: {getVariantLabel(resolveVariantKey(item.configuration.variant, item.configuration.mix), t)}
+                    </p>
                     {item.configuration?.likes?.length > 0 && (
-                      <p>👍 Gustos: {item.configuration.likes.join(", ")}</p>
+                      <p>👍 {t("cart.likes")}: {item.configuration.likes.map(resolvePreferenceLabel).join(", ")}</p>
                     )}
                     {item.configuration?.dislikes?.length > 0 && (
-                      <p>👎 Disgustos: {item.configuration.dislikes.join(", ")}</p>
+                      <p>👎 {t("cart.dislikes")}: {item.configuration.dislikes.map(resolvePreferenceLabel).join(", ")}</p>
                     )}
                     {item.configuration?.selectedProducts && (
                       <div className="flex flex-wrap gap-1 mt-2">
@@ -753,11 +879,19 @@ function OrderSummaryView({
                           .filter(([, qty]) => qty && qty > 0)
                           .map(([slug, qty]) => (
                             <span key={slug} className="rounded-full bg-white px-2 py-1">
-                              {slug} x{qty}
+                              {resolvePreferenceLabel(slug)} x{qty}
                             </span>
                           ))}
                       </div>
                     )}
+                  </div>
+                )}
+                {item.type === "product" && (item.notes || item.excludedIngredients?.length) && (
+                  <div className="mt-2 space-y-2 text-xs text-[var(--color-muted)] border-t border-[var(--color-border)] pt-2">
+                    {item.excludedIngredients?.length ? (
+                      <p>{t("cart.excluded_ingredients")}: {item.excludedIngredients.join(", ")}</p>
+                    ) : null}
+                    {item.notes ? <p>{t("cart.notes")}: {item.notes}</p> : null}
                   </div>
                 )}
               </div>
@@ -820,6 +954,26 @@ function OrderSummaryView({
           <p className="text-sm text-[var(--color-muted)] whitespace-pre-line">{form.notes}</p>
         </div>
       )}
+    </div>
+  );
+}
+
+function AlaCarteReminder({ catalogHref, hasPreferences }: { catalogHref: string; hasPreferences: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-2xl border border-[var(--gd-color-leaf)]/30 bg-[var(--gd-color-sprout)]/20 p-4">
+      <p className="text-xs uppercase tracking-[0.35em] text-[var(--gd-color-forest)]">
+        {t("cart.add_a_la_carte_title")}
+      </p>
+      <p className="mt-2 text-sm text-[var(--color-muted)]">
+        {hasPreferences ? t("cart.add_a_la_carte_hint_with_likes") : t("cart.add_a_la_carte_hint_no_likes")}
+      </p>
+      <Link
+        href={catalogHref}
+        className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/40 bg-white px-4 py-2 text-xs font-semibold text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-sprout)]/30 transition-colors"
+      >
+        {t("cart.view_catalog")}
+      </Link>
     </div>
   );
 }

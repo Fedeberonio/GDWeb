@@ -7,9 +7,8 @@ import Image from "next/image";
 import { useCart } from "@/modules/cart/context";
 import type { Box, Product } from "@/modules/catalog/types";
 import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selector/helpers";
-import { getProductMeta, computeSlots, getBoxContentsForVariant, computeBoxPrice, computeWeight } from "@/modules/box-builder/utils";
+import { computeSlots, getBoxContentsForVariant, computeBoxPrice, computeWeight } from "@/modules/box-builder/utils";
 import productMetadata from "@/data/productMetadata.json";
-import { SwapProductModal } from "./box-builder/swap-product-modal";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
 // Componente para manejar imágenes con fallback (versión mejorada con URLs remotas)
@@ -67,6 +66,8 @@ function ProductImageWithFallback({
   );
 }
 
+const productMetaMap = new Map(productMetadata.map((item) => [item.slug, item]));
+
 type BoxCustomizeModalProps = {
   box: Box;
   baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
@@ -94,10 +95,11 @@ export function BoxCustomizeModal({
 }: BoxCustomizeModalProps) {
   const { addItem } = useCart();
   const { t, tData, locale } = useTranslation();
+  const boxName = tData(box.name);
   const [selectedVariant, setSelectedVariant] = useState<VariantType>(initialVariant ?? "mix");
   const [isAdding, setIsAdding] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const [swappedProducts, setSwappedProducts] = useState<Set<string>>(new Set());
+  const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
+  const [dislikedProducts, setDislikedProducts] = useState<Set<string>>(new Set());
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -118,7 +120,8 @@ export function BoxCustomizeModal({
   useEffect(() => {
     const variantToUse = initialVariant ?? "mix";
     setSelectedVariant(variantToUse);
-    setSwappedProducts(new Set());
+    setLikedProducts(new Set());
+    setDislikedProducts(new Set());
   }, [box.id, initialVariant]);
 
   // Obtener contenido inicial según la variante seleccionada
@@ -147,51 +150,12 @@ export function BoxCustomizeModal({
       newSelection[item.productSlug] = item.quantity;
     });
     setSelectedProducts(newSelection);
-    setSwappedProducts(new Set()); // Reset swapped products cuando cambia la variante
   }, [selectedVariant, box.id, baseContents]);
-  const [productToSwap, setProductToSwap] = useState<{
-    slug: string;
-    name: string;
-    quantity: number;
-    slotValue: number;
-    weightKg: number;
-  } | null>(null);
-
-  // Estados para confirmación de cambio de variante
-  const [pendingVariant, setPendingVariant] = useState<VariantType | null>(null);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
-
-  // Manejar cambio de variante con protección
   const handleVariantChange = (newVariant: VariantType) => {
-    if (newVariant === selectedVariant) return;
-
-    // Si hay cambios personalizados, pedir confirmación
-    if (swappedProducts.size > 0) {
-      setPendingVariant(newVariant);
-      setShowResetConfirm(true);
-    } else {
+    if (newVariant !== selectedVariant) {
       setSelectedVariant(newVariant);
     }
   };
-
-  const confirmVariantChange = () => {
-    if (pendingVariant) {
-      setSelectedVariant(pendingVariant);
-      setPendingVariant(null);
-      setShowResetConfirm(false);
-      // setSwappedProducts se limpia en el useEffect de selectedVariant
-    }
-  };
-
-  const cancelVariantChange = () => {
-    setPendingVariant(null);
-    setShowResetConfirm(false);
-  };
-
-  // Ejecutar animación una vez al montar el componente
-  useEffect(() => {
-    setHasAnimated(true);
-  }, []);
 
   // Filtrar contenido según variante
   // Usar getBoxContentsForVariant si existe contenido específico para la variante
@@ -201,7 +165,7 @@ export function BoxCustomizeModal({
     if (variantContents.length > 0) {
       return variantContents.map((item) => ({
         ...item,
-        name: productMetadata.find((p) => p.slug === item.productSlug)?.name ?? item.productSlug,
+        name: productMetaMap.get(item.productSlug)?.name ?? item.productSlug,
       }));
     }
 
@@ -210,7 +174,7 @@ export function BoxCustomizeModal({
       return baseContents;
     } else if (variant === "fruity") {
       return baseContents.filter((item) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
+        const meta = productMetaMap.get(item.productSlug);
         const category = getVisualCategory(item.productSlug, item.name, meta?.category);
         const slugLower = item.productSlug.toLowerCase();
         const nameLower = item.name.toLowerCase();
@@ -236,7 +200,7 @@ export function BoxCustomizeModal({
       });
     } else {
       return baseContents.filter((item) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
+        const meta = productMetaMap.get(item.productSlug);
         const category = getVisualCategory(item.productSlug, item.name, meta?.category);
         return (
           category === "leafy" ||
@@ -251,49 +215,61 @@ export function BoxCustomizeModal({
   const filteredContents = getFilteredContents(selectedVariant);
   const variantInfo = getVariantInfo(selectedVariant, locale);
 
-  const filteredContentsMap = useMemo(
-    () => new Map(filteredContents.map((item) => [item.productSlug, item])),
-    [filteredContents]
+  const productMap = useMemo(
+    () => new Map(availableProducts.map((product) => [product.slug, product])),
+    [availableProducts]
   );
 
-  // Obtener productos actuales basados en selectedProducts
-  const currentProducts = useMemo(() => {
-    const formatName = (slug: string, fallback: string) => {
-      const meta = productMetadata.find((p) => p.slug === slug) as any;
-      const isBaby = slug.toLowerCase().includes("baby") || (meta && 'tags' in meta && Array.isArray(meta.tags) && meta.tags.includes("baby-only"));
-      const baseName = meta?.name ?? fallback;
-      return isBaby ? `${baseName} (baby)` : baseName;
-    };
-    return Object.entries(selectedProducts)
-      .filter(([, quantity]) => quantity && quantity > 0)
-      .map(([slug, quantity]) => {
-        const baseItem = filteredContentsMap.get(slug);
-        return {
-          productSlug: slug,
-          name: formatName(slug, baseItem?.name ?? slug),
-          quantity,
-          baseQuantity: baseItem?.quantity ?? 0,
-        };
-      })
-      .sort((a, b) => {
-        const aIsBase = filteredContentsMap.has(a.productSlug);
-        const bIsBase = filteredContentsMap.has(b.productSlug);
-        if (aIsBase !== bIsBase) return aIsBase ? -1 : 1;
-        return a.name.localeCompare(b.name, "es");
-      });
-  }, [filteredContentsMap, selectedProducts]);
+  const getProductLabel = (slug: string, fallback?: string) => {
+    const product = productMap.get(slug);
+    const localizedName = product ? tData(product.name) : productMetaMap.get(slug)?.name ?? fallback ?? slug;
+    const isBaby =
+      slug.toLowerCase().includes("baby") ||
+      product?.tags?.some((tag) => tag.toLowerCase() === "baby-only");
+    return isBaby ? `${localizedName} (baby)` : localizedName;
+  };
+
+  const buildImageVariations = (slug: string, name: string) => {
+    const normalizedName = name.toLowerCase();
+    const nameVariations = [
+      slug,
+      slug.toLowerCase(),
+      normalizedName,
+      normalizedName.replace(/\s+/g, "-"),
+      normalizedName.replace(/\s+/g, ""),
+      ...(normalizedName.includes("cebolla")
+        ? [
+            "cebolla-morada-amarilla",
+            "Cebolla morada amarilla",
+            "Cebolla morada",
+            "Cebolla amarilla",
+            "cebolla-moradaamarilla",
+          ]
+        : []),
+    ];
+
+    return nameVariations.flatMap((variation) => [
+      `/images/products/${variation}.jpg`,
+      `/images/products/${variation}.png`,
+    ]);
+  };
+
+  const baseProducts = filteredContents.map((item) => ({
+    ...item,
+    name: getProductLabel(item.productSlug, item.name),
+  }));
 
   // Calcular estadísticas actuales
   const slotsUsed = computeSlots(selectedProducts);
-  const totalProducts = currentProducts.length;
+  const totalProducts = baseProducts.length;
   const categories = new Set(
-    currentProducts.map((item) => {
-      const meta = productMetadata.find((p) => p.slug === item.productSlug);
+    baseProducts.map((item) => {
+      const meta = productMetaMap.get(item.productSlug);
       return getVisualCategory(item.productSlug, item.name, meta?.category);
     })
   ).size;
 
-  // Calcular precio con extras de swaps (usando la variante seleccionada)
+  // Calcular precio de la caja
   const priceInfo = useMemo(() => {
     return computeBoxPrice(box.id, box.price.amount, selectedProducts, selectedVariant);
   }, [box.id, box.price.amount, selectedProducts, selectedVariant]);
@@ -326,7 +302,7 @@ export function BoxCustomizeModal({
       "jugos-naturales",
       "productos-de-granja",
       "cajas",
-      // "otros" se permite ahora (arroz, granos, etc)
+      "otros",
     ];
 
     return availableProducts.filter((product) => {
@@ -344,7 +320,7 @@ export function BoxCustomizeModal({
         return false;
       }
 
-      const meta = productMetadata.find((p) => p.slug === product.slug);
+      const meta = productMetaMap.get(product.slug);
       // También verificar en metadata
       if (meta?.category && EXCLUDED_CATEGORIES.includes(meta.category)) {
         return false;
@@ -367,15 +343,14 @@ export function BoxCustomizeModal({
         nameLower.includes("perejil") ||
         nameLower.includes("cilantro");
 
-      // Permitir frutas, vegetales Y productos de "otros" (granos)
+      // Permitir frutas y vegetales frescos
       const isValidProduct =
         category === "fruit_large" ||
         category === "fruit_small" ||
         category === "citrus" ||
         category === "leafy" ||
         category === "root" ||
-        category === "aromatic" ||
-        category === "otros";
+        category === "aromatic";
 
       // Si no es un producto válido, excluir
       if (!isValidProduct) {
@@ -405,32 +380,68 @@ export function BoxCustomizeModal({
     });
   };
 
-  const availableProductsForVariant = getAvailableProductsForVariant(selectedVariant);
+  const availableProductsForVariant = useMemo(
+    () => getAvailableProductsForVariant(selectedVariant),
+    [selectedVariant, availableProducts, box.id]
+  );
 
-  const handleSwap = (oldSlug: string, newSlug: string, newQuantity?: number) => {
-    const oldQuantity = selectedProducts[oldSlug] || 0;
-    const quantity = Math.max(1, Math.min((newQuantity ?? oldQuantity) || 1, oldQuantity || 1));
-    const newSelection = { ...selectedProducts };
+  const preferenceProducts = useMemo(() => {
+    const nameFor = (product: Product) => tData(product.name) || product.name.es;
+    return [...availableProductsForVariant].sort((a, b) =>
+      nameFor(a).localeCompare(nameFor(b), locale === "en" ? "en" : "es")
+    );
+  }, [availableProductsForVariant, locale, tData]);
 
-    const remainingOld = Math.max(0, oldQuantity - quantity);
-    if (remainingOld > 0) {
-      newSelection[oldSlug] = remainingOld;
-    } else {
-      delete newSelection[oldSlug];
-    }
-    newSelection[newSlug] = (newSelection[newSlug] ?? 0) + quantity;
+  useEffect(() => {
+    const allowed = new Set(availableProductsForVariant.map((product) => product.slug));
+    setLikedProducts((prev) => new Set([...prev].filter((slug) => allowed.has(slug))));
+    setDislikedProducts((prev) => new Set([...prev].filter((slug) => allowed.has(slug))));
+  }, [availableProductsForVariant]);
 
-    // Marcar ambos productos como cambiados (el viejo y el nuevo)
-    setSwappedProducts((prev) => {
-      const updated = new Set(prev);
-      updated.add(oldSlug);
-      updated.add(newSlug);
-      return updated;
+  const toggleLike = (slug: string) => {
+    setLikedProducts((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) {
+        next.delete(slug);
+      } else {
+        next.add(slug);
+      }
+      return next;
     });
-
-    setSelectedProducts(newSelection);
-    setProductToSwap(null);
+    setDislikedProducts((prev) => {
+      if (!prev.has(slug)) return prev;
+      const next = new Set(prev);
+      next.delete(slug);
+      return next;
+    });
   };
+
+  const toggleDislike = (slug: string) => {
+    setDislikedProducts((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) {
+        next.delete(slug);
+      } else {
+        next.add(slug);
+      }
+      return next;
+    });
+    setLikedProducts((prev) => {
+      if (!prev.has(slug)) return prev;
+      const next = new Set(prev);
+      next.delete(slug);
+      return next;
+    });
+  };
+
+  const sortedLikes = Array.from(likedProducts).sort((a, b) =>
+    getProductLabel(a).localeCompare(getProductLabel(b), locale === "en" ? "en" : "es")
+  );
+  const sortedDislikes = Array.from(dislikedProducts).sort((a, b) =>
+    getProductLabel(a).localeCompare(getProductLabel(b), locale === "en" ? "en" : "es")
+  );
+  const likeLabels = sortedLikes.map((slug) => getProductLabel(slug));
+  const dislikeLabels = sortedDislikes.map((slug) => getProductLabel(slug));
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -441,11 +452,25 @@ export function BoxCustomizeModal({
     addItem({
       slug: `${box.slug}-${selectedVariant}`,
       type: "box",
-      name: `${box.name.es} (${selectedVariant.toUpperCase()})`,
+      name: `${boxName} (${selectedVariant.toUpperCase()})`,
       quantity: 1,
       price: finalPrice, // Incluir extras en el precio
       slotValue: 0,
       weightKg: 0,
+      configuration: {
+        boxId: box.id,
+        variant: selectedVariant,
+        mix: selectedVariant === "fruity" ? "frutas" : selectedVariant === "veggie" ? "vegetales" : "mix",
+        selectedProducts,
+        likes: likeLabels,
+        dislikes: dislikeLabels,
+        price: {
+          base: finalPriceInfo.price,
+          extras: finalPriceInfo.extras,
+          final: finalPrice,
+          isACarta: finalPriceInfo.isACarta,
+        },
+      },
     });
     setTimeout(() => {
       setIsAdding(false);
@@ -650,55 +675,23 @@ export function BoxCustomizeModal({
                 </div>
               </div>
 
-              {/* Grid de productos con botón de swap */}
+              {/* Contenido aproximado */}
               <div className="mt-6 pt-6 border-t border-[var(--gd-color-leaf)]/20">
-                <p className="text-xs font-semibold text-[var(--gd-color-forest)] mb-3">
-                  {t("box_customize.included_products")}
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <p className="text-xs font-semibold text-[var(--gd-color-forest)]">
+                    {t("box_customize.approx_contents")}
+                  </p>
+                  <span className="text-[10px] text-[var(--color-muted)]">
+                    {t("box_customize.approx_contents_hint")}
+                  </span>
+                </div>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-                  {currentProducts.map((item, index) => {
-                    const hasBeenSwapped = swappedProducts.has(item.productSlug);
-                    const shouldShake = hasAnimated && !hasBeenSwapped;
-
-                    // Intentar diferentes variaciones del nombre de archivo
-                    // Primero el slug exacto, luego variaciones del nombre del producto
-                    const nameVariations = [
-                      item.productSlug,
-                      item.productSlug.toLowerCase(),
-                      item.name.toLowerCase(),
-                      item.name.replace(/\s+/g, '-').toLowerCase(),
-                      item.name.replace(/\s+/g, '').toLowerCase(),
-                      // Variaciones específicas para cebolla
-                      ...(item.name.toLowerCase().includes('cebolla') ? [
-                        'cebolla-morada-amarilla',
-                        'Cebolla morada amarilla',
-                        'Cebolla morada',
-                        'Cebolla amarilla',
-                        'cebolla-moradaamarilla',
-                      ] : []),
-                    ];
-
-                    const imageVariations = nameVariations.flatMap(name => [
-                      `/images/products/${name}.jpg`,
-                      `/images/products/${name}.png`,
-                      `/images/products/${name.replace(/\s+/g, '-')}.jpg`,
-                      `/images/products/${name.replace(/\s+/g, '-')}.png`,
-                      `/images/products/${name.replace(/\s+/g, '')}.jpg`,
-                      `/images/products/${name.replace(/\s+/g, '')}.png`,
-                    ]);
-
+                  {baseProducts.map((item) => {
+                    const imageVariations = buildImageVariations(item.productSlug, item.name);
                     return (
                       <div
                         key={item.productSlug}
-                        className={`group relative flex flex-col items-center rounded-lg bg-white/60 p-2 border border-[var(--gd-color-leaf)]/10 hover:border-[var(--gd-color-leaf)] transition-all ${shouldShake ? 'animate-shake-slow' : ''
-                          }`}
-                        style={
-                          shouldShake
-                            ? {
-                              animationDelay: `${index * 0.1}s`,
-                            }
-                            : {}
-                        }
+                        className="flex flex-col items-center rounded-lg bg-white/60 p-2 border border-[var(--gd-color-leaf)]/10"
                       >
                         <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[var(--color-background-muted)] mb-1">
                           <ProductImageWithFallback
@@ -706,27 +699,6 @@ export function BoxCustomizeModal({
                             productName={item.name}
                             imageVariations={imageVariations}
                           />
-                          {/* Icono de swap centrado - Siempre visible pero sutil, prominente en hover */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const meta = getProductMeta(item.productSlug);
-                              setProductToSwap({
-                                slug: item.productSlug,
-                                name: item.name,
-                                quantity: item.quantity,
-                                slotValue: meta?.slotValue ?? 1,
-                                weightKg: meta?.weightKg ?? 0.5,
-                              });
-                            }}
-                            className="absolute inset-0 flex items-center justify-center bg-black/5 hover:bg-black/40 transition-all rounded-lg backdrop-blur-[1px]"
-                            title={t("box_customize.swap_product")}
-                          >
-                            <span className="w-8 h-8 rounded-full bg-white/90 text-[var(--gd-color-forest)] text-sm flex items-center justify-center shadow-sm hover:scale-110 hover:bg-[var(--gd-color-leaf)] hover:text-white transition-all transform scale-90 md:scale-75 md:opacity-70 group-hover:scale-100 group-hover:opacity-100">
-                              🔄
-                            </span>
-                          </button>
                         </div>
                         <p className="text-xs text-center font-medium text-[var(--color-foreground)] truncate w-full">
                           {item.name}
@@ -737,6 +709,126 @@ export function BoxCustomizeModal({
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            </div>
+
+            {/* Preferencias */}
+            <div className="rounded-2xl border-2 border-[var(--gd-color-leaf)]/30 bg-white p-5 space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-[var(--gd-color-forest)]">
+                    {t("box_customize.preferences_title")}
+                  </p>
+                  <p className="text-xs text-[var(--color-muted)]">
+                    {t("box_customize.preferences_subtitle")}
+                  </p>
+                </div>
+                <span className="rounded-full border border-[var(--gd-color-leaf)]/30 bg-[var(--gd-color-sprout)]/30 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--gd-color-forest)]">
+                  {t("box_customize.preferences_not_guaranteed")}
+                </span>
+              </div>
+              <p className="text-[11px] text-[var(--color-muted)]">
+                {t("box_customize.preferences_disclaimer")}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {preferenceProducts.map((product) => {
+                  const displayName = getProductLabel(product.slug, tData(product.name));
+                  const isLiked = likedProducts.has(product.slug);
+                  const isDisliked = dislikedProducts.has(product.slug);
+                  const imageVariations = buildImageVariations(product.slug, displayName);
+                  return (
+                    <div
+                      key={product.slug}
+                      className={`flex flex-col items-center rounded-xl border p-3 transition ${
+                        isLiked
+                          ? "border-emerald-500/60 bg-emerald-50/40"
+                          : isDisliked
+                            ? "border-rose-400/60 bg-rose-50/40"
+                            : "border-[var(--gd-color-leaf)]/20 bg-white"
+                      }`}
+                    >
+                      <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-[var(--color-background-muted)] mb-2">
+                        <ProductImageWithFallback
+                          productSlug={product.slug}
+                          productName={displayName}
+                          imageVariations={imageVariations}
+                        />
+                      </div>
+                      <p className="text-xs text-center font-medium text-[var(--color-foreground)] leading-tight">
+                        {displayName}
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleLike(product.slug)}
+                          aria-pressed={isLiked}
+                          className={`h-7 w-7 rounded-full border text-sm transition ${
+                            isLiked
+                              ? "border-emerald-600 bg-emerald-600 text-white"
+                              : "border-[var(--gd-color-leaf)]/30 text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-sprout)]/30"
+                          }`}
+                          title={t("box_customize.like_title")}
+                        >
+                          👍
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleDislike(product.slug)}
+                          aria-pressed={isDisliked}
+                          className={`h-7 w-7 rounded-full border text-sm transition ${
+                            isDisliked
+                              ? "border-rose-600 bg-rose-600 text-white"
+                              : "border-[var(--gd-color-leaf)]/30 text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-sprout)]/30"
+                          }`}
+                          title={t("box_customize.dislike_title")}
+                        >
+                          👎
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-[var(--gd-color-leaf)]/20 bg-white/70 p-3">
+                  <p className="text-[0.6rem] uppercase tracking-[0.25em] text-[var(--gd-color-forest)]">
+                    👍 {t("box_customize.likes_label")}
+                  </p>
+                  {sortedLikes.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {sortedLikes.map((slug) => (
+                        <span
+                          key={slug}
+                          className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700"
+                        >
+                          {getProductLabel(slug)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[11px] text-[var(--color-muted)]">{t("box_customize.no_likes")}</p>
+                  )}
+                </div>
+                <div className="rounded-xl border border-[var(--gd-color-leaf)]/20 bg-white/70 p-3">
+                  <p className="text-[0.6rem] uppercase tracking-[0.25em] text-[var(--gd-color-forest)]">
+                    👎 {t("box_customize.dislikes_label")}
+                  </p>
+                  {sortedDislikes.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {sortedDislikes.map((slug) => (
+                        <span
+                          key={slug}
+                          className="rounded-full bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-700"
+                        >
+                          {getProductLabel(slug)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[11px] text-[var(--color-muted)]">{t("box_customize.no_dislikes")}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -756,21 +848,6 @@ export function BoxCustomizeModal({
         </div>
       </div>
 
-      {/* Modal de swap */}
-      {productToSwap && (
-        <SwapProductModal
-          isOpen={!!productToSwap}
-          onClose={() => setProductToSwap(null)}
-          productToSwap={productToSwap}
-          availableProducts={availableProductsForVariant}
-          selectedProducts={selectedProducts}
-          slotBudget={slotBudget}
-          slotsUsed={slotsUsed}
-          variant={selectedVariant}
-          boxId={box.id}
-          onSwap={(newSlug, quantity) => handleSwap(productToSwap.slug, newSlug, quantity)}
-        />
-      )}
     </>,
     document.body
   );

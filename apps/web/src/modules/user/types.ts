@@ -22,4 +22,6 @@ export type CartItemFromFirestore = {
   };
   cantidad: number;
   autoMode?: boolean;
+  notas?: string;
+  ingredientesExcluidos?: string[];
 };

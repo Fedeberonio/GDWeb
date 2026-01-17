@@ -9,6 +9,9 @@ import {
 
 import type { UserProfile, CartItemFromFirestore } from "./types";
 
+const stripUndefined = <T extends Record<string, unknown>>(value: T): Partial<T> =>
+  Object.fromEntries(Object.entries(value).filter(([, field]) => field !== undefined)) as Partial<T>;
+
 export async function getUserProfile(
   db: Firestore,
   userId: string
@@ -38,7 +41,7 @@ export async function createUserProfile(
   try {
     const userRef = doc(db, "users", userId);
     await setDoc(userRef, {
-      ...profile,
+      ...stripUndefined(profile),
       fechaCreacion: serverTimestamp(),
     });
   } catch (error) {
@@ -54,7 +57,7 @@ export async function updateUserProfile(
 ): Promise<void> {
   try {
     const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, updates);
+    await updateDoc(userRef, stripUndefined(updates));
   } catch (error) {
     console.error("Error al actualizar perfil de usuario:", error);
     throw error;

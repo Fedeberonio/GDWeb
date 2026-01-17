@@ -25,6 +25,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
   const [onlyAvailable, setOnlyAvailable] = useState(true);
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
   const [selectedProductDetails, setSelectedProductDetails] = useState<Product | null>(null);
+  const [productQuantities, setProductQuantities] = useState<Record<string, number>>({});
 
   // Escuchar eventos personalizados de filtrado desde CategoryCard
   useEffect(() => {
@@ -84,6 +85,58 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
     { id: "all", label: t("catalog.all_categories") },
     ...categories.map((category) => ({ id: category.id, label: tData(category.name) })),
   ];
+
+  const getQuantity = (slug: string) => Math.max(1, productQuantities[slug] ?? 1);
+  const updateQuantity = (slug: string, delta: number) => {
+    setProductQuantities((prev) => {
+      const current = prev[slug] ?? 1;
+      const next = Math.max(1, current + delta);
+      return { ...prev, [slug]: next };
+    });
+  };
+  const resetQuantity = (slug: string) => {
+    setProductQuantities((prev) => ({ ...prev, [slug]: 1 }));
+  };
+  const renderQuantitySelector = (slug: string, compact = false) => {
+    const quantity = getQuantity(slug);
+    return (
+      <div
+        className={`flex items-center justify-between border border-[var(--color-border)] bg-white/80 ${
+          compact ? "rounded-lg px-3 py-2" : "rounded-full px-4 py-2"
+        }`}
+      >
+        <span className="text-[10px] uppercase tracking-[0.3em] text-[var(--color-muted)]">
+          {t("common.quantity")}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => updateQuantity(slug, -1)}
+            disabled={quantity <= 1}
+            aria-label="Disminuir cantidad"
+            className={`h-7 w-7 rounded-full border text-sm font-semibold transition ${
+              quantity <= 1
+                ? "cursor-not-allowed border-[var(--color-border)] text-[var(--color-muted)] opacity-40"
+                : "border-[var(--color-border)] text-[var(--color-foreground)] hover:bg-[var(--color-background-muted)]"
+            }`}
+          >
+            −
+          </button>
+          <span className={`w-6 text-center font-semibold ${compact ? "text-xs" : "text-sm"}`}>
+            {quantity}
+          </span>
+          <button
+            type="button"
+            onClick={() => updateQuantity(slug, 1)}
+            aria-label="Aumentar cantidad"
+            className="h-7 w-7 rounded-full border border-[var(--color-border)] text-sm font-semibold text-[var(--color-foreground)] transition hover:bg-[var(--color-background-muted)]"
+          >
+            +
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -158,6 +211,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
           const price = formatCurrency(product.price.amount);
           const salePrice = product.salePrice ? formatCurrency(product.salePrice.amount) : null;
           const isAdded = addedProductId === product.id;
+          const quantity = getQuantity(product.slug);
           const statusLabel =
             product.status === "active"
               ? null
@@ -273,13 +327,14 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
 
                   {/* Botones */}
                   <div className="mt-auto flex flex-col gap-2">
+                    {renderQuantitySelector(product.slug, true)}
                     <button
                       onClick={() => {
                         addItem({
                           type: "product",
                           slug: product.slug,
                           name: tData(product.name),
-                          quantity: 1,
+                          quantity,
                           price: product.price.amount,
                           image: product.image,
                           slotValue: 1,
@@ -289,6 +344,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                         toast.success(`${tData(product.name)} ${t("common.added").toLowerCase()} 🛒`, {
                           icon: "✅",
                         });
+                        resetQuantity(product.slug);
                         setTimeout(() => setAddedProductId(null), 2000);
                       }}
                       className={`inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-white shadow-sm transition ${isAdded
@@ -401,50 +457,54 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                   </div>
                 )}
 
-                <div className="mt-auto flex flex-col gap-2 sm:flex-row">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      addItem({
-                        type: "product",
-                        slug: product.slug,
-                        name: tData(product.name),
-                        quantity: 1,
-                        price: product.price.amount,
-                        image: product.image,
-                        slotValue: 1,
-                        weightKg: product.logistics?.weightKg ?? 0,
-                      });
-                      setAddedProductId(product.id);
-                      toast.success(`${tData(product.name)} ${t("common.added").toLowerCase()} 🛒`, {
-                        icon: "✅",
-                      });
-                      setTimeout(() => setAddedProductId(null), 2000);
-                    }}
-                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition ${isAdded
-                      ? "bg-[var(--gd-color-leaf)]"
-                      : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)]"
-                      }`}
-                  >
-                    {isAdded ? (
-                      <>
-                        <span>✓</span>
-                        <span>{t("common.added")}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>🛒</span>
-                        <span>{t("common.add_to_cart")}</span>
-                      </>
-                    )}
-                  </motion.button>
-                  <Link
-                    href="#contacto"
-                    className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--color-border)] px-4 py-2 text-sm font-semibold text-[var(--color-foreground)] transition hover:border-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)]"
-                  >
-                    {t("combos.view_details")}
-                  </Link>
+                <div className="mt-auto space-y-2">
+                  {renderQuantitySelector(product.slug)}
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        addItem({
+                          type: "product",
+                          slug: product.slug,
+                          name: tData(product.name),
+                          quantity,
+                          price: product.price.amount,
+                          image: product.image,
+                          slotValue: 1,
+                          weightKg: product.logistics?.weightKg ?? 0,
+                        });
+                        setAddedProductId(product.id);
+                        toast.success(`${tData(product.name)} ${t("common.added").toLowerCase()} 🛒`, {
+                          icon: "✅",
+                        });
+                        resetQuantity(product.slug);
+                        setTimeout(() => setAddedProductId(null), 2000);
+                      }}
+                      className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition ${isAdded
+                        ? "bg-[var(--gd-color-leaf)]"
+                        : "bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)]"
+                        }`}
+                    >
+                      {isAdded ? (
+                        <>
+                          <span>✓</span>
+                          <span>{t("common.added")}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>🛒</span>
+                          <span>{t("common.add_to_cart")}</span>
+                        </>
+                      )}
+                    </motion.button>
+                    <Link
+                      href="#contacto"
+                      className="inline-flex flex-1 items-center justify-center rounded-full border border-[var(--color-border)] px-4 py-2 text-sm font-semibold text-[var(--color-foreground)] transition hover:border-[var(--gd-color-leaf)] hover:text-[var(--gd-color-forest)]"
+                    >
+                      {t("combos.view_details")}
+                    </Link>
+                  </div>
                 </div>
               </div>
             </motion.article>
@@ -589,20 +649,29 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                 );
               })()}
 
+              {/* Cantidad */}
+              {selectedProductDetails && (
+                <div className="pt-2">
+                  {renderQuantitySelector(selectedProductDetails.slug)}
+                </div>
+              )}
+
               {/* Botón agregar al carrito */}
               <button
                 onClick={() => {
+                  const quantity = selectedProductDetails ? getQuantity(selectedProductDetails.slug) : 1;
                   addItem({
                     type: "product",
                     slug: selectedProductDetails.slug,
                     name: tData(selectedProductDetails.name),
-                    quantity: 1,
+                    quantity,
                     price: selectedProductDetails.price.amount,
                     image: selectedProductDetails.image,
                     slotValue: 1,
                     weightKg: selectedProductDetails.logistics?.weightKg ?? 0,
                   });
                   setAddedProductId(selectedProductDetails.id);
+                  resetQuantity(selectedProductDetails.slug);
                   setTimeout(() => {
                     setAddedProductId(null);
                     setSelectedProductDetails(null);
