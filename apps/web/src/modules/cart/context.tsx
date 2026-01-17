@@ -21,8 +21,19 @@ type CartContextValue = {
 };
 
 const STORAGE_KEY = "gd-cart";
+const GUEST_STORAGE_KEY = "gd-cart-guest";
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+function parseStoredItems(raw: string | null): CartItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 function calculateMetrics(items: CartItem[]): CartMetrics {
   return items.reduce(
@@ -45,8 +56,14 @@ export function CartProvider({ children }: PropsWithChildren) {
   const [items, setItems] = useState<CartItem[]>(() => {
     if (typeof window === "undefined") return [];
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (user?.uid) {
+        const stored = window.localStorage.getItem(`${STORAGE_KEY}-${user.uid}`);
+        if (stored) return parseStoredItems(stored);
+        const legacyStored = window.localStorage.getItem(STORAGE_KEY);
+        if (legacyStored) return parseStoredItems(legacyStored);
+      }
+      const stored = window.sessionStorage.getItem(GUEST_STORAGE_KEY);
+      return parseStoredItems(stored);
     } catch {
       return [];
     }
@@ -61,14 +78,60 @@ export function CartProvider({ children }: PropsWithChildren) {
     }
   }, [user, profile?.carrito]);
 
-  // Guardar en localStorage
+  // Cargar carrito cuando cambia el usuario (guest vs logged-in)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (user?.uid) {
+        const userKey = `${STORAGE_KEY}-${user.uid}`;
+        const stored = window.localStorage.getItem(userKey);
+        if (stored) {
+          setItems(parseStoredItems(stored));
+          return;
+        }
+
+        const legacyStored = window.localStorage.getItem(STORAGE_KEY);
+        if (legacyStored) {
+          const parsed = parseStoredItems(legacyStored);
+          window.localStorage.setItem(userKey, legacyStored);
+          window.localStorage.removeItem(STORAGE_KEY);
+          setItems(parsed);
+          return;
+        }
+
+        const guestStored = window.sessionStorage.getItem(GUEST_STORAGE_KEY);
+        if (guestStored) {
+          const parsed = parseStoredItems(guestStored);
+          window.localStorage.setItem(userKey, guestStored);
+          window.sessionStorage.removeItem(GUEST_STORAGE_KEY);
+          setItems(parsed);
+          return;
+        }
+
+        setItems([]);
+        return;
+      }
+
+      const guestStored = window.sessionStorage.getItem(GUEST_STORAGE_KEY);
+      setItems(parseStoredItems(guestStored));
+    } catch {
+      setItems([]);
+    }
+  }, [user?.uid]);
+
+  // Guardar en storage (guest por sesión, usuario por cuenta)
   useEffect(() => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      const payload = JSON.stringify(items);
+      if (user?.uid) {
+        window.localStorage.setItem(`${STORAGE_KEY}-${user.uid}`, payload);
+      } else {
+        window.sessionStorage.setItem(GUEST_STORAGE_KEY, payload);
+      }
     } catch {
       // ignore
     }
-  }, [items]);
+  }, [items, user?.uid]);
 
   // Sincronizar con Firestore cuando el usuario está autenticado
   useEffect(() => {
