@@ -300,8 +300,12 @@ export function LunchCombosSection() {
   const { t, tData } = useTranslation();
   const { addItem } = useCart();
   const [comboDetailsModal, setComboDetailsModal] = useState<Combo | null>(null);
+  const [comboNotes, setComboNotes] = useState<Record<number, string>>({});
+  const [comboExcludedIngredients, setComboExcludedIngredients] = useState<Record<number, number[]>>({});
   const [visibleCombos, setVisibleCombos] = useState<Set<number>>(new Set());
   const comboRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const getIngredientLabel = (ingredient: LocalizedString | string) => tData(ingredient);
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
@@ -333,7 +337,27 @@ export function LunchCombosSection() {
     };
   }, []);
 
-  const handleAddCombo = (combo: Combo) => {
+  const toggleExcludedIngredient = (comboId: number, ingredientIndex: number) => {
+    setComboExcludedIngredients((prev) => {
+      const current = new Set(prev[comboId] ?? []);
+      if (current.has(ingredientIndex)) {
+        current.delete(ingredientIndex);
+      } else {
+        current.add(ingredientIndex);
+      }
+      return {
+        ...prev,
+        [comboId]: Array.from(current),
+      };
+    });
+  };
+
+  const handleAddCombo = (
+    combo: Combo,
+    options?: { notes?: string; excludedIngredients?: string[] }
+  ) => {
+    const notes = options?.notes?.trim();
+    const excludedIngredients = options?.excludedIngredients?.filter(Boolean);
     addItem({
       type: "product",
       slug: `combo-${combo.id}`,
@@ -343,6 +367,8 @@ export function LunchCombosSection() {
       slotValue: 1,
       weightKg: 0,
       image: combo.image,
+      notes: notes || undefined,
+      excludedIngredients: excludedIngredients?.length ? excludedIngredients : undefined,
     });
 
     toast.success(`${tData(combo.name)} ${t("common.added").toLowerCase()} 🛒`, {
@@ -356,6 +382,11 @@ export function LunchCombosSection() {
       },
     });
   };
+
+  const excludedIngredientIndexes = comboDetailsModal
+    ? new Set(comboExcludedIngredients[comboDetailsModal.id] ?? [])
+    : new Set<number>();
+  const comboNotesValue = comboDetailsModal ? comboNotes[comboDetailsModal.id] ?? "" : "";
 
   return (
     <div className="relative">
@@ -500,7 +531,16 @@ export function LunchCombosSection() {
                     <div className="space-y-1.5 opacity-0 translate-y-4 transition-all duration-500 delay-200 group-hover:opacity-100 group-hover:translate-y-0">
                       <button
                         type="button"
-                        onClick={() => handleAddCombo(combo)}
+                        onClick={() => {
+                          const excludedIngredients = (comboExcludedIngredients[combo.id] ?? [])
+                            .map((index) => combo.ingredients[index])
+                            .filter(Boolean)
+                            .map(getIngredientLabel);
+                          handleAddCombo(combo, {
+                            notes: comboNotes[combo.id],
+                            excludedIngredients,
+                          });
+                        }}
                         className="flex items-center justify-center gap-2 w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-4 py-2 text-xs font-bold text-white shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
                       >
                         <span>🛒</span>
@@ -683,17 +723,56 @@ export function LunchCombosSection() {
                   <span>🥗</span>
                   <span>{t("combos.ingredients")}</span>
                 </h3>
+                <p className="text-xs text-[var(--color-muted)] text-center mb-4">
+                  {t("combos.exclude_hint")}
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {comboDetailsModal.ingredients.map((ingredient, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-2 rounded-lg bg-[var(--gd-color-sprout)]/20 px-3 py-2.5 border border-[var(--gd-color-leaf)]/20 min-h-[2.5rem]"
+                      className={`flex items-start gap-2 rounded-lg bg-[var(--gd-color-sprout)]/20 px-3 py-2.5 border border-[var(--gd-color-leaf)]/20 min-h-[2.5rem] ${excludedIngredientIndexes.has(idx)
+                        ? "opacity-80"
+                        : ""}`}
                     >
                       <span className="text-[var(--gd-color-leaf)] text-sm flex-shrink-0 mt-0.5">•</span>
-                      <span className="text-sm text-[var(--color-foreground)] font-medium leading-relaxed break-words flex-1">{tData(ingredient)}</span>
+                      <span
+                        className={`text-sm font-medium leading-relaxed break-words flex-1 ${excludedIngredientIndexes.has(idx)
+                          ? "text-[var(--color-muted)] line-through"
+                          : "text-[var(--color-foreground)]"}`}
+                      >
+                        {getIngredientLabel(ingredient)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => toggleExcludedIngredient(comboDetailsModal.id, idx)}
+                        className={`ml-auto rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wide transition ${excludedIngredientIndexes.has(idx)
+                          ? "border-rose-300 bg-rose-50 text-rose-700"
+                          : "border-[var(--gd-color-leaf)]/30 bg-white text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-sprout)]/30"}`}
+                      >
+                        {excludedIngredientIndexes.has(idx) ? t("combos.excluded") : t("combos.exclude")}
+                      </button>
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Notas del combo */}
+              <div className="rounded-xl bg-white/80 p-6 border-2 border-[var(--gd-color-leaf)]/30 space-y-3">
+                <h3 className="text-lg font-bold text-[var(--gd-color-forest)] uppercase text-center">
+                  {t("combos.notes_title")}
+                </h3>
+                <textarea
+                  value={comboNotesValue}
+                  onChange={(event) =>
+                    setComboNotes((prev) => ({
+                      ...prev,
+                      [comboDetailsModal.id]: event.target.value,
+                    }))
+                  }
+                  rows={3}
+                  placeholder={t("combos.notes_placeholder")}
+                  className="w-full rounded-2xl border border-[var(--gd-color-leaf)]/30 bg-white px-4 py-3 text-sm text-[var(--color-foreground)] focus:outline-none focus:border-[var(--gd-color-leaf)]"
+                />
               </div>
 
               {/* Botón de agregar al carrito */}
@@ -701,7 +780,14 @@ export function LunchCombosSection() {
                 <button
                   type="button"
                   onClick={() => {
-                    handleAddCombo(comboDetailsModal);
+                    const excludedIngredients = (comboExcludedIngredients[comboDetailsModal.id] ?? [])
+                      .map((index) => comboDetailsModal.ingredients[index])
+                      .filter(Boolean)
+                      .map(getIngredientLabel);
+                    handleAddCombo(comboDetailsModal, {
+                      notes: comboNotesValue,
+                      excludedIngredients,
+                    });
                     setComboDetailsModal(null);
                   }}
                   className="w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-4 text-base font-bold text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"

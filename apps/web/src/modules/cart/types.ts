@@ -30,6 +30,8 @@ export type CartItem = {
   weightKg: number;
   price: number;
   image?: string;
+  notes?: string;
+  excludedIngredients?: string[];
   configuration?: BoxConfiguration;
 };
 

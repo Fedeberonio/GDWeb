@@ -20,12 +20,19 @@ export function cartItemToFirestore(item: CartItem): CartItemFromFirestore {
     };
   }
 
-  return {
+  const base: CartItemFromFirestore = {
     tipo: "producto",
     nombre: item.name,
     precio: item.price,
     cantidad: item.quantity,
   };
+  if (item.notes) {
+    base.notas = item.notes;
+  }
+  if (item.excludedIngredients?.length) {
+    base.ingredientesExcluidos = item.excludedIngredients;
+  }
+  return base;
 }
 
 /**

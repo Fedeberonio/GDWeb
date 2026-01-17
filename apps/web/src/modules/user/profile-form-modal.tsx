@@ -5,11 +5,16 @@ import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useUser } from "./context";
 import { useAuth } from "@/modules/auth/context";
+import { usePathname } from "next/navigation";
+
+const PROFILE_MODAL_FLAG = "gd-show-profile-modal";
 
 export function ProfileFormModal() {
   const { user } = useAuth();
   const { isNewUser, updateProfile, loading: profileLoading } = useUser();
+  const pathname = usePathname();
   const [submitting, setSubmitting] = useState(false);
+  const [loginTriggered, setLoginTriggered] = useState(false);
   const [formData, setFormData] = useState({
     telefono: "",
     direccion: "",
@@ -19,15 +24,29 @@ export function ProfileFormModal() {
     dislikes: "",
   });
 
-  if (!isNewUser || !user) return null;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const flag = window.sessionStorage.getItem(PROFILE_MODAL_FLAG);
+      if (flag) setLoginTriggered(true);
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
+  const isCheckout = pathname?.startsWith("/checkout");
+  const shouldShow = Boolean(isNewUser && user && (loginTriggered || isCheckout));
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
+    if (!shouldShow) return;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, []);
+  }, [shouldShow]);
+
+  if (!shouldShow) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +66,13 @@ export function ProfileFormModal() {
         likes: formData.likes.trim() || undefined,
         dislikes: formData.dislikes.trim() || undefined,
       });
+      try {
+        if (typeof window !== "undefined") {
+          window.sessionStorage.removeItem(PROFILE_MODAL_FLAG);
+        }
+      } catch {
+        // ignore storage errors
+      }
       toast.success("¡Gracias! Tu perfil ha sido guardado.");
     } catch (error) {
       toast.error("Error al guardar el perfil. Por favor intenta de nuevo.");
@@ -196,7 +222,7 @@ export function ProfileFormModal() {
             <button
               type="submit"
               disabled={submitting || profileLoading}
-              className="flex-1 rounded-full bg-[var(--color-brand)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--color-brand-accent)] disabled:opacity-50"
+              className="flex-1 rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)] disabled:opacity-50"
             >
               {submitting ? "Guardando..." : "Guardar perfil"}
             </button>

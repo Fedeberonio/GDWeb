@@ -3,14 +3,29 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-const SPLASH_DURATION_MS = 3200;
+const SPLASH_DURATION_MS = 6000;
 
 export function LogoSplash() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(false), SPLASH_DURATION_MS);
-    return () => clearTimeout(timer);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const alreadyShown = window.sessionStorage.getItem("gd-splash-shown");
+      if (alreadyShown) {
+        setIsVisible(false);
+        return;
+      }
+      window.sessionStorage.setItem("gd-splash-shown", "true");
+    } catch {
+      // If sessionStorage fails, fall back to showing the splash once per load.
+    }
+
+    setIsVisible(true);
+    timer = setTimeout(() => setIsVisible(false), SPLASH_DURATION_MS);
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   if (!isVisible) return null;
@@ -19,11 +34,11 @@ export function LogoSplash() {
     <div className="logo-splash" aria-hidden="true">
       <div className="logo-splash__logo">
         <Image
-          src="/images/logo/logo-principal-large.png"
+          src="/images/hero/WelcomeBillboard.png"
           alt=""
           fill
-          sizes="(max-width: 768px) 220px, 320px"
-          className="object-contain"
+          sizes="100vw"
+          className="object-cover"
           priority
         />
       </div>

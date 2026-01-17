@@ -39,6 +39,7 @@ export function getFirebaseAuth() {
 }
 
 export const googleAuthProvider = new GoogleAuthProvider();
+googleAuthProvider.setCustomParameters({ prompt: "select_account" });
 
 export async function getFirebaseAnalytics() {
   if (typeof window === "undefined") return null;

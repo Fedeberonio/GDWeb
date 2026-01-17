@@ -8,6 +8,17 @@ export function UserAuthButton() {
   const { user, loading, loginWithGoogle, logout } = useAuth();
   const { profile } = useUser();
 
+  const handleLogin = () => {
+    try {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("gd-show-profile-modal", "true");
+      }
+    } catch {
+      // ignore storage errors
+    }
+    void loginWithGoogle();
+  };
+
   if (loading) {
     return (
       <button
@@ -24,7 +35,7 @@ export function UserAuthButton() {
       <>
         {/* Versión móvil */}
         <button
-          onClick={loginWithGoogle}
+          onClick={handleLogin}
           className="md:hidden flex items-center justify-center rounded-full border border-[var(--gd-color-leaf)]/30 bg-white p-2.5 text-[var(--gd-color-forest)] transition-all hover:bg-[var(--gd-color-leaf)]/10"
           title="Iniciar sesión"
         >
@@ -45,7 +56,7 @@ export function UserAuthButton() {
         </button>
         {/* Versión desktop */}
         <button
-          onClick={loginWithGoogle}
+          onClick={handleLogin}
           className="hidden md:flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/30 bg-white px-4 py-2 text-sm font-semibold text-[var(--gd-color-forest)] transition-all hover:bg-[var(--gd-color-leaf)]/10 hover:border-[var(--gd-color-leaf)] hover:scale-105"
         >
           <svg

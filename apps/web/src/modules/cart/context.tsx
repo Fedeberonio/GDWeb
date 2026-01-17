@@ -92,6 +92,11 @@ export function CartProvider({ children }: PropsWithChildren) {
         updated[existingIndex] = {
           ...updated[existingIndex],
           quantity: updated[existingIndex].quantity + quantity,
+          price: item.price ?? updated[existingIndex].price,
+          image: (item as { image?: string }).image ?? updated[existingIndex].image,
+          configuration: item.configuration ?? updated[existingIndex].configuration,
+          notes: item.notes ?? updated[existingIndex].notes,
+          excludedIngredients: item.excludedIngredients ?? updated[existingIndex].excludedIngredients,
         };
         return updated;
       }
@@ -106,6 +111,9 @@ export function CartProvider({ children }: PropsWithChildren) {
           weightKg: item.weightKg ?? 0,
           price: item.price ?? 0,
           image: (item as { image?: string }).image,
+          configuration: item.configuration,
+          notes: item.notes,
+          excludedIngredients: item.excludedIngredients,
         },
       ];
     });
