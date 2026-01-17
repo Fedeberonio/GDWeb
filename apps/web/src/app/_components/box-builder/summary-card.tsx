@@ -4,6 +4,7 @@ import type { Box } from "@/modules/catalog/types";
 import { BalanceChart } from "./balance-chart";
 import { getBoxRule, computeBoxPrice } from "@/modules/box-builder/utils";
 import { PriceInfoTooltip } from "./price-info-tooltip";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type SummaryCardProps = {
   selectedBox?: Box;
@@ -40,6 +41,8 @@ export function SummaryCard({
   deliveryDay,
   selectedProducts,
 }: SummaryCardProps) {
+  const { t } = useTranslation();
+
   return (
     <aside className="sticky top-6 self-start max-h-[calc(100vh-3rem)] overflow-y-auto rounded-[32px] border border-[var(--color-border)] bg-white/95 p-6 shadow-soft space-y-5">
       <div>
@@ -106,10 +109,17 @@ export function SummaryCard({
           </span>
         </PriceInfoTooltip>
       </SummaryRow>
-      <SummaryRow label="Productos incluidos">
-        {highlightedProducts && highlightedProducts.length > 0
-          ? `${highlightedProducts.length} productos elegidos especialmente para ti`
-          : "Elige tus favoritos"}
+      <SummaryRow label={t("boxes.included_reference")}>
+        <div className="space-y-1">
+          <p>
+            {highlightedProducts && highlightedProducts.length > 0
+              ? `${highlightedProducts.length} productos elegidos especialmente para ti`
+              : "Elige tus favoritos"}
+          </p>
+          <p className="text-xs font-normal text-[var(--color-muted)]">
+            {t("boxes.included_disclaimer")}
+          </p>
+        </div>
       </SummaryRow>
       
       {/* Precio calculado con lógica de A la Carta y extras de swaps */}
