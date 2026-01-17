@@ -112,7 +112,7 @@ export function ProfileFormModal() {
             </label>
             <input
               type="text"
-              value={user.displayName || ""}
+              value={user?.displayName || ""}
               disabled
               className="w-full rounded-2xl border border-[var(--color-border)] bg-gray-50 px-4 py-2 text-sm"
             />
