@@ -22,7 +22,7 @@ type QuickAddModalProps = {
 
 export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimensions, weight, onClose, onCustomize }: QuickAddModalProps) {
   const { addItem } = useCart();
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const [selectedVariant, setSelectedVariant] = useState<VariantType>("mix");
   const [isAdding, setIsAdding] = useState(false);
 
@@ -256,7 +256,10 @@ export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimen
             {/* Grid de productos - TODOS los productos visibles */}
             <div className="mt-6 pt-6 border-t border-[var(--gd-color-leaf)]/20">
               <p className="text-xs font-semibold text-[var(--gd-color-forest)] mb-3">
-                Productos incluidos:
+                {t("boxes.included_reference")}:
+              </p>
+              <p className="text-[0.65rem] text-[var(--color-muted)] mb-3">
+                {t("boxes.included_disclaimer")}
               </p>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                 {allProducts.map((item) => (
