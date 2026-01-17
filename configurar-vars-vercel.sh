@@ -1,24 +1,49 @@
 #!/bin/bash
 
 # Script para configurar variables de entorno en Vercel
-export VERCEL_TOKEN=BlHxzfmDnnCzS6vEXvEh5HbA
+# Siempre usa la cuenta correcta: greendolioexpress
 
-cd "/Users/aimac/Documents/GreenDolio-Pro copy 5/apps/web"
+set -e
 
-echo "🔧 Configurando variables de entorno en Vercel..."
+# Configuración
+TOKEN="BlHxzfmDnnCzS6vEXvEh5HbA"
+SCOPE="gds-projects-1bbb6204"
+PROJECT_DIR="/Users/aimac/Documents/GreenDolio-Pro copy 5/apps/web"
+
+# Colores
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+echo -e "${GREEN}🔧 Configurando Variables de Entorno${NC}"
+echo "=========================================="
 echo ""
 
-# Función para agregar variable a los 3 ambientes
+# Verificar cuenta
+CURRENT_USER=$(vercel whoami --token "$TOKEN" 2>&1)
+if [[ "$CURRENT_USER" != *"greendolioexpress"* ]]; then
+    echo -e "${RED}❌ ERROR: Cuenta incorrecta!${NC}"
+    echo -e "${RED}Cuenta actual: $CURRENT_USER${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Cuenta correcta: $CURRENT_USER${NC}"
+echo ""
+
+cd "$PROJECT_DIR" || exit 1
+
+# Función para agregar variable
 add_env_var() {
     local key=$1
     local value=$2
-    echo "Agregando $key..."
+    echo -e "${YELLOW}Agregando $key...${NC}"
     
-    echo "$value" | vercel env add "$key" production 2>&1 | grep -v "Retrieving project" | grep -v "Saving" || true
-    echo "$value" | vercel env add "$key" preview 2>&1 | grep -v "Retrieving project" | grep -v "Saving" || true
-    echo "$value" | vercel env add "$key" development 2>&1 | grep -v "Retrieving project" | grep -v "Saving" || true
+    echo "$value" | vercel env add "$key" production --token "$TOKEN" --scope "$SCOPE" 2>&1 | grep -E "(Added|already)" || true
+    echo "$value" | vercel env add "$key" preview --token "$TOKEN" --scope "$SCOPE" 2>&1 | grep -E "(Added|already)" || true
+    echo "$value" | vercel env add "$key" development --token "$TOKEN" --scope "$SCOPE" 2>&1 | grep -E "(Added|already)" || true
     
-    echo "✅ $key configurada"
+    echo -e "${GREEN}✅ $key configurada${NC}"
     echo ""
 }
 
@@ -31,8 +56,9 @@ add_env_var "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID" "64271997064"
 add_env_var "NEXT_PUBLIC_FIREBASE_APP_ID" "1:64271997064:web:8001973cad419458fd379f"
 add_env_var "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID" "G-H9F4SXPJPA"
 add_env_var "NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS" "greendolioexpress@gmail.com"
+add_env_var "NEXT_PUBLIC_API_BASE_URL" "http://localhost:5001/api"
 
-echo "✅ Todas las variables configuradas"
+echo -e "${GREEN}✅ Todas las variables configuradas${NC}"
 echo ""
-echo "🔄 Listando variables configuradas:"
-vercel env ls 2>&1 | head -20
+echo -e "${YELLOW}📋 Variables configuradas:${NC}"
+vercel env ls --token "$TOKEN" --scope "$SCOPE" 2>&1 | head -30
