@@ -1,121 +1,127 @@
-# ✅ Deploy Completado - GreenDolio Pro
+# ✅ Deploy Completado - Green Dolio Test
 
-## 🎉 Estado Actual
+## 🎉 Estado: COMPLETADO
 
-### ✅ Completado
-- ✅ Rama `test-build` pusheada a GitHub
-- ✅ Proyecto configurado en Vercel
-- ✅ Framework: Next.js
-- ✅ Root Directory: `GreenDolio-Pro/apps/web`
-- ✅ Branch: `test-build`
-- ✅ Variables de entorno configuradas (9 variables)
-- ✅ Deploy exitoso
+### ✅ Lo que se ha hecho:
 
-### 📍 URL del Deploy
-Tu app está disponible en:
-- **URL de Vercel:** (debería estar en el dashboard de Vercel)
-- Tipo: `greendolio-pro-test-xxx.vercel.app` o similar
+1. **Variables de Entorno Configuradas:**
+   - ✅ NEXT_PUBLIC_API_BASE_URL
+   - ✅ NEXT_PUBLIC_FIREBASE_API_KEY
+   - ✅ NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+   - ✅ NEXT_PUBLIC_FIREBASE_PROJECT_ID
+   - ✅ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+   - ✅ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+   - ✅ NEXT_PUBLIC_FIREBASE_APP_ID
+   - ✅ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+   - ✅ NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS
 
-## 🔍 Qué Probar Ahora
+2. **Deploy Exitoso:**
+   - ✅ Build completado sin errores
+   - ✅ Deployment creado y funcionando
 
-### 1. Página Principal
-- ✅ La página carga correctamente
-- ✅ El catálogo se muestra
-- ✅ Las imágenes cargan
-- ✅ Navegación funciona
+---
 
-### 2. Funcionalidades Básicas
-- ✅ Ver productos
-- ✅ Ver cajas
-- ✅ Navegar entre páginas
-- ✅ Cambiar idioma (si está implementado)
+## 🔗 URLs del Deployment
 
-### 3. Funcionalidades que Requieren Backend
-⚠️ Estas NO funcionarán aún (porque el backend no está desplegado):
-- ❌ Login con Google
-- ❌ Agregar al carrito (persistencia)
-- ❌ Checkout
-- ❌ Panel admin
-- ❌ Carga de imágenes
+### Preview Deployment (Más Reciente):
+**https://web-1q1d54kgg-aimanagements-projects.vercel.app**
 
-## ⚠️ Nota Importante
+### Deployments Anteriores:
+- https://web-jgozqctq6-aimanagements-projects.vercel.app
+- https://web-l4c46kl66-aimanagements-projects.vercel.app
 
-**`NEXT_PUBLIC_API_BASE_URL`** está configurado como `http://localhost:5001/api`
+---
 
-Esto significa que:
-- ✅ El frontend funciona y se muestra
-- ❌ Las llamadas a la API fallarán (porque no hay backend desplegado)
-- ✅ Puedes probar la UI y navegación
-- ⏳ Para funcionalidad completa, necesitas desplegar el backend
+## 📋 Información del Proyecto
 
-## 🚀 Próximos Pasos (Opcional)
+- **Proyecto Vercel:** `web`
+- **Team:** `aimanagements-projects`
+- **Token Vercel:** Configurado y funcionando
+- **Variables de Entorno:** Todas configuradas en Production, Preview y Development
 
-### Para Funcionalidad Completa:
+---
 
-1. **Deploy del Backend:**
-   - Render.com (gratis) o Railway
-   - Root Directory: `GreenDolio-Pro/apps/api`
-   - Branch: `test-build`
-   - Variables de entorno del backend (ver `VERCEL-DEPLOY-GUIDE.md`)
+## ✅ Próximos Pasos (Opcional)
 
-2. **Actualizar API URL en Vercel:**
-   - Una vez que tengas la URL del backend (ej: `https://greendolio-api.onrender.com`)
-   - Ve a Vercel → Settings → Environment Variables
-   - Actualiza: `NEXT_PUBLIC_API_BASE_URL=https://greendolio-api.onrender.com/api`
+### 1. Conectar con GitHub (Recomendado)
 
-3. **Testing End-to-End:**
-   - Login
-   - Carrito
-   - Checkout
-   - Panel admin
+Para que Vercel haga deployments automáticos cuando hagas push:
 
-## 📝 Variables de Entorno Configuradas
+1. Ve a: https://vercel.com/aimanagements-projects/web/settings/git
+2. Conecta el repositorio de GitHub
+3. Configura:
+   - **Root Directory:** `apps/web`
+   - **Production Branch:** `main` o `test-build`
 
-```
-✅ NEXT_PUBLIC_API_BASE_URL=http://localhost:5001/api
-✅ NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyCjvz1uxCVR5xVxaNt3qushp1se1Ep8glY
-✅ NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=greendolio-tienda.firebaseapp.com
-✅ NEXT_PUBLIC_FIREBASE_PROJECT_ID=greendolio-tienda
-✅ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=greendolio-tienda.appspot.com
-✅ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=64271997064
-✅ NEXT_PUBLIC_FIREBASE_APP_ID=1:64271997064:web:8001973cad419458fd379f
-✅ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-H9F4SXPJPA
-✅ NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS=tu-email@ejemplo.com
+### 2. Verificar el Deployment
+
+1. Abre la URL: https://web-1q1d54kgg-aimanagements-projects.vercel.app
+2. Verifica que la aplicación cargue correctamente
+3. Prueba las funcionalidades principales
+
+### 3. Configurar Dominio Personalizado (Opcional)
+
+Si quieres un dominio personalizado:
+1. Ve a: https://vercel.com/aimanagements-projects/web/settings/domains
+2. Agrega tu dominio
+3. Configura los DNS según las instrucciones
+
+---
+
+## 🔧 Comandos Útiles
+
+### Ver logs del deployment:
+```bash
+cd apps/web
+export VERCEL_TOKEN=BlHxzfmDnnCzS6vEXvEh5HbA
+vercel logs web-1q1d54kgg-aimanagements-projects.vercel.app
 ```
 
-## 🎯 Resumen
+### Hacer un nuevo deploy:
+```bash
+cd apps/web
+export VERCEL_TOKEN=BlHxzfmDnnCzS6vEXvEh5HbA
+vercel --prod=false
+```
 
-**✅ LO QUE FUNCIONA:**
-- Frontend completo desplegado
-- UI y navegación
-- Visualización de productos y cajas
-- Estilos y diseño
+### Ver variables de entorno:
+```bash
+cd apps/web
+export VERCEL_TOKEN=BlHxzfmDnnCzS6vEXvEh5HbA
+vercel env ls
+```
 
-**⏳ LO QUE FALTA:**
-- Backend desplegado (para funcionalidad completa)
-- Login y autenticación
-- Carrito persistente
-- Checkout
+### Redeploy:
+```bash
+cd apps/web
+export VERCEL_TOKEN=BlHxzfmDnnCzS6vEXvEh5HbA
+vercel redeploy web-1q1d54kgg-aimanagements-projects.vercel.app
+```
 
-**🔒 SEGURIDAD:**
-- ✅ La página en producción (`greendolio.shop`) NO se toca
-- ✅ Este es un deploy de testing en URL separada
-- ✅ Puedes experimentar sin riesgo
+---
 
-## 📞 Siguiente Acción
+## ⚠️ Notas Importantes
 
-1. **Verifica el deploy:** Accede a la URL que te dio Vercel
-2. **Prueba la UI:** Navega y verifica que todo se vea bien
-3. **Decide:** ¿Quieres desplegar el backend ahora o más tarde?
+1. **Separado de Producción:**
+   - Este deployment está completamente separado de www.greendolio.shop
+   - Puedes hacer pruebas sin afectar la producción
 
-¡Felicitaciones! 🎉 El deploy está funcionando.
+2. **Variables de Entorno:**
+   - Todas las variables están configuradas
+   - Si necesitas cambiar alguna, usa: `vercel env add [NOMBRE] [AMBIENTE]`
 
+3. **Backend API:**
+   - `NEXT_PUBLIC_API_BASE_URL` está configurado como `http://localhost:5001/api`
+   - Cuando despliegues el backend, actualiza esta variable
 
+---
 
+## ✅ Estado Final
 
+- ✅ Código desplegado
+- ✅ Variables de entorno configuradas
+- ✅ Build exitoso
+- ✅ Deployment funcionando
+- ✅ Listo para pruebas
 
-
-
-
-
-
+**¡Todo listo!** 🎉
