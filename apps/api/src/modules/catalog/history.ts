@@ -1,9 +1,9 @@
 import { FieldValue, type Timestamp } from "firebase-admin/firestore";
 
 import { getDb } from "../../lib/firestore";
-import type { Box, Product } from "./schemas";
+import type { Box, BoxRule, Product } from "./schemas";
 
-export type CatalogEntityType = "product" | "box";
+export type CatalogEntityType = "product" | "box" | "box_rule";
 
 export type CatalogChangeContext = {
   actorEmail?: string | null;
@@ -12,8 +12,8 @@ export type CatalogChangeContext = {
 
 export async function recordCatalogChange(
   entityType: CatalogEntityType,
-  before: Product | Box,
-  after: Product | Box,
+  before: Product | Box | BoxRule,
+  after: Product | Box | BoxRule,
   context: CatalogChangeContext = {},
 ) {
   const db = getDb();
@@ -35,8 +35,8 @@ export type CatalogChange = {
   actorEmail: string | null;
   actorUid: string | null;
   timestamp: Timestamp | null;
-  before: Product | Box;
-  after: Product | Box;
+  before: Product | Box | BoxRule;
+  after: Product | Box | BoxRule;
 };
 
 export async function listCatalogHistory(limit = 100): Promise<CatalogChange[]> {

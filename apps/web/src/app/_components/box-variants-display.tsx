@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selector/helpers";
-import { getBoxContentsForVariant } from "@/modules/box-builder/utils";
-import productMetadata from "@/data/productMetadata.json";
 import { ProductImageFallback } from "./product-image-fallback";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import type { BoxRule, Product } from "@/modules/catalog/types";
 
 type BoxVariantsDisplayProps = {
   baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
-  boxId?: string; // ID de la caja para obtener contenidos específicos por variante
+  boxRule?: BoxRule;
+  productMap?: Map<string, Product>;
   compact?: boolean; // Si es true, muestra versión compacta inicialmente
   onVariantSelect?: (variant: VariantType) => void; // Callback cuando se selecciona una variante
   initialVariant?: VariantType; // Variante preseleccionada (ej: desde la tarjeta)
@@ -17,7 +17,8 @@ type BoxVariantsDisplayProps = {
 
 export function BoxVariantsDisplay({
   baseContents,
-  boxId,
+  boxRule,
+  productMap,
   compact = false,
   onVariantSelect,
   initialVariant,
@@ -48,15 +49,12 @@ export function BoxVariantsDisplay({
   // Filtrar contenido según la variante
   // Si hay boxId, usar getBoxContentsForVariant para obtener contenidos específicos
   const getFilteredContents = (variant: VariantType) => {
-    // Si hay boxId y existe contenido específico para la variante, usarlo
-    if (boxId) {
-      const variantContents = getBoxContentsForVariant(boxId, variant);
-      if (variantContents.length > 0) {
-        return variantContents.map((item) => ({
-          ...item,
-          name: productMetadata.find((p) => p.slug === item.productSlug)?.name ?? item.productSlug,
-        }));
-      }
+    // Si hay contenido específico para la variante, usarlo
+    if (boxRule?.variantContents?.[variant]?.length) {
+      return boxRule.variantContents[variant]!.map((item) => ({
+        ...item,
+        name: productMap?.get(item.productSlug)?.name?.es ?? item.productSlug,
+      }));
     }
 
     // Fallback: filtrar baseContents como antes
@@ -66,8 +64,8 @@ export function BoxVariantsDisplay({
     } else if (variant === "fruity") {
       // Fruity: solo frutas tropicales y cítricos, SIN aromáticas de cocina (ajo, cebolla, etc.)
       return baseContents.filter((item) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
-        const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+        const product = productMap?.get(item.productSlug);
+        const category = getVisualCategory(item.productSlug, item.name, product?.categoryId);
         const slugLower = item.productSlug.toLowerCase();
         const nameLower = item.name.toLowerCase();
 
@@ -95,8 +93,8 @@ export function BoxVariantsDisplay({
     } else {
       // Veggie: solo vegetales (hojas, raíces, aromáticas), sin frutas ni cítricos
       return baseContents.filter((item) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
-        const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+        const product = productMap?.get(item.productSlug);
+        const category = getVisualCategory(item.productSlug, item.name, product?.categoryId);
         return (
           category === "leafy" ||
           category === "root" ||
@@ -112,8 +110,8 @@ export function BoxVariantsDisplay({
 
   // Agrupar por categoría para mostrar mejor
   const contentsByCategory = filteredContents.reduce((acc, item) => {
-    const meta = productMetadata.find((p) => p.slug === item.productSlug);
-    const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+    const product = productMap?.get(item.productSlug);
+    const category = getVisualCategory(item.productSlug, item.name, product?.categoryId);
     const categoryKey = category === "fruit_large" || category === "fruit_small" ? "fruit" : category;
 
     if (!acc[categoryKey]) acc[categoryKey] = [];

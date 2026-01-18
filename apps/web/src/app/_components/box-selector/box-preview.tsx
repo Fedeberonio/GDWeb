@@ -6,8 +6,8 @@ import { useCart } from "@/modules/cart/context";
 import type { Box } from "@/modules/catalog/types";
 import { calculateVariantComposition, getVariantInfo, getVisualCategory, type VariantType } from "./helpers";
 import { useState } from "react";
-import productMetadata from "@/data/productMetadata.json";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { useCatalog } from "@/modules/catalog/context";
 
 type BoxPreviewProps = {
   box: Box;
@@ -20,6 +20,7 @@ type BoxPreviewProps = {
 export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant }: BoxPreviewProps) {
   const { addItem } = useCart();
   const { locale, t, tData } = useTranslation();
+  const { productMap } = useCatalog();
   const [isAdded, setIsAdded] = useState(false);
 
   const info = getVariantInfo(variant, locale);
@@ -27,8 +28,8 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
 
   // Agrupar productos por categoría visual
   const contentsByCategory = baseContents.reduce((acc, item) => {
-    const meta = productMetadata.find((p) => p.slug === item.productSlug);
-    const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+    const product = productMap.get(item.productSlug);
+    const category = getVisualCategory(item.productSlug, item.name, product?.categoryId);
     if (!acc[category]) acc[category] = [];
     acc[category].push(item);
     return acc;

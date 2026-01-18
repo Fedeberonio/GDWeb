@@ -1,24 +1,18 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import Link from "next/link";
 
 import { useCart } from "@/modules/cart/context";
 import { useAuth } from "@/modules/auth/context";
 import { useUser } from "@/modules/user/context";
-import { getFirestoreDb } from "@/lib/firebase/client";
-import { saveOrderToFirestore } from "@/modules/orders/firestore";
-import { cartItemsToFirestore } from "@/modules/cart/firestore-sync";
 import type { CartItem } from "@/modules/cart/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
-import productMetadata from "@/data/productMetadata.json";
+import { useCatalog } from "@/modules/catalog/context";
 
 type TranslateFn = ReturnType<typeof useTranslation>["t"];
-
-const productNameMap = new Map(productMetadata.map((item) => [item.slug, item.name]));
-
-const resolvePreferenceLabel = (value: string) => productNameMap.get(value) ?? value;
 
 const resolveVariantKey = (variant?: string, mix?: string) => {
   if (variant === "fruity" || variant === "veggie" || variant === "mix") return variant;
@@ -39,6 +33,28 @@ const getVariantLabel = (variantKey: string, t: TranslateFn) => {
   return t("cart.variant_mix");
 };
 
+const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
+const CHECKOUT_AUTH_KEY = "gd-checkout-auth";
+const AUTH_MODE_KEY = "gd-auth-mode";
+
+type AuthChoice = "undecided" | "guest";
+type PaymentPreference = "Cash" | "Transferencia" | "PayPal";
+
+const mapPaymentMethod = (value: string) => {
+  if (value === "Cash") return "cash";
+  if (value === "Transferencia") return "transfer";
+  if (value === "Tarjeta") return "card";
+  if (value === "PayPal") return "online";
+  return undefined;
+};
+
+const normalizePaymentPreference = (value: string): PaymentPreference | undefined => {
+  if (value === "Cash" || value === "Transferencia" || value === "PayPal") {
+    return value;
+  }
+  return undefined;
+};
+
 type FormState = {
   contactName: string;
   contactPhone: string;
@@ -51,9 +67,10 @@ type FormState = {
 
 export function CheckoutClient() {
   const { items, clear, metrics } = useCart();
-  const { user, loginWithGoogle } = useAuth();
-  const { profile } = useUser();
-  const { t } = useTranslation();
+  const { user } = useAuth();
+  const { profile, updateProfile } = useUser();
+  const { t, tData } = useTranslation();
+  const { productMap } = useCatalog();
   const [form, setForm] = useState<FormState>({
     contactName: "",
     contactPhone: "",
@@ -66,22 +83,36 @@ export function CheckoutClient() {
   const [submitting, setSubmitting] = useState(false);
   const [showSummary, setShowSummary] = useState(false); // Nuevo estado para mostrar resumen
   const [draftLoaded, setDraftLoaded] = useState(false);
-  const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
+  const [authChoice, setAuthChoice] = useState<AuthChoice>("undecided");
+  const [showAuthGate, setShowAuthGate] = useState(false);
+  const resolvePreferenceLabel = useCallback(
+    (value: string) => {
+      const product = productMap.get(value);
+      return product ? tData(product.name) : value;
+    },
+    [productMap, tData],
+  );
 
   // Pre-llenar formulario con datos del perfil
   useEffect(() => {
-    if (user && profile) {
-      setForm((prev) => ({
-        ...prev,
-        contactName: prev.contactName || user.displayName || "",
-        contactPhone: prev.contactPhone || profile.telefono || "",
-        contactEmail: prev.contactEmail || user.email || "",
-        direccion: prev.direccion || profile.direccion || "",
-        metodoPago: prev.metodoPago || profile.pagoPreferido || "",
-        notes: prev.notes || buildNotesFromProfile(profile),
-      }));
-    }
-  }, [user, profile]);
+    if (!user) return;
+    setForm((prev) => ({
+      ...prev,
+      contactName: prev.contactName || user.displayName || "",
+      contactEmail: prev.contactEmail || user.email || "",
+    }));
+  }, [user]);
+
+  useEffect(() => {
+    if (!profile) return;
+    setForm((prev) => ({
+      ...prev,
+      contactPhone: prev.contactPhone || profile.telefono || "",
+      direccion: prev.direccion || profile.direccion || "",
+      metodoPago: prev.metodoPago || profile.pagoPreferido || "",
+      notes: prev.notes || buildNotesFromProfile(profile),
+    }));
+  }, [profile]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -97,6 +128,41 @@ export function CheckoutClient() {
       setDraftLoaded(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const storedChoice = window.sessionStorage.getItem(CHECKOUT_AUTH_KEY);
+      if (storedChoice === "guest") {
+        setAuthChoice("guest");
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!showAuthGate) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showAuthGate]);
+
+  useEffect(() => {
+    if (!user) return;
+    setShowAuthGate(false);
+    if (authChoice !== "undecided") {
+      setAuthChoice("undecided");
+      try {
+        if (typeof window !== "undefined") {
+          window.sessionStorage.removeItem(CHECKOUT_AUTH_KEY);
+        }
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, [user, authChoice]);
 
   useEffect(() => {
     if (!draftLoaded || typeof window === "undefined") return;
@@ -139,9 +205,6 @@ export function CheckoutClient() {
     const totalFinalDOP = subtotalConEnvio + cargoPaypal;
     const tasaCambio = 55;
     const totalFinalUSD = requierePaypal ? (totalFinalDOP / tasaCambio) : 0;
-    const paypalLink = requierePaypal && totalFinalUSD > 0 
-      ? `https://www.paypal.com/paypalme/greendolioexpress/${totalFinalUSD.toFixed(2)}USD`
-      : "";
 
     return {
       cargoEnvio,
@@ -151,9 +214,80 @@ export function CheckoutClient() {
       cargoPaypal,
       totalFinalDOP,
       totalFinalUSD,
-      paypalLink,
     };
   }, [subtotal, form.deliveryDay, form.metodoPago, profile?.pagoPreferido]);
+
+  const persistDraft = () => {
+    try {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
+      }
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const persistProfileFromCheckout = async () => {
+    if (!user) return;
+    const displayName = form.contactName.trim();
+    const updates = {
+      telefono: form.contactPhone.trim(),
+      direccion: form.direccion.trim(),
+      pagoPreferido: normalizePaymentPreference(form.metodoPago),
+      ...(displayName ? { displayName } : {}),
+    };
+    try {
+      await updateProfile(updates);
+    } catch (error) {
+      console.error("Error al guardar datos del cliente en Firebase:", error);
+      toast.error("No pudimos guardar tus datos en tu cuenta. Intenta nuevamente.", {
+        duration: 5000,
+      });
+    }
+  };
+
+  const ensureCheckoutAccess = () => {
+    if (user || authChoice === "guest") {
+      return true;
+    }
+    persistDraft();
+    setShowAuthGate(true);
+    return false;
+  };
+
+  const handleAuthLogin = () => {
+    persistDraft();
+    setShowAuthGate(false);
+    try {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("gd-show-auth-modal", "true");
+        window.sessionStorage.setItem(AUTH_MODE_KEY, "signup");
+        window.sessionStorage.removeItem(CHECKOUT_AUTH_KEY);
+      }
+    } catch {
+      // ignore storage errors
+    }
+    setAuthChoice("undecided");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("gd-auth-modal-open"));
+    }
+  };
+
+  const handleAuthGuest = () => {
+    setAuthChoice("guest");
+    setShowAuthGate(false);
+    try {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(CHECKOUT_AUTH_KEY, "guest");
+      }
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const handleAuthClose = () => {
+    setShowAuthGate(false);
+  };
 
   // Paso 1: Validar formulario y mostrar resumen
   const handleConfirm = (event: React.FormEvent) => {
@@ -179,16 +313,7 @@ export function CheckoutClient() {
       return;
     }
 
-    if (!user) {
-      try {
-        if (typeof window !== "undefined") {
-          window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
-        }
-      } catch {
-        // ignore storage errors
-      }
-      toast.error(t("checkout.login_required"));
-      void loginWithGoogle();
+    if (!ensureCheckoutAccess()) {
       return;
     }
 
@@ -206,34 +331,24 @@ export function CheckoutClient() {
 
   // Paso 2: Enviar pedido por WhatsApp
   const handleSendOrder = async () => {
-    if (!user) {
-      try {
-        if (typeof window !== "undefined") {
-          window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
-        }
-      } catch {
-        // ignore storage errors
-      }
-      toast.error(t("checkout.login_required"));
-      void loginWithGoogle();
+    if (!ensureCheckoutAccess()) {
       return;
     }
 
     setSubmitting(true);
     try {
+      await persistProfileFromCheckout();
+
       const {
         cargoEnvio,
         metodoPago,
-        subtotalConEnvio,
         requierePaypal,
         cargoPaypal,
         totalFinalDOP,
         totalFinalUSD,
-        paypalLink,
       } = orderCalculations;
 
       // Crear detalle del pedido para WhatsApp
-      console.log("Construyendo detalle del pedido con", items.length, "items");
       const detallePedido = items
         .map((item) => {
           const unitPrice = item.configuration?.price?.final ?? item.price;
@@ -268,8 +383,6 @@ export function CheckoutClient() {
           return linea;
         })
         .join("\n");
-      
-      console.log("Detalle del pedido:", detallePedido);
 
       // Crear desglose de totales
       let desgloseTotal = `Subtotal: DOP ${subtotal.toFixed(2)}`;
@@ -314,42 +427,43 @@ ${metodoPago}`;
       // Nota final sobre detalles del pago
       mensajeWhatsApp += `\n\n*💬 Recibirás los detalles del pago por WhatsApp.*`;
 
-      // Guardar en Firestore primero
-      const db = getFirestoreDb();
-      const firestoreItems = cartItemsToFirestore(items);
-      const orderData = {
-        userId: user.uid,
-        cliente: form.contactName,
-        telefono: form.contactPhone,
-        email: form.contactEmail || undefined,
-        direccion: form.direccion || "",
-        diaEntrega: form.deliveryDay,
-        observaciones: form.notes || undefined,
-        metodoPago: metodoPago,
-        items: firestoreItems,
-        total: totalFinalDOP,
-        totalUSD: requierePaypal ? totalFinalUSD : undefined,
-        paypalLink: paypalLink || undefined,
-        estado: requierePaypal ? "Pendiente Pago" : "Recibido",
-        // fechaCreacion se agrega automáticamente con serverTimestamp() en saveOrderToFirestore
+      const deliveryZone = boxItems.find((item) => item.configuration?.deliveryZone)?.configuration?.deliveryZone;
+      const checkoutItems = items.map((item) => {
+        const unitPrice = item.configuration?.price?.final ?? item.price;
+        const metadata: Record<string, unknown> = {};
+        if (item.notes) metadata.notes = item.notes;
+        if (item.excludedIngredients?.length) {
+          metadata.excludedIngredients = item.excludedIngredients;
+        }
+        return {
+          type: item.type,
+          slug: item.slug,
+          name: item.name,
+          quantity: item.quantity,
+          price: unitPrice,
+          image: item.image,
+          configuration: item.type === "box" ? item.configuration : undefined,
+          metadata: Object.keys(metadata).length ? metadata : undefined,
+        };
+      });
+
+      const checkoutPayload = {
+        contactName: form.contactName,
+        contactPhone: form.contactPhone,
+        contactEmail: form.contactEmail?.trim() || undefined,
+        address: form.direccion?.trim() || undefined,
+        deliveryZone,
+        deliveryDay: form.deliveryDay || undefined,
+        notes: form.notes?.trim() || undefined,
+        paymentMethod: mapPaymentMethod(metodoPago),
+        items: checkoutItems,
       };
 
-      // Preparar URL de WhatsApp antes de guardar
+      // Preparar URL de WhatsApp antes de enviar
       const numeroWhatsApp = "18493757338";
-      
-      // Log del mensaje completo para depuración
-      console.log("=== MENSAJE DE WHATSAPP COMPLETO ===");
-      console.log(mensajeWhatsApp);
-      console.log("Longitud del mensaje:", mensajeWhatsApp.length);
-      console.log("Primeros 300 caracteres:", mensajeWhatsApp.substring(0, 300));
       
       const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
       const whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
-      
-      // Log de la URL para verificar
-      console.log("=== URL DE WHATSAPP GENERADA ===");
-      console.log("Longitud de la URL:", whatsappUrl.length);
-      console.log("Primeros 300 caracteres de la URL:", whatsappUrl.substring(0, 300));
       
       // Verificar que el mensaje no esté vacío
       if (!mensajeWhatsApp || mensajeWhatsApp.trim().length === 0) {
@@ -359,29 +473,28 @@ ${metodoPago}`;
         return;
       }
 
-      // Guardar en Firestore primero
+      // Registrar pedido en el backend (si falla, igual enviamos por WhatsApp)
       try {
-        console.log("Guardando pedido en Firestore...", { 
-          userId: orderData.userId, 
-          cliente: orderData.cliente,
-          itemsCount: orderData.items.length 
+        const response = await fetch("/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(checkoutPayload),
         });
-        const orderId = await saveOrderToFirestore(db, orderData);
-        console.log("Pedido guardado en Firestore con ID:", orderId);
-      } catch (firestoreError: any) {
-        console.error("Error al guardar en Firestore:", firestoreError);
-        console.error("Detalles del error:", {
-          message: firestoreError?.message,
-          code: firestoreError?.code,
-        });
-        // Continuar con el envío por WhatsApp aunque falle Firestore
-        toast.error(`Error al guardar en Firestore: ${firestoreError?.message || "Error desconocido"}. El pedido se enviará por WhatsApp de todas formas.`, { duration: 5000 });
+        if (!response.ok) {
+          throw new Error(`Backend responded with ${response.status}`);
+        }
+        await response.json();
+      } catch (apiError: any) {
+        console.error("Error al registrar pedido en API:", apiError);
+        toast.error(
+          `Error al guardar el pedido en sistema: ${apiError?.message || "Error desconocido"}. El pedido se enviará por WhatsApp de todas formas.`,
+          { duration: 5000 }
+        );
       }
 
       // Abrir WhatsApp con toda la información (SIEMPRE al final, después de guardar)
-      console.log("Abriendo WhatsApp...");
-      console.log("URL length:", whatsappUrl.length);
-      
       // Verificar si la URL es demasiado larga (límite de WhatsApp es ~4096 caracteres)
       if (whatsappUrl.length > 4000) {
         console.warn("URL de WhatsApp muy larga, puede causar problemas");
@@ -409,7 +522,6 @@ ${metodoPago}`;
           }
         }, 1000);
         
-        console.log("WhatsApp abierto exitosamente");
       } catch (error) {
         console.error("Error al abrir WhatsApp:", error);
         // Fallback: intentar window.open
@@ -447,6 +559,7 @@ ${metodoPago}`;
       clear();
       if (typeof window !== "undefined") {
         window.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+        window.sessionStorage.removeItem(CHECKOUT_AUTH_KEY);
       }
       setTimeout(() => {
         window.location.href = "/";
@@ -458,6 +571,64 @@ ${metodoPago}`;
       setSubmitting(false);
     }
   };
+
+  const authGate =
+    showAuthGate && !user && typeof window !== "undefined"
+      ? createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            onClick={handleAuthClose}
+          >
+            <div
+              className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000]"
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
+              <div className="p-6 pb-4 border-b border-gray-200">
+                <h2 className="mb-2 font-display text-2xl text-[var(--color-foreground)]">
+                  {t("checkout.auth_title")}
+                </h2>
+                <p className="text-sm text-[var(--color-muted)]">{t("checkout.auth_desc")}</p>
+                <ul className="mt-4 space-y-2 text-sm text-[var(--color-muted)]">
+                  <li>✓ {t("checkout.auth_benefit_1")}</li>
+                  <li>✓ {t("checkout.auth_benefit_2")}</li>
+                  <li>✓ {t("checkout.auth_benefit_3")}</li>
+                </ul>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 p-6 pt-4 border-t border-gray-200 bg-white rounded-b-3xl">
+                <button
+                  type="button"
+                  onClick={handleAuthLogin}
+                  className="flex-1 rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)]"
+                >
+                  {t("checkout.auth_login")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAuthGuest}
+                  className="flex-1 rounded-full border border-[var(--gd-color-forest)]/30 px-6 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition hover:bg-[var(--gd-color-leaf)]/10"
+                >
+                  {t("checkout.auth_guest")}
+                </button>
+              </div>
+              <p className="px-6 pb-6 text-xs text-[var(--color-muted)]">
+                {t("checkout.auth_guest_hint")}
+              </p>
+              <div className="px-6 pb-6">
+                <button
+                  type="button"
+                  onClick={handleAuthClose}
+                  className="w-full rounded-full border border-[var(--color-border)] px-6 py-3 text-sm font-semibold text-[var(--color-foreground)] transition hover:bg-[var(--color-background-muted)]"
+                >
+                  {t("checkout.auth_back")}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
 
   // Si showSummary es true, mostrar resumen del pedido
   if (showSummary) {
@@ -529,6 +700,7 @@ ${metodoPago}`;
             </aside>
           </div>
         </div>
+        {authGate}
       </main>
     );
   }
@@ -679,10 +851,11 @@ ${metodoPago}`;
             />
           </aside>
         </div>
-      </div>
-    </main>
-  );
-}
+        </div>
+        {authGate}
+      </main>
+    );
+  }
 
 function CartLine({ item }: { item: CartItem }) {
   const { t } = useTranslation();
@@ -815,16 +988,14 @@ function OrderSummaryView({
   orderCalculations: {
     cargoEnvio: number;
     metodoPago: string;
-    subtotalConEnvio: number;
     requierePaypal: boolean;
     cargoPaypal: number;
     totalFinalDOP: number;
     totalFinalUSD: number;
-    paypalLink: string;
   };
 }) {
   const { t } = useTranslation();
-  const { cargoEnvio, metodoPago, requierePaypal, cargoPaypal, totalFinalDOP, totalFinalUSD, paypalLink } = orderCalculations;
+  const { cargoEnvio, metodoPago, requierePaypal, cargoPaypal, totalFinalDOP, totalFinalUSD } = orderCalculations;
   
   const subtotal = items.reduce(
     (sum, item) => sum + (item.configuration?.price?.final ?? item.price) * item.quantity,

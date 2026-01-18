@@ -33,6 +33,10 @@ export type Product = {
   image?: string;
   tags: string[];
   isFeatured: boolean;
+  metadata?: {
+    slotValue?: number;
+    wholesaleCost?: number;
+  };
   nutrition?: {
     vegan?: boolean;
     glutenFree?: boolean;
@@ -72,4 +76,15 @@ export type Box = {
   heroImage?: string;
   isFeatured: boolean;
   variants: BoxVariant[];
+};
+
+export type BoxRule = {
+  id: string;
+  displayName: string;
+  slotBudget: number;
+  targetWeightKg: number;
+  minMargin?: number;
+  categoryBudget: Record<string, { min: number; max: number }>;
+  baseContents: Array<{ productSlug: string; quantity: number }>;
+  variantContents?: Partial<Record<"mix" | "fruity" | "veggie", Array<{ productSlug: string; quantity: number }>>>;
 };

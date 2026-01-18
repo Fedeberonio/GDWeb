@@ -1,10 +1,11 @@
 import { getDb } from "../../lib/firestore";
-import type { Box, Product, ProductCategory } from "./schemas";
+import type { Box, BoxRule, Product, ProductCategory } from "./schemas";
 
 const COLLECTIONS = {
   categories: "catalog_categories",
   products: "catalog_products",
   boxes: "catalog_boxes",
+  boxRules: "catalog_box_rules",
 };
 
 export async function listCategories(): Promise<ProductCategory[]> {
@@ -56,6 +57,21 @@ export async function getBoxById(id: string): Promise<Box | null> {
 
 export async function saveBox(box: Box): Promise<void> {
   await getDb().collection(COLLECTIONS.boxes).doc(box.id).set(box, { merge: true });
+}
+
+export async function listBoxRules(): Promise<BoxRule[]> {
+  const snapshot = await getDb().collection(COLLECTIONS.boxRules).get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as BoxRule));
+}
+
+export async function getBoxRuleById(id: string): Promise<BoxRule | null> {
+  const doc = await getDb().collection(COLLECTIONS.boxRules).doc(id).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as BoxRule;
+}
+
+export async function saveBoxRule(rule: BoxRule): Promise<void> {
+  await getDb().collection(COLLECTIONS.boxRules).doc(rule.id).set(rule, { merge: true });
 }
 
 export const catalogCollections = COLLECTIONS;

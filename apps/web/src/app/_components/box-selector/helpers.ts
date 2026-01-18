@@ -1,4 +1,3 @@
-import productMetadata from "@/data/productMetadata.json";
 import { translations } from "@/modules/i18n/translations";
 import type { Locale } from "@/modules/i18n/locales";
 
@@ -85,8 +84,7 @@ export function calculateVariantComposition(
   };
 
   baseContents.forEach((item) => {
-    const meta = productMetadata.find((p) => p.slug === item.productSlug);
-    const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+    const category = getVisualCategory(item.productSlug, item.name);
     const quantity = item.quantity;
 
     // Para todas las variantes, contar todas las categorías del contenido base

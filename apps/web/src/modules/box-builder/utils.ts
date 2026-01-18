@@ -1,13 +1,47 @@
-import boxRules from "@/data/boxRules.json";
-import productMetadata from "@/data/productMetadata.json";
+import type { BoxRule, Product } from "@/modules/catalog/types";
 
-export type BoxRule = (typeof boxRules)[keyof typeof boxRules];
-export type ProductMetadata = (typeof productMetadata)[number];
 type VariantContents = Record<"mix" | "fruity" | "veggie", Array<{ productSlug: string; quantity: number }>>;
+type PriceLookup = Record<string, number | undefined>;
 
-const productMap = new Map<string, ProductMetadata>(productMetadata.map((item) => [item.slug, item]));
+export type ProductMeta = {
+  slug: string;
+  name: string;
+  categoryId?: string;
+  tags?: string[];
+  weightKg?: number;
+  slotValue?: number;
+  wholesaleCost?: number;
+};
 
-export function getBoxRule(boxId?: string): BoxRule | undefined {
+let productMetaMap = new Map<string, ProductMeta>();
+let boxRulesMap: Record<string, BoxRule> = {};
+
+export function buildProductMetaMap(products: Product[]) {
+  return new Map(
+    products.map((product) => [
+      product.slug,
+      {
+        slug: product.slug,
+        name: product.name.es,
+        categoryId: product.categoryId,
+        tags: product.tags,
+        weightKg: product.logistics?.weightKg,
+        slotValue: product.metadata?.slotValue,
+        wholesaleCost: product.metadata?.wholesaleCost,
+      },
+    ]),
+  );
+}
+
+export function setProductMetaMap(products: Product[]) {
+  productMetaMap = buildProductMetaMap(products);
+}
+
+export function setBoxRulesMap(rules: BoxRule[]) {
+  boxRulesMap = Object.fromEntries(rules.map((rule) => [rule.id, rule]));
+}
+
+export function getBoxRule(boxId?: string, rulesMap: Record<string, BoxRule> = boxRulesMap): BoxRule | undefined {
   if (!boxId) return undefined;
   
   // Normalizar boxId: mapear box-1, box-2, box-3 a GD-CAJA-001, GD-CAJA-002, GD-CAJA-003
@@ -16,8 +50,7 @@ export function getBoxRule(boxId?: string): BoxRule | undefined {
     .replace(/^box-2/i, "GD-CAJA-002")
     .replace(/^box-3/i, "GD-CAJA-003");
   
-  return (boxRules as Record<string, BoxRule>)[normalizedId] || 
-         (boxRules as Record<string, BoxRule>)[boxId];
+  return rulesMap[normalizedId] || rulesMap[boxId];
 }
 
 /**
@@ -26,9 +59,10 @@ export function getBoxRule(boxId?: string): BoxRule | undefined {
  */
 export function getBoxContentsForVariant(
   boxId: string,
-  variant: "mix" | "fruity" | "veggie"
+  variant: "mix" | "fruity" | "veggie",
+  rulesMap: Record<string, BoxRule> = boxRulesMap,
 ): Array<{ productSlug: string; quantity: number }> {
-  const rule = getBoxRule(boxId);
+  const rule = getBoxRule(boxId, rulesMap);
   if (!rule) return [];
 
   const variantContents = (rule as BoxRule & { variantContents?: VariantContents }).variantContents;
@@ -45,7 +79,7 @@ export function getBoxContentsForVariant(
 
   // Para fruity y veggie, filtrar baseContents
   return rule.baseContents?.filter((item) => {
-    const meta = productMetadata.find((p) => p.slug === item.productSlug);
+    const meta = getProductMeta(item.productSlug);
     if (!meta) return false;
 
     const nameLower = meta.name.toLowerCase();
@@ -66,14 +100,20 @@ export function getBoxContentsForVariant(
         nameLower.includes("cilantro");
 
       // Solo frutas y cítricos
+      const category = meta.categoryId?.toLowerCase() || "";
       return (
-        (meta.category === "frutas" || nameLower.includes("limón") || nameLower.includes("limon") || nameLower.includes("naranja")) &&
+        (category.includes("fruta") ||
+          category.includes("citr") ||
+          nameLower.includes("limón") ||
+          nameLower.includes("limon") ||
+          nameLower.includes("naranja")) &&
         !isCookingAromatic
       );
     } else {
       // veggie: solo vegetales, sin frutas
-      const isVegetable = meta.category === "vegetales" || meta.category === "hierbas-y-especias";
-      const isFruit = meta.category === "frutas" ||
+      const category = meta.categoryId?.toLowerCase() || "";
+      const isVegetable = category.includes("veget") || category.includes("hierb");
+      const isFruit = category.includes("fruta") ||
         nameLower.includes("mango") ||
         nameLower.includes("piña") ||
         nameLower.includes("pina") ||
@@ -84,32 +124,41 @@ export function getBoxContentsForVariant(
   }) ?? [];
 }
 
-export function getProductMeta(slug: string): ProductMetadata | undefined {
-  return productMap.get(slug);
+export function getProductMeta(slug: string, metaMap: Map<string, ProductMeta> = productMetaMap): ProductMeta | undefined {
+  return metaMap.get(slug);
 }
 
-export function computeSlots(selection: Record<string, number | undefined>) {
+function resolveUnitPrice(slug: string, priceLookup?: PriceLookup): number {
+  const lookupPrice = priceLookup?.[slug];
+  if (typeof lookupPrice === "number" && Number.isFinite(lookupPrice)) {
+    return lookupPrice;
+  }
+  const meta = getProductMeta(slug);
+  return meta?.wholesaleCost ? meta.wholesaleCost * 1.5 : 0;
+}
+
+export function computeSlots(selection: Record<string, number | undefined>, metaMap: Map<string, ProductMeta> = productMetaMap) {
   return Object.entries(selection).reduce((total, [slug, quantity]) => {
     if (!quantity) return total;
-    const meta = getProductMeta(slug);
+    const meta = getProductMeta(slug, metaMap);
     const slotValue = meta?.slotValue ?? 1;
     return total + slotValue * quantity;
   }, 0);
 }
 
-export function computeWeight(selection: Record<string, number | undefined>) {
+export function computeWeight(selection: Record<string, number | undefined>, metaMap: Map<string, ProductMeta> = productMetaMap) {
   return Object.entries(selection).reduce((total, [slug, quantity]) => {
     if (!quantity) return total;
-    const meta = getProductMeta(slug);
+    const meta = getProductMeta(slug, metaMap);
     const weight = meta?.weightKg ?? 0.5;
     return total + weight * quantity;
   }, 0);
 }
 
-export function computeCost(selection: Record<string, number | undefined>) {
+export function computeCost(selection: Record<string, number | undefined>, metaMap: Map<string, ProductMeta> = productMetaMap) {
   return Object.entries(selection).reduce((total, [slug, quantity]) => {
     if (!quantity) return total;
-    const meta = getProductMeta(slug);
+    const meta = getProductMeta(slug, metaMap);
     const cost = meta?.wholesaleCost ?? 0;
     return total + cost * quantity;
   }, 0);
@@ -121,12 +170,14 @@ export function computeCost(selection: Record<string, number | undefined>) {
  */
 export function checkBalanceIssues(
   boxId: string,
-  selectedProducts: Record<string, number>
+  selectedProducts: Record<string, number>,
+  metaMap: Map<string, ProductMeta> = productMetaMap,
+  rulesMap: Record<string, BoxRule> = boxRulesMap,
 ): {
   hasCriticalIssues: boolean;
   issues: Array<{ category: string; message: string; type: "missing" | "excess" }>;
 } {
-  const rule = getBoxRule(boxId);
+  const rule = getBoxRule(boxId, rulesMap);
   const categoryBudget = rule?.categoryBudget ?? {};
   const issues: Array<{ category: string; message: string; type: "missing" | "excess" }> = [];
 
@@ -141,10 +192,10 @@ export function checkBalanceIssues(
 
   Object.entries(selectedProducts).forEach(([slug, quantity]) => {
     if (!quantity || quantity <= 0) return;
-    const meta = productMetadata.find((p) => p.slug === slug);
+    const meta = getProductMeta(slug, metaMap);
     if (!meta) return;
 
-    const productCategory = meta.category?.toLowerCase() || "";
+    const productCategory = meta.categoryId?.toLowerCase() || "";
     if (productCategory.includes("hoja") || productCategory.includes("leafy") || productCategory.includes("lechuga") || productCategory.includes("espinaca")) {
       counts.leafy += quantity;
     } else if (productCategory.includes("fruta") || productCategory.includes("fruit") || productCategory.includes("mango") || productCategory.includes("piña")) {
@@ -205,16 +256,16 @@ export function isCustomizedToACarta(boxId: string, selectedProducts: Record<str
 
 /**
  * Calcula el precio cuando pasa a "A la Carta"
- * Precio individual = wholesaleCost * 1.5 (margen del 50%)
+ * Precio individual = precio de catálogo (fallback wholesaleCost * 1.5)
  */
-export function computeACartaPrice(selection: Record<string, number | undefined>): number {
+export function computeACartaPrice(
+  selection: Record<string, number | undefined>,
+  priceLookup?: PriceLookup,
+): number {
   return Object.entries(selection).reduce((total, [slug, quantity]) => {
     if (!quantity) return total;
-    const meta = getProductMeta(slug);
-    const wholesaleCost = meta?.wholesaleCost ?? 0;
-    // Precio individual con margen del 50%
-    const individualPrice = wholesaleCost * 1.5;
-    return total + individualPrice * quantity;
+    const unitPrice = resolveUnitPrice(slug, priceLookup);
+    return total + unitPrice * quantity;
   }, 0);
 }
 
@@ -224,7 +275,8 @@ export function computeACartaPrice(selection: Record<string, number | undefined>
  */
 export function computeSwapExtras(
   boxId: string,
-  selectedProducts: Record<string, number>
+  selectedProducts: Record<string, number>,
+  priceLookup?: PriceLookup,
 ): number {
   const rule = getBoxRule(boxId);
   if (!rule || !rule.baseContents) return 0;
@@ -243,8 +295,7 @@ export function computeSwapExtras(
     if (!quantity || quantity <= 0) return;
     
     const baseQuantity = baseProductsMap.get(slug) ?? 0;
-    const meta = getProductMeta(slug);
-    const productPrice = meta?.wholesaleCost ? meta.wholesaleCost * 1.5 : 0;
+    const productPrice = resolveUnitPrice(slug, priceLookup);
     
     // Si el producto está en la base, no es un swap
     if (baseQuantity > 0) {
@@ -272,8 +323,7 @@ export function computeSwapExtras(
       if (currentQty === 0 && baseQty > 0) {
         // Este producto base fue removido completamente
         // Podría haber sido reemplazado por el producto actual
-        const baseMeta = getProductMeta(baseSlug);
-        const basePrice = baseMeta?.wholesaleCost ? baseMeta.wholesaleCost * 1.5 : 0;
+        const basePrice = resolveUnitPrice(baseSlug, priceLookup);
         
         // Si el nuevo producto cuesta más, calcular la diferencia
         if (productPrice > basePrice + PRICE_TOLERANCE) {
@@ -295,7 +345,8 @@ export function computeSwapExtras(
 export function computeSwapExtrasV2(
   boxId: string,
   selectedProducts: Record<string, number>,
-  variant?: "mix" | "fruity" | "veggie"
+  variant?: "mix" | "fruity" | "veggie",
+  priceLookup?: PriceLookup,
 ): number {
   const rule = getBoxRule(boxId);
   if (!rule) return 0;
@@ -313,20 +364,18 @@ export function computeSwapExtrasV2(
   
   if (baseContents.length === 0) return 0;
   
-  // Calcular precio total de productos base (precio de venta = wholesaleCost * 1.5)
+  // Calcular precio total de productos base (precio de catálogo; fallback wholesaleCost * 1.5)
   let baseTotalPrice = 0;
   baseContents.forEach((item) => {
-    const meta = getProductMeta(item.productSlug);
-    const basePrice = meta?.wholesaleCost ? meta.wholesaleCost * 1.5 : 0;
+    const basePrice = resolveUnitPrice(item.productSlug, priceLookup);
     baseTotalPrice += basePrice * item.quantity;
   });
   
-  // Calcular precio total de productos seleccionados (precio de venta = wholesaleCost * 1.5)
+  // Calcular precio total de productos seleccionados (precio de catálogo; fallback wholesaleCost * 1.5)
   let selectedTotalPrice = 0;
   Object.entries(selectedProducts).forEach(([slug, quantity]) => {
     if (!quantity || quantity <= 0) return;
-    const meta = getProductMeta(slug);
-    const productPrice = meta?.wholesaleCost ? meta.wholesaleCost * 1.5 : 0;
+    const productPrice = resolveUnitPrice(slug, priceLookup);
     selectedTotalPrice += productPrice * quantity;
   });
   
@@ -346,15 +395,16 @@ export function computeBoxPrice(
   boxId: string,
   boxBasePrice: number,
   selectedProducts: Record<string, number>,
-  variant?: "mix" | "fruity" | "veggie"
+  variant?: "mix" | "fruity" | "veggie",
+  priceLookup?: PriceLookup,
 ): { price: number; isACarta: boolean; extras: number; savings?: number } {
   const isACarta = isCustomizedToACarta(boxId, selectedProducts);
   
   // Calcular extras de swaps (usando la variante si está disponible)
-  const swapExtras = computeSwapExtrasV2(boxId, selectedProducts, variant);
+  const swapExtras = computeSwapExtrasV2(boxId, selectedProducts, variant, priceLookup);
   
   if (isACarta) {
-    const aCartaPrice = computeACartaPrice(selectedProducts);
+    const aCartaPrice = computeACartaPrice(selectedProducts, priceLookup);
     const savings = aCartaPrice - boxBasePrice;
     return {
       price: aCartaPrice,

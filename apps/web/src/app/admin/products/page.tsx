@@ -25,7 +25,7 @@ function ProductsContent() {
 
       const [productsRes, categoriesRes] = await Promise.all([
         adminFetch("/api/admin/catalog/products", { cache: "no-store" }),
-        fetch("/api/catalog/categories", { cache: "force-cache" }),
+        fetch("/api/catalog/categories", { cache: "no-store" }),
       ]);
 
       if (!productsRes.ok || !categoriesRes.ok) {

@@ -5,6 +5,8 @@ import { BalanceChart } from "./balance-chart";
 import { getBoxRule, computeBoxPrice } from "@/modules/box-builder/utils";
 import { PriceInfoTooltip } from "./price-info-tooltip";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { useCatalog } from "@/modules/catalog/context";
+import { useMemo } from "react";
 
 type SummaryCardProps = {
   selectedBox?: Box;
@@ -42,6 +44,8 @@ export function SummaryCard({
   selectedProducts,
 }: SummaryCardProps) {
   const { t } = useTranslation();
+  const { boxRules } = useCatalog();
+  const rulesMap = useMemo(() => Object.fromEntries(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
 
   return (
     <aside className="sticky top-6 self-start max-h-[calc(100vh-3rem)] overflow-y-auto rounded-[32px] border border-[var(--color-border)] bg-white/95 p-6 shadow-soft space-y-5">
@@ -60,7 +64,7 @@ export function SummaryCard({
       
       {/* Advertencia de personalización excesiva */}
       {selectedBox && selectedBox.id && (() => {
-        const rule = getBoxRule(selectedBox.id);
+        const rule = getBoxRule(selectedBox.id, rulesMap);
         const baseContents = rule?.baseContents ?? [];
         const modifiedCount = baseContents.filter((item: { productSlug: string; quantity: number }) => {
           const currentQty = selectedProducts[item.productSlug] ?? 0;

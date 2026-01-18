@@ -28,6 +28,9 @@ type FormState = {
   status: Product["status"];
   isFeatured: boolean;
   categoryId: string;
+  slotValue: string;
+  wholesaleCost: string;
+  weightKg: string;
 };
 
 function buildInitialForm(product: Product): FormState {
@@ -43,6 +46,9 @@ function buildInitialForm(product: Product): FormState {
     status: product.status,
     isFeatured: product.isFeatured,
     categoryId: product.categoryId,
+    slotValue: product.metadata?.slotValue?.toString() ?? "",
+    wholesaleCost: product.metadata?.wholesaleCost?.toString() ?? "",
+    weightKg: product.logistics?.weightKg?.toString() ?? "",
   };
 }
 
@@ -104,6 +110,42 @@ function ProductForm({
               </option>
             ))}
           </select>
+        </label>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Slots
+          <input
+            type="number"
+            min="1"
+            step="1"
+            value={formState.slotValue}
+            onChange={(event) => setFormState({ ...formState, slotValue: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Costo mayorista (DOP)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={formState.wholesaleCost}
+            onChange={(event) => setFormState({ ...formState, wholesaleCost: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Peso (kg)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={formState.weightKg}
+            onChange={(event) => setFormState({ ...formState, weightKg: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
         </label>
       </div>
 
@@ -248,6 +290,9 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
     tags: "",
     image: "",
     isFeatured: false,
+    slotValue: "",
+    wholesaleCost: "",
+    weightKg: "",
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -264,6 +309,18 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
     setMessage(null);
 
     try {
+      const slotValue = form.slotValue.trim();
+      const wholesaleCost = form.wholesaleCost.trim();
+      const weightKg = form.weightKg.trim();
+      const metadata =
+        slotValue || wholesaleCost
+          ? {
+              slotValue: slotValue ? Number(slotValue) : undefined,
+              wholesaleCost: wholesaleCost ? Number(wholesaleCost) : undefined,
+            }
+          : undefined;
+      const logistics = weightKg ? { weightKg: Number(weightKg) } : undefined;
+
       const response = await adminFetch("/api/admin/catalog/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -289,6 +346,8 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
             .filter(Boolean),
           image: form.image || undefined,
           isFeatured: form.isFeatured,
+          ...(metadata ? { metadata } : {}),
+          ...(logistics ? { logistics } : {}),
         }),
       });
       const json = await response.json();
@@ -311,6 +370,9 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
         tags: "",
         image: "",
         isFeatured: false,
+        slotValue: "",
+        wholesaleCost: "",
+        weightKg: "",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado");
@@ -381,6 +443,41 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
             step="0.01"
             value={form.priceAmount}
             onChange={(event) => setForm({ ...form, priceAmount: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Slots
+          <input
+            type="number"
+            min="1"
+            step="1"
+            value={form.slotValue}
+            onChange={(event) => setForm({ ...form, slotValue: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Costo mayorista (DOP)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.wholesaleCost}
+            onChange={(event) => setForm({ ...form, wholesaleCost: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Peso (kg)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.weightKg}
+            onChange={(event) => setForm({ ...form, weightKg: event.target.value })}
             className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
           />
         </label>
@@ -524,6 +621,18 @@ export function ProductManager({ initialProducts, categories, onProductCreated }
       .map((tag) => tag.trim())
       .filter(Boolean);
 
+    const slotValue = formState.slotValue.trim();
+    const wholesaleCost = formState.wholesaleCost.trim();
+    const weightKg = formState.weightKg.trim();
+    const metadata =
+      slotValue || wholesaleCost
+        ? {
+            slotValue: slotValue ? Number(slotValue) : undefined,
+            wholesaleCost: wholesaleCost ? Number(wholesaleCost) : undefined,
+          }
+        : undefined;
+    const logistics = weightKg ? { weightKg: Number(weightKg) } : undefined;
+
     const payload: Record<string, unknown> = {
       price: {
         amount: Number(formState.priceAmount),
@@ -545,6 +654,8 @@ export function ProductManager({ initialProducts, categories, onProductCreated }
       status: formState.status,
       isFeatured: formState.isFeatured,
       categoryId: formState.categoryId,
+      ...(metadata ? { metadata } : {}),
+      ...(logistics ? { logistics } : {}),
     };
 
     try {

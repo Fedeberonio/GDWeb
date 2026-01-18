@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { getBoxRule } from "@/modules/box-builder/utils";
-import productMetadata from "@/data/productMetadata.json";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { useCatalog } from "@/modules/catalog/context";
 
 type BalanceChartProps = {
   boxId: string;
@@ -22,7 +22,9 @@ type CategoryCount = {
 
 export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
   const { t } = useTranslation();
-  const rule = getBoxRule(boxId);
+  const { productMap, boxRules } = useCatalog();
+  const rulesMap = useMemo(() => Object.fromEntries(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
+  const rule = useMemo(() => getBoxRule(boxId, rulesMap), [boxId, rulesMap]);
   const categoryBudget = useMemo(() => rule?.categoryBudget ?? {}, [rule]);
 
   const categoryCounts = useMemo<CategoryCount[]>(() => {
@@ -37,11 +39,11 @@ export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
     // Contar productos por categoría
     Object.entries(selectedProducts).forEach(([slug, quantity]) => {
       if (!quantity || quantity <= 0) return;
-      const meta = productMetadata.find((p) => p.slug === slug);
-      if (!meta) return;
+      const product = productMap.get(slug);
+      if (!product) return;
 
       // Mapear categorías del producto a las categorías de la caja
-      const productCategory = meta.category?.toLowerCase() || "";
+      const productCategory = product.categoryId?.toLowerCase() || "";
       if (productCategory.includes("hoja") || productCategory.includes("leafy") || productCategory.includes("lechuga") || productCategory.includes("espinaca")) {
         counts.leafy += quantity;
       } else if (productCategory.includes("fruta") || productCategory.includes("fruit") || productCategory.includes("mango") || productCategory.includes("piña")) {
@@ -74,7 +76,7 @@ export function BalanceChart({ boxId, selectedProducts }: BalanceChartProps) {
         ...info,
       };
     });
-  }, [selectedProducts, categoryBudget]);
+  }, [selectedProducts, categoryBudget, productMap]);
 
   const getStatusColor = (current: number, min: number, max: number) => {
     if (current < min) return "bg-red-500";

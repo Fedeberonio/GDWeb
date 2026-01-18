@@ -3,13 +3,9 @@ import { Router } from "express";
 import { z } from "zod";
 import { FieldValue } from "firebase-admin/firestore";
 
-import boxRules from "../../data/boxRules.json";
-import productMetadata from "../../data/productMetadata.json";
 import { getDb } from "../../lib/firestore";
-
-const productMap = new Map(productMetadata.map((item) => [item.slug, item]));
-
-type BoxRule = (typeof boxRules)[keyof typeof boxRules];
+import { getBoxRulesMap, getProductMetaMap, type ProductMetaSnapshot } from "../catalog/service";
+import type { BoxRule } from "../catalog/schemas";
 
 const baseSelectionSchema = z.object({
   boxId: z.string().min(1),
@@ -60,7 +56,11 @@ type BuilderValidationResult = {
   valid: boolean;
 };
 
-function evaluateSelection(selection: Record<string, number>, rule: BoxRule) {
+function evaluateSelection(
+  selection: Record<string, number>,
+  rule: BoxRule,
+  productMetaMap: Record<string, ProductMetaSnapshot>,
+) {
   let slotsUsed = 0;
   let weightUsed = 0;
   let costEstimate = 0;
@@ -72,7 +72,7 @@ function evaluateSelection(selection: Record<string, number>, rule: BoxRule) {
     const qty = typeof quantity === "number" ? quantity : Number(quantity) || 0;
     if (!qty || qty <= 0) return;
     productCount += 1;
-    const metadata = productMap.get(slug);
+    const metadata = productMetaMap[slug];
     if (!metadata) {
       missingProducts.push(slug);
       return;
@@ -112,12 +112,17 @@ function evaluateSelection(selection: Record<string, number>, rule: BoxRule) {
   };
 }
 
-function buildValidationResult(payload: ValidationPayload, rule: BoxRule) {
+function buildValidationResult(
+  payload: ValidationPayload,
+  rule: BoxRule,
+  productMetaMap: Record<string, ProductMetaSnapshot>,
+) {
   // Asegurar que selectedProducts sea Record<string, number>
   const selectedProducts = payload.selectedProducts as Record<string, number>;
   const { slotsUsed, weightUsed, costEstimate, productCount, errors, warnings } = evaluateSelection(
     selectedProducts,
     rule,
+    productMetaMap,
   );
 
   return {
@@ -147,7 +152,7 @@ function buildValidationResult(payload: ValidationPayload, rule: BoxRule) {
 export function createBoxesRouter() {
   const router = Router();
 
-  router.post("/validate", (req, res) => {
+  router.post("/validate", async (req, res) => {
     const parsed = validationSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({
@@ -158,8 +163,8 @@ export function createBoxesRouter() {
     }
 
     const payload = parsed.data;
-    // Castear boxRules a Record y asegurar que selectedProducts sea Record<string, number>
-    const boxRulesRecord = boxRules as Record<string, BoxRule>;
+    const boxRulesRecord = await getBoxRulesMap();
+    const productMetaMap = await getProductMetaMap();
     const rule = boxRulesRecord[payload.boxId];
     if (!rule) {
       res.status(404).json({ error: "Caja no encontrada" });
@@ -173,7 +178,7 @@ export function createBoxesRouter() {
       selectedProducts,
     };
 
-    const result = buildValidationResult(payloadWithTypedSelection, rule);
+    const result = buildValidationResult(payloadWithTypedSelection, rule, productMetaMap);
 
     res.json({ data: result });
   });
@@ -189,8 +194,8 @@ export function createBoxesRouter() {
     }
 
     const payload = parsed.data;
-    // Castear boxRules a Record y asegurar que selectedProducts sea Record<string, number>
-    const boxRulesRecord = boxRules as Record<string, BoxRule>;
+    const boxRulesRecord = await getBoxRulesMap();
+    const productMetaMap = await getProductMetaMap();
     const rule = boxRulesRecord[payload.boxId];
     if (!rule) {
       res.status(404).json({ error: "Caja no encontrada" });
@@ -204,7 +209,7 @@ export function createBoxesRouter() {
       selectedProducts,
     };
 
-    const validationResult = buildValidationResult(payloadWithTypedSelection, rule);
+    const validationResult = buildValidationResult(payloadWithTypedSelection, rule, productMetaMap);
     if (!validationResult.valid) {
       res.status(400).json({
         error: "Tu selección necesita ajustes antes de enviarla.",

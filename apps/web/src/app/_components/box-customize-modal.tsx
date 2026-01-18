@@ -5,10 +5,9 @@ import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useCart } from "@/modules/cart/context";
-import type { Box, Product } from "@/modules/catalog/types";
+import type { Box, BoxRule, Product } from "@/modules/catalog/types";
 import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selector/helpers";
-import { computeSlots, getBoxContentsForVariant, computeBoxPrice, computeWeight } from "@/modules/box-builder/utils";
-import productMetadata from "@/data/productMetadata.json";
+import { computeBoxPrice, computeWeight, getProductMeta } from "@/modules/box-builder/utils";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
 // Componente para manejar imágenes con fallback (versión mejorada con URLs remotas)
@@ -66,11 +65,10 @@ function ProductImageWithFallback({
   );
 }
 
-const productMetaMap = new Map(productMetadata.map((item) => [item.slug, item]));
-
 type BoxCustomizeModalProps = {
   box: Box;
   baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
+  boxRule?: BoxRule;
   boxImage?: string;
   dimensions?: string;
   weight?: string;
@@ -84,11 +82,12 @@ type BoxCustomizeModalProps = {
 export function BoxCustomizeModal({
   box,
   baseContents,
+  boxRule,
   boxImage: propBoxImage,
   dimensions,
   weight,
   availableProducts,
-  slotBudget,
+  slotBudget: _slotBudget,
   initialVariant,
   onClose,
   onAddToCart,
@@ -100,6 +99,14 @@ export function BoxCustomizeModal({
   const [isAdding, setIsAdding] = useState(false);
   const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
   const [dislikedProducts, setDislikedProducts] = useState<Set<string>>(new Set());
+  const productMap = useMemo(
+    () => new Map(availableProducts.map((product) => [product.slug, product])),
+    [availableProducts]
+  );
+  const priceLookup = useMemo(
+    () => Object.fromEntries(availableProducts.map((product) => [product.slug, product.price?.amount ?? 0])),
+    [availableProducts],
+  );
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -128,29 +135,22 @@ export function BoxCustomizeModal({
   const [selectedProducts, setSelectedProducts] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
     const variantToUse = initialVariant ?? "mix";
-    const initialContents = getBoxContentsForVariant(box.id, variantToUse);
-    if (initialContents.length > 0) {
-      initialContents.forEach((item) => {
-        initial[item.productSlug] = item.quantity;
-      });
-    } else {
-      baseContents.forEach((item) => {
-        initial[item.productSlug] = item.quantity;
-      });
-    }
+    const initialContents = boxRule?.variantContents?.[variantToUse] ?? baseContents;
+    initialContents.forEach((item) => {
+      initial[item.productSlug] = item.quantity;
+    });
     return initial;
   });
 
   // Actualizar selectedProducts cuando cambia la variante
   useEffect(() => {
-    const variantContents = getBoxContentsForVariant(box.id, selectedVariant);
-    const newContents = variantContents.length > 0 ? variantContents : baseContents;
+    const newContents = boxRule?.variantContents?.[selectedVariant] ?? baseContents;
     const newSelection: Record<string, number> = {};
     newContents.forEach((item) => {
       newSelection[item.productSlug] = item.quantity;
     });
     setSelectedProducts(newSelection);
-  }, [selectedVariant, box.id, baseContents]);
+  }, [selectedVariant, baseContents, boxRule]);
   const handleVariantChange = (newVariant: VariantType) => {
     if (newVariant !== selectedVariant) {
       setSelectedVariant(newVariant);
@@ -160,12 +160,10 @@ export function BoxCustomizeModal({
   // Filtrar contenido según variante
   // Usar getBoxContentsForVariant si existe contenido específico para la variante
   const getFilteredContents = (variant: VariantType) => {
-    // Intentar obtener contenido específico para la variante
-    const variantContents = getBoxContentsForVariant(box.id, variant);
-    if (variantContents.length > 0) {
-      return variantContents.map((item) => ({
+    if (boxRule?.variantContents?.[variant]?.length) {
+      return boxRule.variantContents[variant]!.map((item) => ({
         ...item,
-        name: productMetaMap.get(item.productSlug)?.name ?? item.productSlug,
+        name: productMap.get(item.productSlug)?.name?.es ?? item.productSlug,
       }));
     }
 
@@ -174,8 +172,8 @@ export function BoxCustomizeModal({
       return baseContents;
     } else if (variant === "fruity") {
       return baseContents.filter((item) => {
-        const meta = productMetaMap.get(item.productSlug);
-        const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+        const product = productMap.get(item.productSlug);
+        const category = getVisualCategory(item.productSlug, item.name, product?.categoryId);
         const slugLower = item.productSlug.toLowerCase();
         const nameLower = item.name.toLowerCase();
 
@@ -200,8 +198,8 @@ export function BoxCustomizeModal({
       });
     } else {
       return baseContents.filter((item) => {
-        const meta = productMetaMap.get(item.productSlug);
-        const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+        const product = productMap.get(item.productSlug);
+        const category = getVisualCategory(item.productSlug, item.name, product?.categoryId);
         return (
           category === "leafy" ||
           category === "root" ||
@@ -215,14 +213,9 @@ export function BoxCustomizeModal({
   const filteredContents = getFilteredContents(selectedVariant);
   const variantInfo = getVariantInfo(selectedVariant, locale);
 
-  const productMap = useMemo(
-    () => new Map(availableProducts.map((product) => [product.slug, product])),
-    [availableProducts]
-  );
-
   const getProductLabel = (slug: string, fallback?: string) => {
     const product = productMap.get(slug);
-    const localizedName = product ? tData(product.name) : productMetaMap.get(slug)?.name ?? fallback ?? slug;
+    const localizedName = product ? tData(product.name) : fallback ?? slug;
     const isBaby =
       slug.toLowerCase().includes("baby") ||
       product?.tags?.some((tag) => tag.toLowerCase() === "baby-only");
@@ -260,19 +253,19 @@ export function BoxCustomizeModal({
   }));
 
   // Calcular estadísticas actuales
-  const slotsUsed = computeSlots(selectedProducts);
   const totalProducts = baseProducts.length;
   const categories = new Set(
     baseProducts.map((item) => {
-      const meta = productMetaMap.get(item.productSlug);
-      return getVisualCategory(item.productSlug, item.name, meta?.category);
+      const product = productMap.get(item.productSlug);
+      const meta = getProductMeta(item.productSlug);
+      return getVisualCategory(item.productSlug, item.name, product?.categoryId ?? meta?.categoryId);
     })
   ).size;
 
   // Calcular precio de la caja
   const priceInfo = useMemo(() => {
-    return computeBoxPrice(box.id, box.price.amount, selectedProducts, selectedVariant);
-  }, [box.id, box.price.amount, selectedProducts, selectedVariant]);
+    return computeBoxPrice(box.id, box.price.amount, selectedProducts, selectedVariant, priceLookup);
+  }, [box.id, box.price.amount, selectedProducts, selectedVariant, priceLookup]);
 
   const totalPrice = priceInfo.price + priceInfo.extras;
 
@@ -320,14 +313,13 @@ export function BoxCustomizeModal({
         return false;
       }
 
-      const meta = productMetaMap.get(product.slug);
-      // También verificar en metadata
-      if (meta?.category && EXCLUDED_CATEGORIES.includes(meta.category)) {
+      const meta = getProductMeta(product.slug);
+      if (meta?.categoryId && EXCLUDED_CATEGORIES.includes(meta.categoryId)) {
         return false;
       }
 
       // Obtener categoría visual del producto
-      const category = getVisualCategory(product.slug, product.name.es, meta?.category);
+      const category = getVisualCategory(product.slug, product.name.es, meta?.categoryId ?? product.categoryId);
       const nameLower = product.name.es.toLowerCase();
 
       // Identificar aromáticas de cocina (no deben estar en fruity)
@@ -446,7 +438,7 @@ export function BoxCustomizeModal({
   const handleAddToCart = async () => {
     setIsAdding(true);
     // Calcular precio final con extras (usando la variante seleccionada)
-    const finalPriceInfo = computeBoxPrice(box.id, box.price.amount, selectedProducts, selectedVariant);
+    const finalPriceInfo = computeBoxPrice(box.id, box.price.amount, selectedProducts, selectedVariant, priceLookup);
     const finalPrice = finalPriceInfo.price + finalPriceInfo.extras;
 
     addItem({
@@ -576,36 +568,13 @@ export function BoxCustomizeModal({
                   {/* Estadísticas */}
                   {/* Estadísticas */}
                   <div className="grid grid-cols-2 gap-3">
-                    {slotBudget ? (
-                      <div className="col-span-2 rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20">
-                        <div className="flex justify-between items-end mb-1">
-                          <p className="text-[0.65rem] uppercase tracking-[0.25em] text-[var(--gd-color-forest)]">{t("box_customize.capacity")}</p>
-                          <p className="text-xs font-bold text-[var(--gd-color-forest)]">
-                            {slotsUsed} / {slotBudget}
-                          </p>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-[var(--color-background-muted)] overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-300 ${slotsUsed > slotBudget ? "bg-red-500" : "bg-[var(--gd-color-leaf)]"
-                              }`}
-                            style={{ width: `${Math.min((slotsUsed / slotBudget) * 100, 100)}%` }}
-                          />
-                        </div>
-                        {slotsUsed > slotBudget && (
-                          <p className="mt-1 text-[10px] text-red-600 font-semibold text-right">
-                            {t("box_customize.exceeded_by")} {slotsUsed - slotBudget}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20">
-                        <p className="text-2xl font-bold text-[var(--gd-color-forest)]">
-                          {totalProducts}
-                        </p>
-                        <p className="text-xs text-[var(--color-muted)]">{t("box_customize.products")}</p>
-                      </div>
-                    )}
-                    <div className={`${slotBudget ? "col-span-2" : ""} rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20`}>
+                    <div className="rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20">
+                      <p className="text-2xl font-bold text-[var(--gd-color-forest)]">
+                        {totalProducts}
+                      </p>
+                      <p className="text-xs text-[var(--color-muted)]">{t("box_customize.products")}</p>
+                    </div>
+                    <div className="rounded-lg bg-white/60 p-3 border border-[var(--gd-color-leaf)]/20">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">🧺</span>
                         <div>
