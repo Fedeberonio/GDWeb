@@ -10,15 +10,11 @@ import { BoxesGrid } from "./_components/boxes-grid";
 import { HowItWorksAccordion } from "./_components/how-it-works-accordion";
 import { UnifiedCatalogSection } from "./_components/unified-catalog-section";
 import { HomeSections } from "./_components/home-sections";
-import boxRules from "@/data/boxRules.json";
-import productMetadata from "@/data/productMetadata.json";
-import { fetchBoxes, fetchProductCategories, fetchProducts } from "@/modules/catalog/api";
+import { fetchBoxRules, fetchBoxes, fetchProductCategories, fetchProducts } from "@/modules/catalog/api";
 
 export const dynamic = "force-dynamic";
 
-const productMap = new Map(productMetadata.map((item) => [item.slug, item]));
-
-const slugToRuleKey: Record<string, keyof typeof boxRules> = {
+const slugToRuleKey: Record<string, string> = {
   "caribbean-fresh-pack": "GD-CAJA-001",
   "island-weekssential": "GD-CAJA-002",
   "allgreenxclusive": "GD-CAJA-003",
@@ -31,11 +27,15 @@ const slugToRuleKey: Record<string, keyof typeof boxRules> = {
 };
 
 export default async function HomePage() {
-  const [categories, boxes, products] = await Promise.all([
+  const [categories, boxes, products, boxRules] = await Promise.all([
     fetchProductCategories(),
     fetchBoxes(),
     fetchProducts(),
+    fetchBoxRules(),
   ]);
+
+  const productMap = new Map(products.map((product) => [product.slug, product]));
+  const rulesById = new Map(boxRules.map((rule) => [rule.id, rule]));
 
   const categoriesWithCounts = categories.map((category) => {
     if (category.id === "cajas") {
@@ -60,14 +60,14 @@ export default async function HomePage() {
     if (!ruleKey && box.id === "box-2") ruleKey = "GD-CAJA-002";
     if (!ruleKey && box.id === "box-3") ruleKey = "GD-CAJA-003";
 
-    const rule = ruleKey ? (boxRules as Record<string, typeof boxRules[keyof typeof boxRules]>)[ruleKey] : undefined;
+    const rule = ruleKey ? rulesById.get(ruleKey) : undefined;
     return {
       box,
       rule,
       baseContents:
         rule?.baseContents.map((content) => ({
           ...content,
-          name: productMap.get(content.productSlug)?.name ?? content.productSlug,
+          name: productMap.get(content.productSlug)?.name?.es ?? content.productSlug,
         })) ?? [],
     };
   });
@@ -82,7 +82,7 @@ export default async function HomePage() {
         <section id="cajas" className="relative bg-gradient-to-b from-white via-[var(--gd-color-sprout)]/20 to-white py-3 md:py-4 overflow-hidden">
           <Container className="relative z-10 space-y-3">
             {/* Grid de Cajas */}
-            <BoxesGrid boxes={boxes} prebuiltBoxes={prebuiltBoxes} products={products} />
+            <BoxesGrid boxes={boxes} prebuiltBoxes={prebuiltBoxes} products={products} boxRules={boxRules} />
 
             {/* Banner y Pasos (Interactivos) */}
             <HowItWorksAccordion />

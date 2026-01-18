@@ -2,21 +2,22 @@
 
 import Image from "next/image";
 import { useAuth } from "@/modules/auth/context";
-import { useUser } from "@/modules/user/context";
 
 export function UserAuthButton() {
-  const { user, loading, loginWithGoogle, logout } = useAuth();
-  const { profile } = useUser();
+  const { user, loading, logout } = useAuth();
 
   const handleLogin = () => {
     try {
       if (typeof window !== "undefined") {
-        window.sessionStorage.setItem("gd-show-profile-modal", "true");
+        window.sessionStorage.setItem("gd-show-auth-modal", "true");
+        window.sessionStorage.setItem("gd-auth-mode", "login");
       }
     } catch {
       // ignore storage errors
     }
-    void loginWithGoogle();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("gd-auth-modal-open"));
+    }
   };
 
   if (loading) {

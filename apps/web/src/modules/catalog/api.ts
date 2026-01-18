@@ -1,5 +1,34 @@
 import { headers } from "next/headers";
-import type { Box, Product, ProductCategory } from "./types";
+
+import { staticBoxes, staticCategories, staticProducts } from "./static-data";
+import type { Box, BoxRule, Product, ProductCategory } from "./types";
+
+function getStaticFallback(path: string) {
+  switch (path) {
+    case "/catalog/categories":
+      return staticCategories;
+    case "/catalog/boxes":
+      return staticBoxes;
+    case "/catalog/products":
+      return staticProducts;
+    default:
+      return null;
+  }
+}
+
+function getEmptyFallback(path: string) {
+  return getStaticFallback(path) ? [] : null;
+}
+
+function shouldUseStaticFallback() {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+  return (
+    process.env.NODE_ENV !== "production" ||
+    apiBase === "" ||
+    apiBase.includes("localhost") ||
+    apiBase.includes("mock")
+  );
+}
 
 // Función helper para usar rutas locales de Next.js API
 async function fetchLocal<T>(path: string): Promise<T> {
@@ -23,16 +52,32 @@ async function fetchLocal<T>(path: string): Promise<T> {
 
   const url = `${baseUrl}/api${path}`;
 
-  const response = await fetch(url, {
-    cache: "force-cache",
-  });
+  const allowStaticFallback = shouldUseStaticFallback();
+  const fallback = allowStaticFallback ? getStaticFallback(path) : null;
+  const emptyFallback = getEmptyFallback(path);
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${path}: ${response.statusText}`);
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${path}: ${response.statusText}`);
+    }
+
+    const json = await response.json();
+    return json.data;
+  } catch (error) {
+    if (fallback !== null) {
+      console.warn(`Falling back to static catalog data for ${path}.`, error);
+      return fallback as T;
+    }
+    if (emptyFallback !== null) {
+      console.warn(`Catalog API unavailable for ${path}. Returning empty data.`, error);
+      return emptyFallback as T;
+    }
+    throw error;
   }
-
-  const json = await response.json();
-  return json.data;
 }
 
 export async function fetchProductCategories() {
@@ -45,4 +90,8 @@ export async function fetchBoxes() {
 
 export async function fetchProducts() {
   return fetchLocal<Product[]>("/catalog/products");
+}
+
+export async function fetchBoxRules() {
+  return fetchLocal<BoxRule[]>("/catalog/box-rules");
 }

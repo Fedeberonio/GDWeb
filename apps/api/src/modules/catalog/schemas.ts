@@ -35,6 +35,13 @@ export const productSchema = z.object({
   image: z.string().min(1).optional(),
   tags: z.array(z.string()).default([]),
   isFeatured: z.boolean().default(false),
+  metadata: z
+    .object({
+      slotValue: z.number().int().positive().optional(),
+      wholesaleCost: z.number().nonnegative().optional(),
+    })
+    .passthrough()
+    .optional(),
   nutrition: z
     .object({
       vegan: z.boolean().optional(),
@@ -86,9 +93,60 @@ export const boxSchema = z.object({
   variants: z.array(boxVariantSchema),
 });
 
+export const boxRuleSchema = z.object({
+  id: z.string().min(1),
+  displayName: z.string().min(1),
+  slotBudget: z.number().int().positive(),
+  targetWeightKg: z.number().positive(),
+  minMargin: z.number().nonnegative().optional(),
+  categoryBudget: z.record(
+    z.string(),
+    z.object({
+      min: z.number().int().nonnegative(),
+      max: z.number().int().nonnegative(),
+    }),
+  ),
+  baseContents: z.array(
+    z.object({
+      productSlug: z.string().min(1),
+      quantity: z.number().int().positive(),
+    }),
+  ),
+  variantContents: z
+    .object({
+      mix: z
+        .array(
+          z.object({
+            productSlug: z.string().min(1),
+            quantity: z.number().int().positive(),
+          }),
+        )
+        .optional(),
+      fruity: z
+        .array(
+          z.object({
+            productSlug: z.string().min(1),
+            quantity: z.number().int().positive(),
+          }),
+        )
+        .optional(),
+      veggie: z
+        .array(
+          z.object({
+            productSlug: z.string().min(1),
+            quantity: z.number().int().positive(),
+          }),
+        )
+        .optional(),
+    })
+    .partial()
+    .optional(),
+});
+
 export type LocaleCode = z.infer<typeof localeSchema>;
 export type LocalizedString = z.infer<typeof localizedStringSchema>;
 export type ProductCategory = z.infer<typeof productCategorySchema>;
 export type Product = z.infer<typeof productSchema>;
 export type BoxVariant = z.infer<typeof boxVariantSchema>;
 export type Box = z.infer<typeof boxSchema>;
+export type BoxRule = z.infer<typeof boxRuleSchema>;

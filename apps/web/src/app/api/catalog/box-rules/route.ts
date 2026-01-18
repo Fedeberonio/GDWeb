@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { getClientEnv } from "@/lib/config/env";
-import { staticBoxes } from "@/modules/catalog/static-data";
 
 export async function GET() {
   try {
@@ -9,18 +8,13 @@ export async function GET() {
     const apiBase = NEXT_PUBLIC_API_BASE_URL ?? "";
     const hasRemoteApi =
       apiBase !== "" && !apiBase.includes("localhost") && !apiBase.includes("mock");
-    const allowStaticFallback = process.env.NODE_ENV !== "production";
 
-    // Si no hay URL de API configurada, usar datos estáticos
     if (!hasRemoteApi) {
-      if (allowStaticFallback) {
-        return NextResponse.json({ data: staticBoxes });
-      }
-      console.warn("Catalog API base URL not configured for boxes.");
+      console.warn("Catalog API base URL not configured for box rules.");
       return NextResponse.json({ data: [] });
     }
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/catalog/boxes`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/catalog/box-rules`, {
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
     });
@@ -32,11 +26,7 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("Failed to fetch boxes from API, using static data:", error);
-      return NextResponse.json({ data: staticBoxes });
-    }
-    console.warn("Failed to fetch boxes from API, returning empty data:", error);
+    console.warn("Failed to fetch box rules from API, returning empty data:", error);
     return NextResponse.json({ data: [] });
   }
 }

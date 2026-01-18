@@ -7,7 +7,6 @@ import { createPortal } from "react-dom";
 import type { Product } from "@/modules/catalog/types";
 import { getProductMeta } from "@/modules/box-builder/utils";
 import { ProductSeasonalBadge } from "../product-seasonal-badge";
-import productMetadata from "@/data/productMetadata.json";
 import { getVisualCategory, type VariantType } from "../box-selector/helpers";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
@@ -220,22 +219,37 @@ export function SwapProductModal({
   // Render using Portal to escape parent stacking contexts
   if (typeof window === "undefined") return null;
 
+  const priceLookup = useMemo(
+    () => new Map(availableProducts.map((product) => [product.slug, product.price?.amount ?? 0])),
+    [availableProducts],
+  );
+  const resolveUnitPrice = useCallback(
+    (slug: string) => {
+      const lookup = priceLookup.get(slug);
+      if (typeof lookup === "number" && Number.isFinite(lookup)) {
+        return lookup;
+      }
+      const meta = getProductMeta(slug);
+      return meta?.wholesaleCost ? meta.wholesaleCost * 1.5 : 0;
+    },
+    [priceLookup],
+  );
+
   const productMeta = getProductMeta(productToSwap.slug);
-  const currentCategory = productMeta?.category;
+  const currentCategory = productMeta?.categoryId;
   const swapTargets = useMemo(() => {
     const oldMeta = getProductMeta(productToSwap.slug);
     const targetWeight = (oldMeta?.weightKg ?? productToSwap.weightKg) * swapQuantity;
-    const targetPrice =
-      (oldMeta?.wholesaleCost ? oldMeta.wholesaleCost * 1.5 : 0) * swapQuantity;
+    const targetPrice = resolveUnitPrice(productToSwap.slug) * swapQuantity;
     const targetSlots = (oldMeta?.slotValue ?? productToSwap.slotValue) * swapQuantity;
     const currentSlotsWithoutSwap = slotsUsed - targetSlots;
     return { targetWeight, targetPrice, targetSlots, currentSlotsWithoutSwap };
-  }, [productToSwap, slotsUsed, swapQuantity]);
+  }, [productToSwap, resolveUnitPrice, slotsUsed, swapQuantity]);
 
   const classifyProduct = useCallback((product: Product) => {
-    const meta = productMetadata.find((pm) => pm.slug === product.slug);
-    const visualCategory = getVisualCategory(product.slug, product.name.es, meta?.category || product.categoryId);
-    const categoryHint = (meta?.category || product.categoryId || "").toLowerCase();
+    const meta = getProductMeta(product.slug);
+    const visualCategory = getVisualCategory(product.slug, product.name.es, meta?.categoryId || product.categoryId);
+    const categoryHint = (meta?.categoryId || product.categoryId || "").toLowerCase();
 
     const isFruit =
       visualCategory === "fruit_large" ||
@@ -321,8 +335,8 @@ export function SwapProductModal({
     const baseProducts = availableProducts.filter((p) => {
       if (p.slug === productToSwap.slug) return false;
       if (selectedProducts[p.slug]) return false;
-      const meta = productMetadata.find((pm) => pm.slug === p.slug);
-      const categoryId = (meta?.category || p.categoryId || "").toLowerCase();
+      const meta = getProductMeta(p.slug);
+      const categoryId = (meta?.categoryId || p.categoryId || "").toLowerCase();
       if (EXCLUDED_CATEGORIES.includes(categoryId)) return false;
       if (isBaby(p) && !allowBaby) return false; // Ocultar baby salvo Box 1 o swaps entre baby
 
@@ -341,7 +355,7 @@ export function SwapProductModal({
     const targetCategory = getVisualCategory(
       productToSwap.slug,
       productToSwap.name,
-      currentCategory || productMeta?.category
+      currentCategory || productMeta?.categoryId
     );
 
     const scored = baseProducts
@@ -350,8 +364,8 @@ export function SwapProductModal({
         const classification = classifyProduct(p);
         const weight = meta?.weightKg ?? 0.5;
         const slotValue = meta?.slotValue ?? 1;
-        const price = meta?.wholesaleCost ? meta.wholesaleCost * 1.5 : p.price?.amount ?? 0;
-        const category = meta?.category || classification.visualCategory;
+        const price = resolveUnitPrice(p.slug);
+        const category = meta?.categoryId || classification.visualCategory;
         const recommendation = computeRecommendedQuantity(weight, slotValue, price);
 
         let score = 0;
@@ -372,7 +386,7 @@ export function SwapProductModal({
       .sort((a, b) => b.score - a.score);
 
     return scored;
-  }, [availableProducts, productToSwap, selectedProducts, currentCategory, slotBudget, variant, productMeta?.category, swapTargets, classifyProduct, computeRecommendedQuantity]);
+  }, [availableProducts, productToSwap, selectedProducts, currentCategory, slotBudget, variant, productMeta?.categoryId, swapTargets, classifyProduct, computeRecommendedQuantity, resolveUnitPrice]);
 
   // Filtrar por búsqueda y categoría
   const filteredProducts = useMemo(() => {
@@ -427,7 +441,7 @@ export function SwapProductModal({
     const meta = getProductMeta(product.slug);
     const slotValue = meta?.slotValue ?? 1;
     const weight = meta?.weightKg ?? 0.5;
-    const price = meta?.wholesaleCost ? meta.wholesaleCost * 1.5 : product.price?.amount ?? 0;
+    const price = resolveUnitPrice(product.slug);
 
     const desiredQuantity = Math.max(1, Math.min(quantityHint ?? swapQuantity, productToSwap.quantity));
     const recommendation = computeRecommendedQuantity(weight, slotValue, price);
@@ -629,7 +643,7 @@ export function SwapProductModal({
                 const isSuggested =
                   (item.category === currentCategory ||
                     item.visualCategory === currentCategory ||
-                    item.visualCategory === getVisualCategory(productToSwap.slug, productToSwap.name, currentCategory || productMeta?.category)) &&
+                    item.visualCategory === getVisualCategory(productToSwap.slug, productToSwap.name, currentCategory || productMeta?.categoryId)) &&
                   item.score >= 10;
                 const validation = getProductValidation(product, item.recommendation?.quantity);
                 return (

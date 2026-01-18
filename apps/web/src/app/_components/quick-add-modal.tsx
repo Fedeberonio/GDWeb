@@ -4,15 +4,16 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useCart } from "@/modules/cart/context";
-import type { Box } from "@/modules/catalog/types";
+import type { Box, BoxRule, Product } from "@/modules/catalog/types";
 import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selector/helpers";
-import productMetadata from "@/data/productMetadata.json";
 import { ProductImageFallback } from "./product-image-fallback";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
 type QuickAddModalProps = {
   box: Box;
   baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
+  boxRule?: BoxRule;
+  productMap?: Map<string, Product>;
   boxImage?: string;
   dimensions?: string;
   weight?: string;
@@ -20,7 +21,17 @@ type QuickAddModalProps = {
   onCustomize: () => void;
 };
 
-export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimensions, weight, onClose, onCustomize }: QuickAddModalProps) {
+export function QuickAddModal({
+  box,
+  baseContents,
+  boxRule,
+  productMap,
+  boxImage: propBoxImage,
+  dimensions,
+  weight,
+  onClose,
+  onCustomize,
+}: QuickAddModalProps) {
   const { addItem } = useCart();
   const { locale, t } = useTranslation();
   const [selectedVariant, setSelectedVariant] = useState<VariantType>("mix");
@@ -36,12 +47,18 @@ export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimen
 
   // Filtrar contenido según variante
   const getFilteredContents = (variant: VariantType) => {
+    if (boxRule?.variantContents?.[variant]?.length) {
+      return boxRule.variantContents[variant]!.map((item) => ({
+        ...item,
+        name: productMap?.get(item.productSlug)?.name?.es ?? item.productSlug,
+      }));
+    }
     if (variant === "mix") {
       return baseContents;
     } else if (variant === "fruity") {
       return baseContents.filter((item) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
-        const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+        const product = productMap?.get(item.productSlug);
+        const category = getVisualCategory(item.productSlug, item.name, product?.categoryId);
         return (
           category === "fruit_large" ||
           category === "fruit_small" ||
@@ -51,8 +68,8 @@ export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimen
       });
     } else {
       return baseContents.filter((item) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
-        const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+        const product = productMap?.get(item.productSlug);
+        const category = getVisualCategory(item.productSlug, item.name, product?.categoryId);
         return (
           category === "leafy" ||
           category === "root" ||
@@ -70,8 +87,8 @@ export function QuickAddModal({ box, baseContents, boxImage: propBoxImage, dimen
   const totalProducts = filteredContents.length;
   const categories = new Set(
     filteredContents.map((item) => {
-      const meta = productMetadata.find((p) => p.slug === item.productSlug);
-      return getVisualCategory(item.productSlug, item.name, meta?.category);
+      const product = productMap?.get(item.productSlug);
+      return getVisualCategory(item.productSlug, item.name, product?.categoryId);
     })
   ).size;
 

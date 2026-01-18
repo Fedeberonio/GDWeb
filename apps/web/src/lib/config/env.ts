@@ -22,12 +22,6 @@ let cachedEnv: ClientEnv | null = null;
 export function getClientEnv(): ClientEnv {
   if (cachedEnv) return cachedEnv;
 
-  console.log("DEBUG ENV VARS:", {
-    API_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-    FIREBASE_PROJECT: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    ADMIN_EMAILS: process.env.NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS,
-  });
-
   const runtimeEnv = {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

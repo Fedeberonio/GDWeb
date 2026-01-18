@@ -3,10 +3,12 @@ import { Router } from "express";
 import { requireAdminSession, type AdminRequest } from "../../middleware/requireAdminSession";
 import {
   listBoxesForAdmin,
+  listBoxRulesForAdmin,
   listCatalogHistoryEntries,
   listProductsForAdmin,
   createProduct,
   updateBoxById,
+  updateBoxRuleById,
   updateProductById,
 } from "./service";
 
@@ -81,6 +83,29 @@ export function createAdminCatalogRouter() {
         res.status(404).json({ error: "Box not found" });
         return;
       }
+      res.json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get("/box-rules", async (_req, res, next) => {
+    try {
+      const rules = await listBoxRulesForAdmin();
+      res.json({ data: rules });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.put("/box-rules/:id", async (req, res, next) => {
+    try {
+      const adminUser = (req as AdminRequest).adminUser;
+      const ruleId = decodeURIComponent(req.params.id);
+      const updated = await updateBoxRuleById(ruleId, req.body, {
+        actorEmail: adminUser?.email ?? null,
+        actorUid: adminUser?.uid ?? null,
+      });
       res.json({ data: updated });
     } catch (error) {
       next(error);

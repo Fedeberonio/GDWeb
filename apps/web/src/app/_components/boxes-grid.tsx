@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import type { Box } from "@/modules/catalog/types";
 import { useScrollFadeStagger } from "./use-scroll-fade";
 import { BoxVariantsDisplay } from "./box-variants-display";
 import { QuickAddModal } from "./quick-add-modal";
 import { BoxCustomizeModal } from "./box-customize-modal";
-import { getBoxRule } from "@/modules/box-builder/utils";
-import type { Product } from "@/modules/catalog/types";
+import type { BoxRule, Product } from "@/modules/catalog/types";
 import type { VariantType } from "./box-selector/helpers";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
@@ -16,6 +15,7 @@ type BoxesGridProps = {
   boxes: Box[];
   prebuiltBoxes: Array<{
     box: Box;
+    rule?: BoxRule;
     baseContents: Array<{
       productSlug: string;
       quantity: number;
@@ -23,6 +23,7 @@ type BoxesGridProps = {
     }>;
   }>;
   products: Product[];
+  boxRules: BoxRule[];
 };
 
 const BOX_SKU_MAP: Record<string, string> = {
@@ -53,11 +54,13 @@ const BOX_DETAILS_BY_SKU: Record<string, { dimensions?: string; weight?: string 
   },
 };
 
-export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
+export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGridProps) {
   const { t, tData } = useTranslation();
   const [quickAddBox, setQuickAddBox] = useState<Box | null>(null);
   const [customizeBox, setCustomizeBox] = useState<Box | null>(null);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, VariantType>>({});
+  const productMap = useMemo(() => new Map(products.map((product) => [product.slug, product])), [products]);
+  const rulesById = useMemo(() => new Map(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
   const { getItemProps } = useScrollFadeStagger<HTMLDivElement>(boxes.length, {
     threshold: 0.1,
     rootMargin: "50px",
@@ -230,11 +233,15 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
                       const baseContents = boxData?.baseContents ?? [];
                       if (baseContents.length === 0) return null;
 
+                      const ruleId = BOX_SKU_MAP[box.id] || BOX_SKU_MAP[box.slug];
+                      const rule = ruleId ? rulesById.get(ruleId) : undefined;
+
                       return (
                         <div className="opacity-0 translate-y-4 transition-all duration-500 delay-150 group-hover:opacity-100 group-hover:translate-y-0">
                           <BoxVariantsDisplay
                             baseContents={baseContents}
-                            boxId={box.id}
+                            boxRule={rule}
+                            productMap={productMap}
                             compact={true}
                             initialVariant={selectedVariants[box.id]}
                             onVariantSelect={(variant) =>
@@ -310,6 +317,8 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
       {quickAddBox && (() => {
         const boxData = prebuiltBoxes.find((pb) => pb.box.id === quickAddBox.id);
         const baseContents = boxData?.baseContents ?? [];
+        const ruleId = BOX_SKU_MAP[quickAddBox.slug] || BOX_SKU_MAP[quickAddBox.id];
+        const rule = ruleId ? rulesById.get(ruleId) : boxData?.rule;
 
         // Obtener la imagen de la caja (misma que en la tarjeta)
         const productImages: Record<string, string> = {
@@ -338,6 +347,8 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
           <QuickAddModal
             box={quickAddBox}
             baseContents={baseContents}
+            boxRule={rule}
+            productMap={productMap}
             boxImage={boxImage}
             dimensions={boxDetails?.dimensions}
             weight={boxDetails?.weight}
@@ -354,7 +365,8 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
       {customizeBox && (() => {
         const boxData = prebuiltBoxes.find((pb) => pb.box.id === customizeBox.id);
         const baseContents = boxData?.baseContents ?? [];
-        const rule = getBoxRule(customizeBox.id);
+        const ruleId = BOX_SKU_MAP[customizeBox.slug] || BOX_SKU_MAP[customizeBox.id];
+        const rule = ruleId ? rulesById.get(ruleId) : boxData?.rule;
 
         // Obtener la imagen de la caja (misma que en la tarjeta)
         const productImages: Record<string, string> = {
@@ -383,6 +395,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
           <BoxCustomizeModal
             box={customizeBox}
             baseContents={baseContents}
+            boxRule={rule}
             boxImage={boxImage}
             dimensions={boxDetails?.dimensions}
             weight={boxDetails?.weight}

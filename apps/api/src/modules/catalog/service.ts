@@ -3,18 +3,22 @@ import { z } from "zod";
 import { boxes as staticBoxes, productCategories as staticCategories } from "./mock-data";
 import {
   getBoxById,
+  getBoxRuleById,
   getProductById,
   listAllBoxes,
   listAllProducts,
+  listBoxRules,
   listBoxes,
   listCategories,
   listProducts,
   saveBox,
+  saveBoxRule,
   saveProduct,
 } from "./repository";
 import {
   boxSchema,
   boxVariantSchema,
+  boxRuleSchema,
   localizedStringSchema,
   priceSchema,
   productCategorySchema,
@@ -87,6 +91,7 @@ const productUpdateSchema = z
     nutrition: nutritionUpdateSchema.optional(),
     logistics: logisticsUpdateSchema.optional(),
     categoryId: z.string().min(1).optional(),
+    metadata: productSchema.shape.metadata.optional(),
   })
   .partial();
 
@@ -105,6 +110,17 @@ const boxUpdateSchema = z
 function mergeLocalized(base: Record<string, string> | undefined, update?: Partial<Record<string, string>>) {
   if (!update) return base;
   return { ...(base ?? {}), ...update } as Record<string, string>;
+}
+
+function mergeMetadata(
+  base: NonNullable<z.infer<typeof productSchema>["metadata"]> | undefined,
+  update?: z.infer<typeof productUpdateSchema>["metadata"],
+) {
+  if (!update) return base;
+  return {
+    ...(base ?? {}),
+    ...update,
+  };
 }
 
 function mergeProduct(existing: z.infer<typeof productSchema>, updates: z.infer<typeof productUpdateSchema>) {
@@ -134,6 +150,7 @@ function mergeProduct(existing: z.infer<typeof productSchema>, updates: z.infer<
             : existing.logistics?.storage,
         }
       : existing.logistics,
+    metadata: mergeMetadata(existing.metadata, updates.metadata),
   } satisfies Record<string, unknown>;
 
   return productSchema.parse(merged);
@@ -165,13 +182,64 @@ export async function listBoxesForAdmin() {
   return boxes.map((box) => boxSchema.parse(box));
 }
 
+export async function listBoxRulesForAdmin() {
+  const rules = await listBoxRules();
+  return rules.map((rule) => boxRuleSchema.parse(rule));
+}
+
+export async function listBoxRulesPublic() {
+  const rules = await listBoxRules();
+  return rules.map((rule) => boxRuleSchema.parse(rule));
+}
+
+export type ProductMetaSnapshot = {
+  slug: string;
+  name: string;
+  categoryId: string;
+  weightKg?: number;
+  slotValue?: number;
+  wholesaleCost?: number;
+  tags: string[];
+};
+
+export async function getProductMetaMap(): Promise<Record<string, ProductMetaSnapshot>> {
+  const products = await listAllProducts();
+  return products.reduce<Record<string, ProductMetaSnapshot>>((acc, product) => {
+    const parsed = productSchema.parse(product);
+    acc[parsed.slug] = {
+      slug: parsed.slug,
+      name: parsed.name.es,
+      categoryId: parsed.categoryId,
+      weightKg: parsed.logistics?.weightKg,
+      slotValue: parsed.metadata?.slotValue,
+      wholesaleCost: parsed.metadata?.wholesaleCost,
+      tags: parsed.tags,
+    };
+    return acc;
+  }, {});
+}
+
+export async function getBoxRulesMap(): Promise<Record<string, z.infer<typeof boxRuleSchema>>> {
+  const rules = await listBoxRules();
+  return rules.reduce<Record<string, z.infer<typeof boxRuleSchema>>>((acc, rule) => {
+    const parsed = boxRuleSchema.parse(rule);
+    acc[parsed.id] = parsed;
+    return acc;
+  }, {});
+}
+
 export type CatalogHistoryEntry = CatalogChange;
 
 export async function listCatalogHistoryEntries(limit = 100): Promise<CatalogHistoryEntry[]> {
   const entries = await listCatalogHistory(limit);
 
   return entries.map((entry) => {
-    const parser = entry.entityType === "product" ? productSchema : boxSchema;
+    const parser =
+      entry.entityType === "product"
+        ? productSchema
+        : entry.entityType === "box_rule"
+          ? boxRuleSchema
+          : boxSchema;
     return {
       ...entry,
       before: parser.parse(entry.before),
@@ -223,6 +291,7 @@ const productCreationSchema = z.object({
   tags: z.array(z.string()).optional(),
   image: z.string().min(1).optional(),
   isFeatured: z.boolean().optional(),
+  metadata: productSchema.shape.metadata.optional(),
 });
 
 export async function createProduct(payload: unknown, context: CatalogChangeContext = {}) {
@@ -244,11 +313,35 @@ export async function createProduct(payload: unknown, context: CatalogChangeCont
     isFeatured: parsed.isFeatured ?? false,
     image: parsed.image,
     sku: parsed.slug,
+    metadata: parsed.metadata,
   };
 
   const product = productSchema.parse(productPayload);
   await saveProduct(product);
   await recordCatalogChange("product", product, product, context);
   return product;
+}
+
+const boxRuleUpdateSchema = boxRuleSchema.partial().extend({
+  id: z.string().min(1),
+});
+
+export async function updateBoxRuleById(id: string, payload: unknown, context: CatalogChangeContext = {}) {
+  const existing = await getBoxRuleById(id);
+  const parsedExisting = existing ? boxRuleSchema.parse(existing) : null;
+  const updates = boxRuleUpdateSchema.parse({ ...(payload as Record<string, unknown>), id });
+  const merged = boxRuleSchema.parse({
+    ...(parsedExisting ?? {}),
+    ...updates,
+    id,
+  });
+
+  await saveBoxRule(merged);
+  if (parsedExisting) {
+    await recordCatalogChange("box_rule", parsedExisting, merged, context);
+  } else {
+    await recordCatalogChange("box_rule", merged, merged, context);
+  }
+  return merged;
 }
 // @ts-nocheck

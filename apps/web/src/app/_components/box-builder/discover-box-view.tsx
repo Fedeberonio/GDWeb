@@ -3,11 +3,11 @@
 import Image from "next/image";
 import { useMemo, useState, useEffect } from "react";
 import { getBoxRule, getProductMeta } from "@/modules/box-builder/utils";
-import productMetadata from "@/data/productMetadata.json";
 import type { Box } from "@/modules/catalog/types";
 import { getVariantInfo, type VariantType } from "../box-selector/helpers";
 import { ProductImageFallback } from "../product-image-fallback";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { useCatalog } from "@/modules/catalog/context";
 
 type DiscoverBoxViewProps = {
   box: Box;
@@ -91,8 +91,10 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
   // Expandir todas las categorías por defecto
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const { t, tData, locale } = useTranslation();
+  const { productMap, boxRules } = useCatalog();
   const ruleKey = resolveRuleKey(box) || box.id;
-  const rule = getBoxRule(ruleKey);
+  const rulesMap = useMemo(() => Object.fromEntries(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
+  const rule = useMemo(() => getBoxRule(ruleKey, rulesMap), [ruleKey, rulesMap]);
   const baseContents = useMemo(() => rule?.baseContents ?? [], [rule]);
   const variantInfo = getVariantInfo(variant, locale);
 
@@ -103,10 +105,9 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
     } else if (variant === "fruity") {
       // Fruity: solo frutas tropicales y cítricos, SIN aromáticas de cocina (ajo, cebolla, etc.)
       return baseContents.filter((item: { productSlug: string; quantity: number }) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
-        const name = meta?.name ?? item.productSlug;
-        const productMeta = getProductMeta(item.productSlug);
-        const category = getVisualCategory(item.productSlug, name, productMeta?.category);
+        const product = productMap.get(item.productSlug);
+        const name = product?.name.es ?? item.productSlug;
+        const category = getVisualCategory(item.productSlug, name, product?.categoryId);
         const slugLower = item.productSlug.toLowerCase();
         const nameLower = name.toLowerCase();
         
@@ -134,10 +135,9 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
     } else {
       // veggie
       return baseContents.filter((item: { productSlug: string; quantity: number }) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
-        const name = meta?.name ?? item.productSlug;
-        const productMeta = getProductMeta(item.productSlug);
-        const category = getVisualCategory(item.productSlug, name, productMeta?.category);
+        const product = productMap.get(item.productSlug);
+        const name = product?.name.es ?? item.productSlug;
+        const category = getVisualCategory(item.productSlug, name, product?.categoryId);
         return (
           category === "leafy" ||
           category === "root" ||
@@ -146,23 +146,23 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
         );
       });
     }
-  }, [baseContents, variant]);
+  }, [baseContents, variant, productMap]);
 
   const baseItems = useMemo<BaseItem[]>(() => {
     return filteredContents.map((item: { productSlug: string; quantity: number }) => {
-      const meta = productMetadata.find((p) => p.slug === item.productSlug);
+      const product = productMap.get(item.productSlug);
       const productMeta = getProductMeta(item.productSlug);
-      const name = meta?.name ?? item.productSlug;
+      const name = product?.name.es ?? productMeta?.name ?? item.productSlug;
       
       return {
         slug: item.productSlug,
         name,
         quantity: item.quantity,
-        category: getVisualCategory(item.productSlug, name, productMeta?.category),
+        category: getVisualCategory(item.productSlug, name, product?.categoryId),
         image: `/images/products/${item.productSlug}.jpg`,
       };
     });
-  }, [filteredContents]);
+  }, [filteredContents, productMap]);
 
   // Agrupar productos por categoría
   const itemsByCategory = useMemo(() => {
@@ -188,8 +188,9 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
   const totalItems = baseItems.reduce((sum, item) => sum + item.quantity, 0);
   const categoryCount = itemsByCategory.size;
   const totalWeight = baseItems.reduce((sum, item) => {
+    const product = productMap.get(item.slug);
     const meta = getProductMeta(item.slug);
-    const weight = meta?.weightKg ?? 0.5;
+    const weight = product?.logistics?.weightKg ?? meta?.weightKg ?? 0.5;
     return sum + (weight * item.quantity);
   }, 0);
 

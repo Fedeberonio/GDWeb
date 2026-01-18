@@ -5,14 +5,10 @@ import { useCart } from "@/modules/cart/context";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "@/modules/i18n/use-translation";
-import productMetadata from "@/data/productMetadata.json";
-
-const productNameMap = new Map(productMetadata.map((item) => [item.slug, item.name]));
-
-const resolvePreferenceLabel = (value: string) => productNameMap.get(value) ?? value;
+import { useCatalog } from "@/modules/catalog/context";
 
 const resolveVariantKey = (variant?: string, mix?: string) => {
   if (variant === "fruity" || variant === "veggie" || variant === "mix") return variant;
@@ -33,7 +29,15 @@ type CartDrawerProps = {
 };
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { t } = useTranslation();
+  const { t, tData } = useTranslation();
+  const { productMap } = useCatalog();
+  const resolvePreferenceLabel = useCallback(
+    (value: string) => {
+      const product = productMap.get(value);
+      return product ? tData(product.name) : value;
+    },
+    [productMap, tData],
+  );
   const { items, metrics, removeItem, updateQuantity, clear } = useCart();
   const total = metrics.totalCost;
   const boxItems = items.filter((item) => item.type === "box" && item.configuration);

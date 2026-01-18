@@ -17,6 +17,8 @@
     "import:catalog": "ts-node-dev --transpile-only src/scripts/importCatalogFromExcel.ts",
     "import:new-csv": "ts-node-dev --transpile-only src/scripts/importFromNewCSV.ts",
     "import:box-contents": "ts-node-dev --transpile-only src/scripts/importBoxContents.ts",
+    "import:box-rules": "ts-node-dev --transpile-only src/scripts/importBoxRulesFromJson.ts",
+    "import:product-metadata": "ts-node-dev --transpile-only src/scripts/importProductMetadataToCatalog.ts",
     "export:metadata": "ts-node-dev --transpile-only src/scripts/exportProductMetadata.ts",
     "test": "echo \"No tests configured\" && exit 0"
   },

@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/modules/i18n/context";
 import { BoxBuilderProvider } from "@/modules/box-builder/context";
 import { CartProvider } from "@/modules/cart/context";
 import { ToastProvider } from "./_components/toast-provider";
+import { CatalogProvider } from "@/modules/catalog/context";
 import type { Locale } from "@/modules/i18n/locales";
 
 type Props = {
@@ -16,12 +17,14 @@ export function Providers({ children, initialLocale }: Props) {
   return (
     <AuthProvider>
       <LanguageProvider initialLocale={initialLocale}>
-        <CartProvider>
-          <BoxBuilderProvider>
-            <ToastProvider />
-            {children}
-          </BoxBuilderProvider>
-        </CartProvider>
+        <CatalogProvider>
+          <CartProvider>
+            <BoxBuilderProvider>
+              <ToastProvider />
+              {children}
+            </BoxBuilderProvider>
+          </CartProvider>
+        </CatalogProvider>
       </LanguageProvider>
     </AuthProvider>
   );

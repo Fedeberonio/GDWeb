@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { getBoxRule, getProductMeta, computeSlots } from "@/modules/box-builder/utils";
-import productMetadata from "@/data/productMetadata.json";
 import type { Box, Product } from "@/modules/catalog/types";
 import { SwapProductModal } from "./swap-product-modal";
 import { ProductImageFallback } from "../product-image-fallback";
+import { useCatalog } from "@/modules/catalog/context";
 
 type BaseContentsDisplayProps = {
   box: Box;
@@ -31,6 +31,7 @@ export function BaseContentsDisplay({
   slotBudget,
   onSwapProduct,
 }: BaseContentsDisplayProps) {
+  const { productMap, boxRules } = useCatalog();
   const [swapModalOpen, setSwapModalOpen] = useState(false);
   const [productToSwap, setProductToSwap] = useState<{
     slug: string;
@@ -40,33 +41,37 @@ export function BaseContentsDisplay({
     weightKg: number;
   } | null>(null);
 
-  const rule = getBoxRule(box.id);
+  const rulesMap = useMemo(() => Object.fromEntries(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
+  const rule = useMemo(() => getBoxRule(box.id, rulesMap), [box.id, rulesMap]);
   const baseContents = useMemo(() => rule?.baseContents ?? [], [rule]);
   const slotsUsed = computeSlots(selectedProducts);
 
   const baseItems = useMemo<BaseItem[]>(() => {
     const formatName = (slug: string, name: string) => {
-      const meta = productMetadata.find((p) => p.slug === slug) as any;
-      const tags = (meta && 'tags' in meta && Array.isArray(meta.tags)) ? meta.tags : [];
+      const product = productMap.get(slug);
+      const meta = getProductMeta(slug);
+      const tags = product?.tags ?? meta?.tags ?? [];
       const isBaby = slug.toLowerCase().includes("baby") || tags.includes("baby-only");
       return isBaby ? `${name} (baby)` : name;
     };
     return baseContents.map((item: { productSlug: string; quantity: number }) => {
-      const meta = productMetadata.find((p) => p.slug === item.productSlug);
+      const product = productMap.get(item.productSlug);
+      const meta = getProductMeta(item.productSlug);
+      const productName = product?.name.es ?? meta?.name ?? item.productSlug;
       const currentQty = selectedProducts[item.productSlug] ?? 0;
       const isRemoved = currentQty === 0;
       const isModified = currentQty !== item.quantity;
       
       return {
         slug: item.productSlug,
-        name: formatName(item.productSlug, meta?.name ?? item.productSlug),
+        name: formatName(item.productSlug, productName),
         baseQuantity: item.quantity,
         currentQuantity: currentQty,
         isModified,
         isRemoved,
       };
     });
-  }, [baseContents, selectedProducts]);
+  }, [baseContents, selectedProducts, productMap]);
 
   // Productos agregados que no están en el contenido base
   const addedItems = useMemo<Array<{ slug: string; name: string; quantity: number }>>(() => {
@@ -74,14 +79,15 @@ export function BaseContentsDisplay({
     return Object.entries(selectedProducts)
       .filter(([slug, quantity]) => !baseSlugs.has(slug) && quantity && quantity > 0)
       .map(([slug, quantity]) => {
-        const meta = productMetadata.find((p) => p.slug === slug);
+        const product = productMap.get(slug);
+        const meta = getProductMeta(slug);
         return {
           slug,
-          name: meta?.name ?? slug,
+          name: product?.name.es ?? meta?.name ?? slug,
           quantity: quantity as number,
         };
       });
-  }, [selectedProducts, baseContents]);
+  }, [selectedProducts, baseContents, productMap]);
 
   const modifiedCount = baseItems.filter((item: BaseItem) => item.isModified || item.isRemoved).length;
   const isHeavilyCustomized = modifiedCount > baseContents.length * 0.5; // Más del 50% modificado

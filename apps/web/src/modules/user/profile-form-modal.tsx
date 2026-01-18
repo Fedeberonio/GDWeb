@@ -5,21 +5,22 @@ import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useUser } from "./context";
 import { useAuth } from "@/modules/auth/context";
-import { usePathname } from "next/navigation";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
-const PROFILE_MODAL_FLAG = "gd-show-profile-modal";
-const PROFILE_CHOICE_SKIPPED = "gd-profile-choice-skipped";
+const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
+
+const normalizePaymentPreference = (value: string) => {
+  if (value === "Cash" || value === "Transferencia" || value === "PayPal") {
+    return value;
+  }
+  return "";
+};
 
 export function ProfileFormModal() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { isNewUser, updateProfile, loading: profileLoading } = useUser();
-  const pathname = usePathname();
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
-  const [loginTriggered, setLoginTriggered] = useState(false);
-  const [skipChoice, setSkipChoice] = useState(false);
-  const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     telefono: "",
     direccion: "",
@@ -32,21 +33,25 @@ export function ProfileFormModal() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const flag = window.sessionStorage.getItem(PROFILE_MODAL_FLAG);
-      if (flag) setLoginTriggered(true);
-      const skipped = window.sessionStorage.getItem(PROFILE_CHOICE_SKIPPED);
-      if (skipped) setSkipChoice(true);
+      const rawDraft = window.sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+      if (!rawDraft) return;
+      const draft = JSON.parse(rawDraft) as {
+        contactPhone?: string;
+        direccion?: string;
+        metodoPago?: string;
+      };
+      setFormData((prev) => ({
+        ...prev,
+        telefono: prev.telefono || draft.contactPhone || "",
+        direccion: prev.direccion || draft.direccion || "",
+        pagoPreferido: prev.pagoPreferido || normalizePaymentPreference(draft.metodoPago || ""),
+      }));
     } catch {
       // ignore storage errors
     }
-  }, []);
+  }, [user?.uid]);
 
-  const isCheckout = pathname?.startsWith("/checkout");
-  const shouldPromptChoice = Boolean(
-    isNewUser && user && loginTriggered && !isCheckout && !skipChoice && !showForm
-  );
-  const shouldShowForm = Boolean(isNewUser && user && (isCheckout || showForm));
-  const shouldShow = shouldPromptChoice || shouldShowForm;
+  const shouldShow = Boolean(user && isNewUser && !profileLoading);
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -77,14 +82,6 @@ export function ProfileFormModal() {
         likes: formData.likes.trim() || undefined,
         dislikes: formData.dislikes.trim() || undefined,
       });
-      try {
-        if (typeof window !== "undefined") {
-          window.sessionStorage.removeItem(PROFILE_MODAL_FLAG);
-          window.sessionStorage.removeItem(PROFILE_CHOICE_SKIPPED);
-        }
-      } catch {
-        // ignore storage errors
-      }
       toast.success(t("profile.success_message"));
     } catch (error) {
       toast.error(t("profile.error_message"));
@@ -94,82 +91,19 @@ export function ProfileFormModal() {
     }
   };
 
-  const handleCreateAccount = () => {
-    setShowForm(true);
+  const handleContinueAsGuest = async () => {
     try {
-      if (typeof window !== "undefined") {
-        window.sessionStorage.removeItem(PROFILE_CHOICE_SKIPPED);
-      }
-    } catch {
-      // ignore storage errors
-    }
-  };
-
-  const handleSkipAccount = () => {
-    setSkipChoice(true);
-    setLoginTriggered(false);
-    setShowForm(false);
-    try {
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(PROFILE_CHOICE_SKIPPED, "true");
-        window.sessionStorage.removeItem(PROFILE_MODAL_FLAG);
-      }
-    } catch {
-      // ignore storage errors
+      await logout();
+    } catch (error) {
+      console.error(error);
     }
   };
 
   // Render using Portal to escape parent stacking contexts
   if (typeof window === "undefined") return null;
 
-  if (shouldPromptChoice) {
-    return createPortal(
-      <div
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-        style={{ position: "fixed" }}
-      >
-        <div className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000]">
-          <div className="p-6 pb-4 border-b border-gray-200">
-            <h2 className="mb-2 font-display text-2xl text-[var(--color-foreground)]">
-              {t("profile.prompt_title")}
-            </h2>
-            <p className="text-sm text-[var(--color-muted)]">{t("profile.prompt_desc")}</p>
-            <ul className="mt-4 space-y-2 text-sm text-[var(--color-muted)]">
-              <li>✓ {t("profile.prompt_benefit_1")}</li>
-              <li>✓ {t("profile.prompt_benefit_2")}</li>
-              <li>✓ {t("profile.prompt_benefit_3")}</li>
-            </ul>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 p-6 pt-4 border-t border-gray-200 bg-white rounded-b-3xl">
-            <button
-              type="button"
-              onClick={handleCreateAccount}
-              className="flex-1 rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)]"
-            >
-              {t("profile.prompt_create")}
-            </button>
-            <button
-              type="button"
-              onClick={handleSkipAccount}
-              className="flex-1 rounded-full border border-[var(--gd-color-forest)]/30 px-6 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition hover:bg-[var(--gd-color-leaf)]/10"
-            >
-              {t("profile.prompt_skip")}
-            </button>
-          </div>
-          <p className="px-6 pb-6 text-xs text-[var(--color-muted)]">
-            {t("profile.prompt_skip_hint")}
-          </p>
-        </div>
-      </div>,
-      document.body
-    );
-  }
-
   return createPortal(
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
       onClick={(e) => {
         // No cerrar al hacer clic en el fondo (el formulario es obligatorio)
@@ -178,13 +112,15 @@ export function ProfileFormModal() {
       style={{ position: "fixed" }}
     >
       <div className="w-full max-w-2xl rounded-3xl bg-white shadow-xl flex flex-col max-h-[90vh] z-[10000]">
-        <div className="p-6 pb-4 border-b border-gray-200 flex-shrink-0">
-          <h2 className="mb-2 font-display text-2xl text-[var(--color-foreground)]">
-            {t("profile.welcome_title")}
-          </h2>
-          <p className="text-sm text-[var(--color-muted)]">
-            {t("profile.welcome_desc")}
-          </p>
+        <div className="p-6 pb-4 border-b border-gray-200 flex-shrink-0 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="mb-2 font-display text-2xl text-[var(--color-foreground)]">
+              {t("profile.welcome_title")}
+            </h2>
+            <p className="text-sm text-[var(--color-muted)]">
+              {t("profile.welcome_desc")}
+            </p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
@@ -310,7 +246,17 @@ export function ProfileFormModal() {
             >
               {submitting ? t("profile.saving_button") : t("profile.save_button")}
             </button>
+            <button
+              type="button"
+              onClick={handleContinueAsGuest}
+              className="flex-1 rounded-full border border-[var(--gd-color-forest)]/30 px-6 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition hover:bg-[var(--gd-color-leaf)]/10"
+            >
+              {t("profile.guest_button")}
+            </button>
           </div>
+          <p className="px-6 pb-6 text-xs text-[var(--color-muted)]">
+            {t("profile.guest_hint")}
+          </p>
         </form>
       </div>
     </div>,
