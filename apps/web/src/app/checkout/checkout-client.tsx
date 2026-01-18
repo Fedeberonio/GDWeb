@@ -858,7 +858,15 @@ ${metodoPago}`;
   }
 
 function CartLine({ item }: { item: CartItem }) {
-  const { t } = useTranslation();
+  const { t, tData } = useTranslation();
+  const { productMap } = useCatalog();
+  const resolvePreferenceLabel = useCallback(
+    (value: string) => {
+      const product = productMap.get(value);
+      return product ? tData(product.name) : value;
+    },
+    [productMap, tData],
+  );
   const isBox = item.type === "box" && item.configuration;
   const unitPrice = item.configuration?.price?.final ?? item.price;
   const variantKey = item.configuration
