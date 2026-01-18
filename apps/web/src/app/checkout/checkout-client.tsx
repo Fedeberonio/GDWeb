@@ -1002,7 +1002,15 @@ function OrderSummaryView({
     totalFinalUSD: number;
   };
 }) {
-  const { t } = useTranslation();
+  const { t, tData } = useTranslation();
+  const { productMap } = useCatalog();
+  const resolvePreferenceLabel = useCallback(
+    (value: string) => {
+      const product = productMap.get(value);
+      return product ? tData(product.name) : value;
+    },
+    [productMap, tData],
+  );
   const { cargoEnvio, metodoPago, requierePaypal, cargoPaypal, totalFinalDOP, totalFinalUSD } = orderCalculations;
   
   const subtotal = items.reduce(
