@@ -53,7 +53,7 @@ export function CartButton() {
       })
       .join("\n");
     const totalText = `Total: RD$${total.toLocaleString("es-DO")}`;
-    const whatsappUrl = `https://wa.me/18098234567?text=${encodeURIComponent(`Hola! Quiero hacer este pedido:\n\n${message}\n\n${totalText}`)}`;
+    const whatsappUrl = `https://wa.me/18097537338?text=${encodeURIComponent(`Hola! Quiero hacer este pedido:\n\n${message}\n\n${totalText}`)}`;
     window.open(whatsappUrl, "_blank");
     toast.success("¡Pedido enviado por WhatsApp! 🎉");
     clear();

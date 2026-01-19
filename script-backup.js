@@ -945,7 +945,7 @@ function enviarPedidoWhatsApp(pedidoData, dialog) {
         return;
     }
     
-    const numeroWhatsApp = '18493757338';
+    const numeroWhatsApp = '18097537338';
     const db = firebase.firestore();
 
     // 1. Abrir WhatsApp inmediatamente

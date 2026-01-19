@@ -1303,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const mensaje = lang === 'en' 
         ? 'Hello GreenDolio! I would like to place an order.'
         : 'Hola GreenDolio! Me gustaría hacer un pedido.';
-      btnWhatsApp.href = `https://wa.me/18493757338?text=${encodeURIComponent(mensaje)}`;
+      btnWhatsApp.href = `https://wa.me/18097537338?text=${encodeURIComponent(mensaje)}`;
     };
     
     updateWhatsAppLink();
@@ -1901,7 +1901,7 @@ function enviarPedidoWhatsApp() {
     resumen = generarResumenPedido(carrito, formData, lang);
   }
 
-  const numeroWhatsApp = '18493757338';
+  const numeroWhatsApp = '18097537338';
   const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(resumen.mensaje)}`;
   window.open(url, '_blank');
   cerrarModalResumen();
@@ -1930,7 +1930,7 @@ function setLanguage(lang){
     const mensaje = lang === 'en' 
       ? 'Hello GreenDolio! I would like to place an order.'
       : 'Hola GreenDolio! Me gustaría hacer un pedido.';
-    btnWhatsApp.href = `https://wa.me/18493757338?text=${encodeURIComponent(mensaje)}`;
+    btnWhatsApp.href = `https://wa.me/18097537338?text=${encodeURIComponent(mensaje)}`;
   }
 }
 
