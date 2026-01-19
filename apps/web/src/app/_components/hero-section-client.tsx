@@ -20,6 +20,7 @@ export function HeroSectionClient() {
           aria-hidden="true"
         />
       </div>
+      <div className="absolute inset-0 bg-black/30" />
       
       {/* Overlay balanceado para legibilidad y visibilidad de imagen */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-white/85" />

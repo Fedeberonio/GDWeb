@@ -42,7 +42,7 @@ export function BaseContentsDisplay({
   } | null>(null);
 
   const rulesMap = useMemo(() => Object.fromEntries(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
-  const rule = useMemo(() => getBoxRule(box.id, rulesMap), [box.id, rulesMap]);
+  const rule = useMemo(() => getBoxRule(box.ruleId ?? box.id, rulesMap), [box.id, box.ruleId, rulesMap]);
   const baseContents = useMemo(() => rule?.baseContents ?? [], [rule]);
   const slotsUsed = computeSlots(selectedProducts);
 
@@ -272,7 +272,7 @@ export function BaseContentsDisplay({
           selectedProducts={selectedProducts}
           slotBudget={slotBudget}
           slotsUsed={slotsUsed}
-          boxId={box.id}
+          boxId={box.ruleId ?? box.id}
           onSwap={(newProductSlug, quantity) => {
             if (onSwapProduct) {
               onSwapProduct(productToSwap.slug, newProductSlug, quantity);

@@ -5,20 +5,25 @@ import {
   getBoxById,
   getBoxRuleById,
   getProductById,
+  getComboById,
   listAllBoxes,
   listAllProducts,
+  listAllCombos,
   listBoxRules,
   listBoxes,
   listCategories,
   listProducts,
+  listCombos,
   saveBox,
   saveBoxRule,
   saveProduct,
+  saveCombo,
 } from "./repository";
 import {
   boxSchema,
   boxVariantSchema,
   boxRuleSchema,
+  comboSchema,
   localizedStringSchema,
   priceSchema,
   productCategorySchema,
@@ -61,6 +66,12 @@ const nutritionUpdateSchema = z
     vegan: z.boolean().optional(),
     glutenFree: z.boolean().optional(),
     organic: z.boolean().optional(),
+    calories: z.number().nonnegative().optional(),
+    protein: z.number().nonnegative().optional(),
+    carbs: z.number().nonnegative().optional(),
+    fats: z.number().nonnegative().optional(),
+    fiber: z.number().nonnegative().optional(),
+    sugars: z.number().nonnegative().optional(),
   })
   .partial();
 
@@ -80,10 +91,12 @@ const logisticsUpdateSchema = z
 
 const productUpdateSchema = z
   .object({
+    sku: z.string().optional().nullable(),
     name: localizedStringSchema.partial().optional(),
     description: localizedStringSchema.partial().optional(),
     unit: localizedStringSchema.partial().optional(),
     price: priceSchema.partial().optional(),
+    salePrice: priceSchema.partial().optional().nullable(),
     status: productSchema.shape.status.optional(),
     image: z.union([z.string().min(1), z.literal(""), z.undefined()]).transform((val) => (val === "" ? undefined : val)),
     tags: z.array(z.string()).optional(),
@@ -100,10 +113,41 @@ const boxUpdateSchema = z
     name: localizedStringSchema.partial().optional(),
     description: localizedStringSchema.partial().optional(),
     price: priceSchema.partial().optional(),
+    ruleId: z.string().min(1).optional(),
+    dimensionsLabel: z.string().min(1).optional(),
+    weightLabel: z.string().min(1).optional(),
     heroImage: z.string().min(1).optional(),
     isFeatured: z.boolean().optional(),
     durationDays: z.number().int().positive().optional(),
     variants: z.array(boxVariantSchema).optional(),
+  })
+  .partial();
+
+const comboUpdateSchema = z
+  .object({
+    name: localizedStringSchema.partial().optional(),
+    salad: localizedStringSchema.partial().optional(),
+    juice: localizedStringSchema.partial().optional(),
+    dessert: localizedStringSchema.partial().optional(),
+    price: z.number().nonnegative().optional(),
+    cost: z.number().nonnegative().optional(),
+    margin: z.number().nonnegative().optional(),
+    calories: z.number().nonnegative().optional(),
+    protein: z.number().nonnegative().optional(),
+    glutenFree: z.boolean().optional(),
+    benefit: localizedStringSchema.partial().optional(),
+    benefitDetail: localizedStringSchema.partial().optional(),
+    recommendedFor: localizedStringSchema.partial().optional(),
+    carbs: z.number().nonnegative().optional(),
+    fats: z.number().nonnegative().optional(),
+    fiber: z.number().nonnegative().optional(),
+    sugars: z.number().nonnegative().optional(),
+    vitaminA: z.string().optional(),
+    vitaminC: z.string().optional(),
+    image: z.union([z.string().min(1), z.literal(""), z.undefined()]).transform((val) => (val === "" ? undefined : val)),
+    ingredients: z.array(localizedStringSchema).optional(),
+    status: comboSchema.shape.status.optional(),
+    isFeatured: z.boolean().optional(),
   })
   .partial();
 
@@ -126,10 +170,14 @@ function mergeMetadata(
 function mergeProduct(existing: z.infer<typeof productSchema>, updates: z.infer<typeof productUpdateSchema>) {
   const merged = {
     ...existing,
+    sku: updates.sku !== undefined ? (updates.sku === null ? undefined : updates.sku) : existing.sku,
     name: updates.name ? mergeLocalized(existing.name, updates.name) : existing.name,
     description: updates.description ? mergeLocalized(existing.description, updates.description) : existing.description,
     unit: updates.unit ? mergeLocalized(existing.unit, updates.unit) : existing.unit,
     price: updates.price ? { ...existing.price, ...updates.price } : existing.price,
+    salePrice: updates.salePrice !== undefined 
+      ? (updates.salePrice === null ? undefined : { ...(existing.salePrice ?? existing.price), ...updates.salePrice })
+      : existing.salePrice,
     tags: updates.tags !== undefined ? updates.tags : existing.tags,
     image: updates.image !== undefined ? updates.image : existing.image,
     status: updates.status !== undefined ? updates.status : existing.status,
@@ -148,6 +196,7 @@ function mergeProduct(existing: z.infer<typeof productSchema>, updates: z.infer<
           storage: updates.logistics.storage
             ? mergeLocalized(existing.logistics?.storage, updates.logistics.storage)
             : existing.logistics?.storage,
+          dimensionsCm: updates.logistics.dimensionsCm ?? existing.logistics?.dimensionsCm,
         }
       : existing.logistics,
     metadata: mergeMetadata(existing.metadata, updates.metadata),
@@ -172,6 +221,30 @@ function mergeBox(existing: z.infer<typeof boxSchema>, updates: z.infer<typeof b
   return boxSchema.parse(merged);
 }
 
+function mergeCombo(existing: z.infer<typeof comboSchema>, updates: z.infer<typeof comboUpdateSchema>) {
+  const merged = {
+    ...existing,
+    ...updates,
+    name: updates.name ? mergeLocalized(existing.name, updates.name) : existing.name,
+    salad: updates.salad ? mergeLocalized(existing.salad, updates.salad) : existing.salad,
+    juice: updates.juice ? mergeLocalized(existing.juice, updates.juice) : existing.juice,
+    dessert: updates.dessert ? mergeLocalized(existing.dessert, updates.dessert) : existing.dessert,
+    benefit: updates.benefit ? mergeLocalized(existing.benefit, updates.benefit) : existing.benefit,
+    benefitDetail: updates.benefitDetail
+      ? mergeLocalized(existing.benefitDetail, updates.benefitDetail)
+      : existing.benefitDetail,
+    recommendedFor: updates.recommendedFor
+      ? mergeLocalized(existing.recommendedFor, updates.recommendedFor)
+      : existing.recommendedFor,
+    ingredients: updates.ingredients ?? existing.ingredients,
+    image: updates.image ?? existing.image,
+    status: updates.status ?? existing.status,
+    isFeatured: updates.isFeatured ?? existing.isFeatured,
+  } satisfies Record<string, unknown>;
+
+  return comboSchema.parse(merged);
+}
+
 export async function listProductsForAdmin() {
   const products = await listAllProducts();
   return products.map((product) => productSchema.parse(product));
@@ -185,6 +258,16 @@ export async function listBoxesForAdmin() {
 export async function listBoxRulesForAdmin() {
   const rules = await listBoxRules();
   return rules.map((rule) => boxRuleSchema.parse(rule));
+}
+
+export async function listCombosForAdmin() {
+  const combos = await listAllCombos();
+  return combos.map((combo) => comboSchema.parse(combo));
+}
+
+export async function getCombos() {
+  const combos = await listCombos();
+  return combos.map((combo) => comboSchema.parse(combo));
 }
 
 export async function listBoxRulesPublic() {
@@ -292,6 +375,8 @@ const productCreationSchema = z.object({
   image: z.string().min(1).optional(),
   isFeatured: z.boolean().optional(),
   metadata: productSchema.shape.metadata.optional(),
+  nutrition: productSchema.shape.nutrition.optional(),
+  logistics: productSchema.shape.logistics.optional(),
 });
 
 export async function createProduct(payload: unknown, context: CatalogChangeContext = {}) {
@@ -314,12 +399,28 @@ export async function createProduct(payload: unknown, context: CatalogChangeCont
     image: parsed.image,
     sku: parsed.slug,
     metadata: parsed.metadata,
+    nutrition: parsed.nutrition,
+    logistics: parsed.logistics,
   };
 
   const product = productSchema.parse(productPayload);
   await saveProduct(product);
   await recordCatalogChange("product", product, product, context);
   return product;
+}
+
+export async function updateComboById(id: string, payload: unknown, context: CatalogChangeContext = {}) {
+  const existing = await getComboById(id);
+  if (!existing) {
+    return null;
+  }
+
+  const parsedExisting = comboSchema.parse(existing);
+  const updates = comboUpdateSchema.parse(payload);
+  const merged = mergeCombo(parsedExisting, updates);
+  await saveCombo(merged);
+  await recordCatalogChange("combo", parsedExisting, merged, context);
+  return merged;
 }
 
 const boxRuleUpdateSchema = boxRuleSchema.partial().extend({

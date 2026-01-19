@@ -11,7 +11,7 @@ export async function GET() {
 
     if (!hasRemoteApi) {
       console.warn("Catalog API base URL not configured for box rules.");
-      return NextResponse.json({ data: [] });
+      return NextResponse.json({ error: "Catalog API base URL not configured." }, { status: 500 });
     }
 
     const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/catalog/box-rules`, {
@@ -26,7 +26,7 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.warn("Failed to fetch box rules from API, returning empty data:", error);
-    return NextResponse.json({ data: [] });
+    console.warn("Failed to fetch box rules from API:", error);
+    return NextResponse.json({ error: "Failed to fetch box rules from API." }, { status: 502 });
   }
 }

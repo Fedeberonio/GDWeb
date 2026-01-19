@@ -118,6 +118,9 @@ exports.boxes = [
             currency: "DOP",
         },
         durationDays: 3,
+        ruleId: "GD-CAJA-001",
+        dimensionsLabel: "8\" x 8\" x 8\"",
+        weightLabel: "7.7 lb (3.5 kg)",
         heroImage: "/images/boxes/box1.jpg",
         isFeatured: true,
         variants: [
@@ -181,6 +184,9 @@ exports.boxes = [
             currency: "DOP",
         },
         durationDays: 7,
+        ruleId: "GD-CAJA-002",
+        dimensionsLabel: "10\" x 10\" x 10\"",
+        weightLabel: "13.2 lb (6 kg)",
         heroImage: "/images/boxes/box2.jpg",
         isFeatured: true,
         variants: [
@@ -244,6 +250,9 @@ exports.boxes = [
             currency: "DOP",
         },
         durationDays: 14,
+        ruleId: "GD-CAJA-003",
+        dimensionsLabel: "12\" x 12\" x 12\"",
+        weightLabel: "26.4 lb (12 kg)",
         heroImage: "/images/boxes/box3.jpg",
         isFeatured: true,
         variants: [

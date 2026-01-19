@@ -26,34 +26,6 @@ type BoxesGridProps = {
   boxRules: BoxRule[];
 };
 
-const BOX_SKU_MAP: Record<string, string> = {
-  "box-1": "GD-CAJA-001",
-  "box-2": "GD-CAJA-002",
-  "box-3": "GD-CAJA-003",
-  "box-1-caribbean-fresh-pack-3-dias": "GD-CAJA-001",
-  "box-2-island-weekssential-1-semana": "GD-CAJA-002",
-  "box-3-allgreenxclusive-2-semanas": "GD-CAJA-003",
-  "caribbean-fresh-pack": "GD-CAJA-001",
-  "island-weekssential": "GD-CAJA-002",
-  "allgreenxclusive": "GD-CAJA-003",
-};
-
-// Datos hardcodeados para evitar dependencia del archivo JSON externo
-const BOX_DETAILS_BY_SKU: Record<string, { dimensions?: string; weight?: string }> = {
-  "GD-CAJA-001": {
-    dimensions: "8\" x 8\" x 8\"",
-    weight: "7.7 lb (3.5 kg)",
-  },
-  "GD-CAJA-002": {
-    dimensions: "10\" x 10\" x 10\"",
-    weight: "13.2 lb (6 kg)",
-  },
-  "GD-CAJA-003": {
-    dimensions: "12\" x 12\" x 12\"",
-    weight: "26.4 lb (12 kg)",
-  },
-};
-
 export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGridProps) {
   const { t, tData } = useTranslation();
   const [quickAddBox, setQuickAddBox] = useState<Box | null>(null);
@@ -71,37 +43,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-3 pt-6">
         {boxes.map((box, index) => {
-          const productImages: Record<string, string> = {
-            "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-            "box-2": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-            "box-3": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-            "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-            "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-            "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-            "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-            "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-            "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          };
-
-          const hoverImages: Record<string, string> = {
-            "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-topdown.png",
-            "box-2": "/images/boxes/box-2-island-weekssential-veggie-topdown.png",
-            "box-3": "/images/boxes/box-3-allgreenxclusive-veggie-topdown.png",
-            "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-topdown.png",
-            "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-topdown.png",
-            "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-veggie-topdown.png",
-            "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-topdown.png",
-            "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-topdown.png",
-            "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-veggie-topdown.png",
-          };
-
-          const boxImage =
-            productImages[box.id] ||
-            productImages[box.slug] ||
-            box.heroImage ||
-            "/images/boxes/placeholder.jpg";
-          const boxHoverImage = hoverImages[box.id] || hoverImages[box.slug] || null;
-          const hasHoverImage = boxHoverImage !== null;
+          const boxImage = box.heroImage || "/images/boxes/placeholder.jpg";
 
           const boxSizeConfig: Record<string, { scale: string; padding: string }> = {
             "box-1": { scale: "1.0", padding: "p-2" },
@@ -116,8 +58,10 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
             { scale: "0.85", padding: "p-6" };
 
           const itemProps = getItemProps(index);
-          const sku = BOX_SKU_MAP[box.slug] || BOX_SKU_MAP[box.id];
-          const boxDetails = sku ? BOX_DETAILS_BY_SKU[sku] : undefined;
+          const boxDetails = {
+            dimensions: box.dimensionsLabel,
+            weight: box.weightLabel,
+          };
 
           // Definir badges especiales según la caja
           const specialBadge = index === 1 ? t("boxes.badge_popular") : index === 2 ? t("boxes.badge_best_value") : null;
@@ -150,9 +94,8 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
                 {/* Imagen - Altura fija */}
                 <div className="relative h-64 w-full overflow-hidden bg-gradient-to-b from-[var(--gd-color-sprout)]/20 to-white">
                   <div
-                    className={`absolute inset-0 transition-all duration-500 group-hover:scale-105 ${hasHoverImage ? "group-hover:opacity-0" : ""
-                      } ${config.padding}`}
-                    style={{ transform: hasHoverImage ? undefined : `scale(${config.scale})` }}
+                    className={`absolute inset-0 transition-all duration-500 group-hover:scale-105 ${config.padding}`}
+                    style={{ transform: `scale(${config.scale})` }}
                   >
                     <Image
                       src={boxImage}
@@ -162,19 +105,10 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
                       className="object-contain object-center"
                     />
                   </div>
-                  {hasHoverImage && (
-                    <div
-                      className={`absolute inset-0 opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105 ${config.padding}`}
-                    >
-                      <Image
-                        src={boxHoverImage}
-                        alt={`${tData(box.name)} - Vista cenital`}
-                        fill
-                        sizes="(max-width:768px) 100vw, 400px"
-                        className="object-contain object-center"
-                      />
-                    </div>
-                  )}
+                  <div
+                    className={`absolute inset-0 opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105 ${config.padding}`}
+                    aria-hidden
+                  />
 
                   {/* Badges Flotantes */}
                   <div className="absolute bottom-3 right-3 flex flex-col items-end gap-1.5 opacity-90 transition-opacity group-hover:opacity-100">
@@ -233,8 +167,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
                       const baseContents = boxData?.baseContents ?? [];
                       if (baseContents.length === 0) return null;
 
-                      const ruleId = BOX_SKU_MAP[box.id] || BOX_SKU_MAP[box.slug];
-                      const rule = ruleId ? rulesById.get(ruleId) : undefined;
+                      const rule = box.ruleId ? rulesById.get(box.ruleId) : undefined;
 
                       return (
                         <div className="opacity-0 translate-y-4 transition-all duration-500 delay-150 group-hover:opacity-100 group-hover:translate-y-0">
@@ -242,6 +175,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
                             baseContents={baseContents}
                             boxRule={rule}
                             productMap={productMap}
+                            boxVariants={box.variants}
                             compact={true}
                             initialVariant={selectedVariants[box.id]}
                             onVariantSelect={(variant) =>
@@ -317,31 +251,14 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
       {quickAddBox && (() => {
         const boxData = prebuiltBoxes.find((pb) => pb.box.id === quickAddBox.id);
         const baseContents = boxData?.baseContents ?? [];
-        const ruleId = BOX_SKU_MAP[quickAddBox.slug] || BOX_SKU_MAP[quickAddBox.id];
-        const rule = ruleId ? rulesById.get(ruleId) : boxData?.rule;
+        const rule = quickAddBox.ruleId ? rulesById.get(quickAddBox.ruleId) : boxData?.rule;
 
-        // Obtener la imagen de la caja (misma que en la tarjeta)
-        const productImages: Record<string, string> = {
-          "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "box-2": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "box-3": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
+        const boxImage = quickAddBox.heroImage || "/images/boxes/placeholder.jpg";
+
+        const boxDetails = {
+          dimensions: quickAddBox.dimensionsLabel,
+          weight: quickAddBox.weightLabel,
         };
-
-        const boxImage =
-          productImages[quickAddBox.id] ||
-          productImages[quickAddBox.slug] ||
-          quickAddBox.heroImage ||
-          "/images/boxes/placeholder.jpg";
-
-        // Obtener dimensiones y peso
-        const sku = BOX_SKU_MAP[quickAddBox.slug] || BOX_SKU_MAP[quickAddBox.id];
-        const boxDetails = sku ? BOX_DETAILS_BY_SKU[sku] : undefined;
 
         return (
           <QuickAddModal
@@ -363,51 +280,46 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
 
       {/* Modal de personalización */}
       {customizeBox && (() => {
-        const boxData = prebuiltBoxes.find((pb) => pb.box.id === customizeBox.id);
-        const baseContents = boxData?.baseContents ?? [];
-        const ruleId = BOX_SKU_MAP[customizeBox.slug] || BOX_SKU_MAP[customizeBox.id];
-        const rule = ruleId ? rulesById.get(ruleId) : boxData?.rule;
+        try {
+          const boxData = prebuiltBoxes.find((pb) => pb.box.id === customizeBox.id);
+          const baseContents = boxData?.baseContents ?? [];
+          const rule = customizeBox.ruleId ? rulesById.get(customizeBox.ruleId) : boxData?.rule;
 
-        // Obtener la imagen de la caja (misma que en la tarjeta)
-        const productImages: Record<string, string> = {
-          "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "box-2": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "box-3": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-        };
+          const boxImage = customizeBox.heroImage || "/images/boxes/placeholder.jpg";
 
-        const boxImage =
-          productImages[customizeBox.id] ||
-          productImages[customizeBox.slug] ||
-          customizeBox.heroImage ||
-          "/images/boxes/placeholder.jpg";
+          // Obtener dimensiones y peso
+          const boxDetails = {
+            dimensions: customizeBox.dimensionsLabel,
+            weight: customizeBox.weightLabel,
+          };
 
-        // Obtener dimensiones y peso
-        const sku = BOX_SKU_MAP[customizeBox.slug] || BOX_SKU_MAP[customizeBox.id];
-        const boxDetails = sku ? BOX_DETAILS_BY_SKU[sku] : undefined;
+          // Validar que tenemos la caja (los productos pueden cargarse después)
+          if (!customizeBox) {
+            console.warn("BoxCustomizeModal: Missing box", { customizeBox });
+            return null;
+          }
 
-        return (
-          <BoxCustomizeModal
-            box={customizeBox}
-            baseContents={baseContents}
-            boxRule={rule}
-            boxImage={boxImage}
-            dimensions={boxDetails?.dimensions}
-            weight={boxDetails?.weight}
-            availableProducts={products}
-            slotBudget={rule?.slotBudget}
-            initialVariant={selectedVariants[customizeBox.id]}
-            onClose={() => setCustomizeBox(null)}
-            onAddToCart={() => {
-              setCustomizeBox(null);
-            }}
-          />
-        );
+          return (
+            <BoxCustomizeModal
+              box={customizeBox}
+              baseContents={baseContents}
+              boxRule={rule}
+              boxImage={boxImage}
+              dimensions={boxDetails?.dimensions}
+              weight={boxDetails?.weight}
+              availableProducts={products}
+              slotBudget={rule?.slotBudget}
+              initialVariant={selectedVariants[customizeBox.id]}
+              onClose={() => setCustomizeBox(null)}
+              onAddToCart={() => {
+                setCustomizeBox(null);
+              }}
+            />
+          );
+        } catch (error) {
+          console.error("Error rendering BoxCustomizeModal:", error);
+          return null;
+        }
       })()}
     </div>
   );

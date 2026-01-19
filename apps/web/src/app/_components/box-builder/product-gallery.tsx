@@ -5,6 +5,7 @@ import type { Product } from "@/modules/catalog/types";
 import { ProductSeasonalBadge } from "../product-seasonal-badge";
 import { getVisualCategory, type VariantType } from "../box-selector/helpers";
 import { ProductImageFallback } from "../product-image-fallback";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 const FRUITY_CATEGORIES = new Set(["fruit_large", "fruit_small", "citrus"]);
 
@@ -17,6 +18,7 @@ type ProductGalleryProps = {
 };
 
 export function ProductGallery({ products, selection, onToggle, variantFilter, limit }: ProductGalleryProps) {
+  const { tData } = useTranslation();
   const [recentlyToggled, setRecentlyToggled] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function ProductGallery({ products, selection, onToggle, variantFilter, l
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (p) =>
-          p.name.es.toLowerCase().includes(query) ||
+          tData(p.name).toLowerCase().includes(query) ||
           p.slug.toLowerCase().includes(query) ||
           p.categoryId.toLowerCase().includes(query)
       );
@@ -53,13 +55,13 @@ export function ProductGallery({ products, selection, onToggle, variantFilter, l
   const variantFilteredProducts = useMemo(() => {
     return filteredProducts.filter((product) => {
       if (!variantFilter || variantFilter === "mix") return true;
-      const category = getVisualCategory(product.slug, product.name.es, product.categoryId);
+      const category = getVisualCategory(product.slug, tData(product.name), product.categoryId);
       if (variantFilter === "fruity") {
         return FRUITY_CATEGORIES.has(category);
       }
       return !FRUITY_CATEGORIES.has(category);
     });
-  }, [filteredProducts, variantFilter]);
+  }, [filteredProducts, variantFilter, tData]);
 
   const visibleProducts = typeof limit === "number" ? variantFilteredProducts.slice(0, limit) : variantFilteredProducts;
 
@@ -158,7 +160,7 @@ export function ProductGallery({ products, selection, onToggle, variantFilter, l
               } ${
                 wasJustToggled ? "animate-pulse scale-105" : ""
               }`}
-              title={isSelected ? `Quitar ${product.name.es} de tu caja` : `Agregar ${product.name.es} a tu caja`}
+              title={isSelected ? `Quitar ${tData(product.name)} de tu caja` : `Agregar ${tData(product.name)} a tu caja`}
             >
               {/* Overlay de acción */}
               {wasJustToggled && (
@@ -209,7 +211,7 @@ export function ProductGallery({ products, selection, onToggle, variantFilter, l
                 <p className={`font-display text-lg mb-1 transition-colors ${
                   isSelected ? "text-[var(--gd-color-forest)] font-bold" : "text-[var(--color-foreground)]"
                 }`}>
-                  {product.name.es}
+                  {tData(product.name)}
                 </p>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-[var(--color-muted)]">

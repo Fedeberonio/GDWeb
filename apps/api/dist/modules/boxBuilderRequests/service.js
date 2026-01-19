@@ -9,11 +9,28 @@ const repository_1 = require("./repository");
 async function listBuilderRequests(limit = 100) {
     const requests = await (0, repository_1.listRequests)(limit);
     return requests.map((request) => {
-        const createdAt = request.createdAt instanceof firestore_1.Timestamp ? request.createdAt.toDate().toISOString() : request.createdAt;
+        // Normalizar createdAt: puede ser Timestamp, Date, string o undefined
+        let createdAt;
+        if (request.createdAt instanceof firestore_1.Timestamp) {
+            createdAt = request.createdAt.toDate().toISOString();
+        }
+        else if (request.createdAt instanceof Date) {
+            createdAt = request.createdAt.toISOString();
+        }
+        else if (typeof request.createdAt === "string") {
+            createdAt = request.createdAt;
+        }
+        else {
+            createdAt = undefined;
+        }
+        // Normalizar status: debe ser uno de los valores válidos
+        const status = typeof request.status === "string" && ["pending", "confirmed", "cancelled"].includes(request.status)
+            ? request.status
+            : "pending";
         const normalized = {
             ...request,
-            createdAt: typeof createdAt === "string" ? createdAt : undefined,
-            status: request.status ?? "pending",
+            createdAt,
+            status,
         };
         return schemas_1.boxBuilderRequestSchema.parse(normalized);
     });

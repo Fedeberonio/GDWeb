@@ -6,17 +6,19 @@ import type { CartItemFromFirestore } from "@/modules/user/types";
  */
 export function cartItemToFirestore(item: CartItem): CartItemFromFirestore {
   if (item.type === "box" && item.configuration) {
+    const likes = item.configuration.likes ?? [];
+    const dislikes = item.configuration.dislikes ?? [];
     return {
       tipo: "caja",
       nombre: item.name,
       precio: item.configuration.price?.final ?? item.price,
       variedad: item.configuration.variant || item.configuration.mix || "mix",
       preferencias: {
-        like: item.configuration.likes || [],
-        dislike: item.configuration.dislikes || [],
+        like: likes,
+        dislike: dislikes,
       },
       cantidad: item.quantity,
-      autoMode: item.configuration.likes.length === 0 && item.configuration.dislikes.length === 0,
+      autoMode: likes.length === 0 && dislikes.length === 0,
     };
   }
 

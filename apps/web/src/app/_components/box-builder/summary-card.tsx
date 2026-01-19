@@ -64,7 +64,7 @@ export function SummaryCard({
       
       {/* Advertencia de personalización excesiva */}
       {selectedBox && selectedBox.id && (() => {
-        const rule = getBoxRule(selectedBox.id, rulesMap);
+        const rule = getBoxRule(selectedBox.ruleId ?? selectedBox.id, rulesMap);
         const baseContents = rule?.baseContents ?? [];
         const modifiedCount = baseContents.filter((item: { productSlug: string; quantity: number }) => {
           const currentQty = selectedProducts[item.productSlug] ?? 0;
@@ -90,7 +90,7 @@ export function SummaryCard({
 
       {/* Gráfico de Balance Visual */}
       {selectedBox && selectedBox.id && (
-        <BalanceChart boxId={selectedBox.id} selectedProducts={selectedProducts} />
+        <BalanceChart boxId={selectedBox.ruleId ?? selectedBox.id} selectedProducts={selectedProducts} />
       )}
 
       <SummaryRow label="📦 Espacio en tu caja">
@@ -129,7 +129,12 @@ export function SummaryCard({
       {/* Precio calculado con lógica de A la Carta y extras de swaps */}
       {selectedBox && selectedBox.id && (() => {
         const mixVariant = mix === "frutas" ? "fruity" : mix === "vegetales" ? "veggie" : "mix";
-        const priceInfo = computeBoxPrice(selectedBox.id, selectedBox.price.amount, selectedProducts, mixVariant);
+        const priceInfo = computeBoxPrice(
+          selectedBox.ruleId ?? selectedBox.id,
+          selectedBox.price.amount,
+          selectedProducts,
+          mixVariant,
+        );
         const isACarta = priceInfo.isACarta;
         const deliveryCost: number = 0; // Delivery gratuito lunes, miércoles y viernes
         // Redondear extras a 2 decimales para evitar problemas de precisión

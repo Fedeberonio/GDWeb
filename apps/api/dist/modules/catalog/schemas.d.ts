@@ -62,10 +62,20 @@ export declare const productSchema: z.ZodObject<{
     image: z.ZodOptional<z.ZodString>;
     tags: z.ZodDefault<z.ZodArray<z.ZodString>>;
     isFeatured: z.ZodDefault<z.ZodBoolean>;
+    metadata: z.ZodOptional<z.ZodObject<{
+        slotValue: z.ZodOptional<z.ZodNumber>;
+        wholesaleCost: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$loose>>;
     nutrition: z.ZodOptional<z.ZodObject<{
         vegan: z.ZodOptional<z.ZodBoolean>;
         glutenFree: z.ZodOptional<z.ZodBoolean>;
         organic: z.ZodOptional<z.ZodBoolean>;
+        calories: z.ZodOptional<z.ZodNumber>;
+        protein: z.ZodOptional<z.ZodNumber>;
+        carbs: z.ZodOptional<z.ZodNumber>;
+        fats: z.ZodOptional<z.ZodNumber>;
+        fiber: z.ZodOptional<z.ZodNumber>;
+        sugars: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strip>>;
     logistics: z.ZodOptional<z.ZodObject<{
         weightKg: z.ZodOptional<z.ZodNumber>;
@@ -120,6 +130,9 @@ export declare const boxSchema: z.ZodObject<{
         currency: z.ZodDefault<z.ZodString>;
     }, z.core.$strip>;
     durationDays: z.ZodOptional<z.ZodNumber>;
+    ruleId: z.ZodOptional<z.ZodString>;
+    dimensionsLabel: z.ZodOptional<z.ZodString>;
+    weightLabel: z.ZodOptional<z.ZodString>;
     heroImage: z.ZodOptional<z.ZodString>;
     isFeatured: z.ZodDefault<z.ZodBoolean>;
     variants: z.ZodArray<z.ZodObject<{
@@ -147,10 +160,95 @@ export declare const boxSchema: z.ZodObject<{
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
 }, z.core.$strip>;
+export declare const boxRuleSchema: z.ZodObject<{
+    id: z.ZodString;
+    displayName: z.ZodString;
+    slotBudget: z.ZodNumber;
+    targetWeightKg: z.ZodNumber;
+    minMargin: z.ZodOptional<z.ZodNumber>;
+    categoryBudget: z.ZodRecord<z.ZodString, z.ZodObject<{
+        min: z.ZodNumber;
+        max: z.ZodNumber;
+    }, z.core.$strip>>;
+    baseContents: z.ZodArray<z.ZodObject<{
+        productSlug: z.ZodString;
+        quantity: z.ZodNumber;
+    }, z.core.$strip>>;
+    variantContents: z.ZodOptional<z.ZodObject<{
+        mix: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
+            productSlug: z.ZodString;
+            quantity: z.ZodNumber;
+        }, z.core.$strip>>>>;
+        fruity: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
+            productSlug: z.ZodString;
+            quantity: z.ZodNumber;
+        }, z.core.$strip>>>>;
+        veggie: z.ZodOptional<z.ZodOptional<z.ZodArray<z.ZodObject<{
+            productSlug: z.ZodString;
+            quantity: z.ZodNumber;
+        }, z.core.$strip>>>>;
+    }, z.core.$strip>>;
+}, z.core.$strip>;
+export declare const comboSchema: z.ZodObject<{
+    id: z.ZodString;
+    name: z.ZodObject<{
+        es: z.ZodString;
+        en: z.ZodString;
+    }, z.core.$strip>;
+    salad: z.ZodObject<{
+        es: z.ZodString;
+        en: z.ZodString;
+    }, z.core.$strip>;
+    juice: z.ZodObject<{
+        es: z.ZodString;
+        en: z.ZodString;
+    }, z.core.$strip>;
+    dessert: z.ZodObject<{
+        es: z.ZodString;
+        en: z.ZodString;
+    }, z.core.$strip>;
+    price: z.ZodNumber;
+    cost: z.ZodOptional<z.ZodNumber>;
+    margin: z.ZodOptional<z.ZodNumber>;
+    calories: z.ZodNumber;
+    protein: z.ZodNumber;
+    glutenFree: z.ZodDefault<z.ZodBoolean>;
+    benefit: z.ZodObject<{
+        es: z.ZodString;
+        en: z.ZodString;
+    }, z.core.$strip>;
+    benefitDetail: z.ZodObject<{
+        es: z.ZodString;
+        en: z.ZodString;
+    }, z.core.$strip>;
+    recommendedFor: z.ZodObject<{
+        es: z.ZodString;
+        en: z.ZodString;
+    }, z.core.$strip>;
+    carbs: z.ZodNumber;
+    fats: z.ZodNumber;
+    fiber: z.ZodNumber;
+    sugars: z.ZodNumber;
+    vitaminA: z.ZodOptional<z.ZodString>;
+    vitaminC: z.ZodOptional<z.ZodString>;
+    image: z.ZodOptional<z.ZodString>;
+    ingredients: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        es: z.ZodString;
+        en: z.ZodString;
+    }, z.core.$strip>>>;
+    status: z.ZodDefault<z.ZodEnum<{
+        active: "active";
+        inactive: "inactive";
+        coming_soon: "coming_soon";
+    }>>;
+    isFeatured: z.ZodDefault<z.ZodBoolean>;
+}, z.core.$strip>;
 export type LocaleCode = z.infer<typeof localeSchema>;
 export type LocalizedString = z.infer<typeof localizedStringSchema>;
 export type ProductCategory = z.infer<typeof productCategorySchema>;
 export type Product = z.infer<typeof productSchema>;
 export type BoxVariant = z.infer<typeof boxVariantSchema>;
 export type Box = z.infer<typeof boxSchema>;
+export type BoxRule = z.infer<typeof boxRuleSchema>;
+export type Combo = z.infer<typeof comboSchema>;
 //# sourceMappingURL=schemas.d.ts.map

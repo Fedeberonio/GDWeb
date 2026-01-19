@@ -1,17 +1,12 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createBoxesRouter = createBoxesRouter;
 // @ts-nocheck
 const express_1 = require("express");
 const zod_1 = require("zod");
 const firestore_1 = require("firebase-admin/firestore");
-const boxRules_json_1 = __importDefault(require("../../data/boxRules.json"));
-const productMetadata_json_1 = __importDefault(require("../../data/productMetadata.json"));
 const firestore_2 = require("../../lib/firestore");
-const productMap = new Map(productMetadata_json_1.default.map((item) => [item.slug, item]));
+const service_1 = require("../catalog/service");
 const baseSelectionSchema = zod_1.z.object({
     boxId: zod_1.z.string().min(1),
     selectedProducts: zod_1.z
@@ -32,17 +27,19 @@ const requestSchema = baseSelectionSchema.extend({
     contactEmail: zod_1.z.string().email().optional(),
     contactPhone: zod_1.z.string().min(7, "El teléfono es obligatorio"),
 });
-function evaluateSelection(selection, rule) {
+function evaluateSelection(selection, rule, productMetaMap) {
     let slotsUsed = 0;
     let weightUsed = 0;
     let costEstimate = 0;
     let productCount = 0;
     const missingProducts = [];
     Object.entries(selection).forEach(([slug, quantity]) => {
-        if (!quantity || quantity <= 0)
+        // Asegurar que quantity sea number
+        const qty = typeof quantity === "number" ? quantity : Number(quantity) || 0;
+        if (!qty || qty <= 0)
             return;
         productCount += 1;
-        const metadata = productMap.get(slug);
+        const metadata = productMetaMap[slug];
         if (!metadata) {
             missingProducts.push(slug);
             return;
@@ -50,9 +47,9 @@ function evaluateSelection(selection, rule) {
         const slotValue = metadata.slotValue ?? 1;
         const weight = metadata.weightKg ?? 0.5;
         const cost = metadata.wholesaleCost ?? 0;
-        slotsUsed += slotValue * quantity;
-        weightUsed += weight * quantity;
-        costEstimate += cost * quantity;
+        slotsUsed += slotValue * qty;
+        weightUsed += weight * qty;
+        costEstimate += cost * qty;
     });
     const errors = [];
     const warnings = [];
@@ -77,8 +74,10 @@ function evaluateSelection(selection, rule) {
         warnings,
     };
 }
-function buildValidationResult(payload, rule) {
-    const { slotsUsed, weightUsed, costEstimate, productCount, errors, warnings } = evaluateSelection(payload.selectedProducts, rule);
+function buildValidationResult(payload, rule, productMetaMap) {
+    // Asegurar que selectedProducts sea Record<string, number>
+    const selectedProducts = payload.selectedProducts;
+    const { slotsUsed, weightUsed, costEstimate, productCount, errors, warnings } = evaluateSelection(selectedProducts, rule, productMetaMap);
     return {
         boxId: payload.boxId,
         mix: payload.mix,
@@ -104,7 +103,7 @@ function buildValidationResult(payload, rule) {
 }
 function createBoxesRouter() {
     const router = (0, express_1.Router)();
-    router.post("/validate", (req, res) => {
+    router.post("/validate", async (req, res) => {
         const parsed = validationSchema.safeParse(req.body);
         if (!parsed.success) {
             res.status(400).json({
@@ -114,12 +113,20 @@ function createBoxesRouter() {
             return;
         }
         const payload = parsed.data;
-        const rule = boxRules_json_1.default[payload.boxId];
+        const boxRulesRecord = await (0, service_1.getBoxRulesMap)();
+        const productMetaMap = await (0, service_1.getProductMetaMap)();
+        const rule = boxRulesRecord[payload.boxId];
         if (!rule) {
             res.status(404).json({ error: "Caja no encontrada" });
             return;
         }
-        const result = buildValidationResult(payload, rule);
+        // Asegurar que selectedProducts sea Record<string, number>
+        const selectedProducts = payload.selectedProducts;
+        const payloadWithTypedSelection = {
+            ...payload,
+            selectedProducts,
+        };
+        const result = buildValidationResult(payloadWithTypedSelection, rule, productMetaMap);
         res.json({ data: result });
     });
     router.post("/requests", async (req, res) => {
@@ -132,12 +139,20 @@ function createBoxesRouter() {
             return;
         }
         const payload = parsed.data;
-        const rule = boxRules_json_1.default[payload.boxId];
+        const boxRulesRecord = await (0, service_1.getBoxRulesMap)();
+        const productMetaMap = await (0, service_1.getProductMetaMap)();
+        const rule = boxRulesRecord[payload.boxId];
         if (!rule) {
             res.status(404).json({ error: "Caja no encontrada" });
             return;
         }
-        const validationResult = buildValidationResult(payload, rule);
+        // Asegurar que selectedProducts sea Record<string, number>
+        const selectedProducts = payload.selectedProducts;
+        const payloadWithTypedSelection = {
+            ...payload,
+            selectedProducts,
+        };
+        const validationResult = buildValidationResult(payloadWithTypedSelection, rule, productMetaMap);
         if (!validationResult.valid) {
             res.status(400).json({
                 error: "Tu selección necesita ajustes antes de enviarla.",
@@ -156,7 +171,7 @@ function createBoxesRouter() {
                 likes: payload.likes ?? [],
                 dislikes: payload.dislikes ?? [],
                 notes: payload.notes ?? "",
-                selection: payload.selectedProducts,
+                selection: selectedProducts,
                 metrics: validationResult.metrics,
                 createdAt: firestore_1.FieldValue.serverTimestamp(),
                 status: "pending",

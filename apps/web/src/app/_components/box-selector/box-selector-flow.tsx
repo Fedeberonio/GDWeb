@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Box } from "@/modules/catalog/types";
+import type { Box, BoxRule } from "@/modules/catalog/types";
 import { BoxSizeSelector } from "./box-size-selector";
 import { VariantSelector } from "./variant-selector";
 import { BoxPreview } from "./box-preview";
@@ -11,6 +11,7 @@ type BoxSelectorFlowProps = {
   boxes: Box[];
   prebuiltBoxes: Array<{
     box: Box;
+    rule?: BoxRule;
     baseContents: Array<{
       productSlug: string;
       quantity: number;
@@ -56,9 +57,9 @@ export function BoxSelectorFlow({ boxes, prebuiltBoxes, onClose }: BoxSelectorFl
     return null;
   }
 
-  const baseContents = selectedBox
-    ? prebuiltBoxes.find((pb) => pb.box.id === selectedBox.id)?.baseContents ?? []
-    : [];
+  const selectedBoxData = selectedBox ? prebuiltBoxes.find((pb) => pb.box.id === selectedBox.id) : undefined;
+  const baseContents = selectedBoxData?.baseContents ?? [];
+  const boxRule = selectedBoxData?.rule;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white/95 backdrop-blur-sm">
@@ -120,6 +121,7 @@ export function BoxSelectorFlow({ boxes, prebuiltBoxes, onClose }: BoxSelectorFl
               box={selectedBox}
               variant={selectedVariant}
               baseContents={baseContents}
+              boxRule={boxRule}
               onBack={handleBackToVariants}
               onChangeVariant={handleChangeVariant}
             />
@@ -129,4 +131,3 @@ export function BoxSelectorFlow({ boxes, prebuiltBoxes, onClose }: BoxSelectorFl
     </div>
   );
 }
-

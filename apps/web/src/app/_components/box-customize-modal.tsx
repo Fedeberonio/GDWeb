@@ -100,11 +100,11 @@ export function BoxCustomizeModal({
   const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
   const [dislikedProducts, setDislikedProducts] = useState<Set<string>>(new Set());
   const productMap = useMemo(
-    () => new Map(availableProducts.map((product) => [product.slug, product])),
+    () => new Map((availableProducts || []).map((product) => [product.slug, product])),
     [availableProducts]
   );
   const priceLookup = useMemo(
-    () => Object.fromEntries(availableProducts.map((product) => [product.slug, product.price?.amount ?? 0])),
+    () => Object.fromEntries((availableProducts || []).map((product) => [product.slug, product.price?.amount ?? 0])),
     [availableProducts],
   );
 
@@ -211,7 +211,8 @@ export function BoxCustomizeModal({
   };
 
   const filteredContents = getFilteredContents(selectedVariant);
-  const variantInfo = getVariantInfo(selectedVariant, locale);
+  const selectedVariantData = box.variants.find((item) => item.id === selectedVariant || item.slug === selectedVariant);
+  const variantInfo = getVariantInfo(selectedVariant, locale, selectedVariantData);
 
   const getProductLabel = (slug: string, fallback?: string) => {
     const product = productMap.get(slug);
@@ -264,8 +265,8 @@ export function BoxCustomizeModal({
 
   // Calcular precio de la caja
   const priceInfo = useMemo(() => {
-    return computeBoxPrice(box.id, box.price.amount, selectedProducts, selectedVariant, priceLookup);
-  }, [box.id, box.price.amount, selectedProducts, selectedVariant, priceLookup]);
+    return computeBoxPrice(box.ruleId ?? box.id, box.price.amount, selectedProducts, selectedVariant, priceLookup);
+  }, [box.id, box.ruleId, box.price.amount, selectedProducts, selectedVariant, priceLookup]);
 
   const totalPrice = priceInfo.price + priceInfo.extras;
 
@@ -277,14 +278,7 @@ export function BoxCustomizeModal({
   const currentWeightLb = currentWeightKg * 2.20462;
   const formattedWeight = `${currentWeightLb.toFixed(1)} lb (${currentWeightKg.toFixed(1)} kg)`;
 
-  const boxImage =
-    propBoxImage ||
-    box.heroImage ||
-    (box.id === "box-1" || box.slug.includes("caribbean")
-      ? "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png"
-      : box.id === "box-2" || box.slug.includes("island")
-        ? "/images/boxes/box-2-island-weekssential-veggie-product.jpg"
-        : "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg");
+  const boxImage = propBoxImage || box.heroImage || "/images/boxes/placeholder.jpg";
 
   // Filtrar productos disponibles según la variante
   const getAvailableProductsForVariant = (variant: VariantType): Product[] => {
@@ -302,7 +296,7 @@ export function BoxCustomizeModal({
       const slugLower = product.slug.toLowerCase();
       const isBaby = slugLower.includes("baby") || product.tags?.some((tag) => tag.toLowerCase() === "baby-only");
       // Ocultar baby del catálogo general; solo aparecen si vienen en contenidos base
-      const boxIdLower = box.id.toLowerCase();
+      const boxIdLower = (box.ruleId ?? box.id).toLowerCase();
       const isSmallBox = boxIdLower.includes("box-1") || boxIdLower.includes("gd-caja-001");
       if (isBaby && !isSmallBox) {
         return false;
@@ -438,7 +432,13 @@ export function BoxCustomizeModal({
   const handleAddToCart = async () => {
     setIsAdding(true);
     // Calcular precio final con extras (usando la variante seleccionada)
-    const finalPriceInfo = computeBoxPrice(box.id, box.price.amount, selectedProducts, selectedVariant, priceLookup);
+    const finalPriceInfo = computeBoxPrice(
+      box.ruleId ?? box.id,
+      box.price.amount,
+      selectedProducts,
+      selectedVariant,
+      priceLookup,
+    );
     const finalPrice = finalPriceInfo.price + finalPriceInfo.extras;
 
     addItem({
@@ -494,6 +494,13 @@ export function BoxCustomizeModal({
             <div className="flex items-center justify-between">
               <h2 className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
                 {t("box_customize.title")} {tData(box.name)}
+                {box.durationDays && (
+                  <span className="text-lg font-normal text-[var(--color-muted)]">
+                    {" "}({box.durationDays} {box.durationDays === 1 
+                      ? (locale === "en" ? "week" : "semana")
+                      : (locale === "en" ? "weeks" : "semanas")})
+                  </span>
+                )}
               </h2>
               <button
                 type="button"
@@ -514,7 +521,8 @@ export function BoxCustomizeModal({
               </p>
               <div className="grid grid-cols-3 gap-3">
                 {(["mix", "fruity", "veggie"] as VariantType[]).map((variant) => {
-                  const info = getVariantInfo(variant, locale);
+                  const variantData = box.variants.find((item) => item.id === variant || item.slug === variant);
+                  const info = getVariantInfo(variant, locale, variantData);
                   const isSelected = selectedVariant === variant;
                   return (
                     <button
@@ -542,13 +550,35 @@ export function BoxCustomizeModal({
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Imagen */}
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-[var(--color-background-muted)]">
-                  <Image
-                    src={boxImage}
-                    alt={box.name.es}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 300px"
-                    className="object-contain object-center p-4"
-                  />
+                  {boxImage ? (
+                    <Image
+                      src={boxImage}
+                      alt={boxName}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 300px"
+                      className="object-contain object-center p-4"
+                      unoptimized={boxImage?.startsWith('http') || boxImage?.startsWith('https')}
+                      onError={(e) => {
+                        // Si falla, intentar con fallbacks
+                        const target = e.target as HTMLImageElement;
+                        const fallbacks = [
+                          box.heroImage,
+                          "/images/boxes/placeholder.jpg",
+                          "https://greendolio.shop/images/boxes/" + (box.id || box.slug) + ".jpg",
+                          "https://greendolio.shop/images/boxes/" + (box.id || box.slug) + ".png",
+                        ].filter(Boolean);
+                        const currentSrc = target.src;
+                        const nextFallback = fallbacks.find(fb => fb && fb !== currentSrc);
+                        if (nextFallback && target.src !== nextFallback) {
+                          target.src = nextFallback;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-[var(--color-background-muted)] text-sm text-[var(--color-muted)]">
+                      {boxName}
+                    </div>
+                  )}
                 </div>
 
                 {/* Info */}

@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selector/helpers";
 import { ProductImageFallback } from "./product-image-fallback";
 import { useTranslation } from "@/modules/i18n/use-translation";
-import type { BoxRule, Product } from "@/modules/catalog/types";
+import type { BoxRule, BoxVariant, Product } from "@/modules/catalog/types";
 
 type BoxVariantsDisplayProps = {
   baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
   boxRule?: BoxRule;
   productMap?: Map<string, Product>;
+  boxVariants?: BoxVariant[];
   compact?: boolean; // Si es true, muestra versión compacta inicialmente
   onVariantSelect?: (variant: VariantType) => void; // Callback cuando se selecciona una variante
   initialVariant?: VariantType; // Variante preseleccionada (ej: desde la tarjeta)
@@ -19,6 +20,7 @@ export function BoxVariantsDisplay({
   baseContents,
   boxRule,
   productMap,
+  boxVariants,
   compact = false,
   onVariantSelect,
   initialVariant,
@@ -105,8 +107,12 @@ export function BoxVariantsDisplay({
     }
   };
 
+  const resolveVariantData = (variant: VariantType) =>
+    boxVariants?.find((item) => item.id === variant || item.slug === variant);
   const filteredContents = selectedVariant ? getFilteredContents(selectedVariant) : [];
-  const variantInfo = selectedVariant ? getVariantInfo(selectedVariant, locale) : { tagline: "", description: "", icon: "" };
+  const variantInfo = selectedVariant
+    ? getVariantInfo(selectedVariant, locale, resolveVariantData(selectedVariant))
+    : { tagline: "", description: "", icon: "" };
 
   // Agrupar por categoría para mostrar mejor
   const contentsByCategory = filteredContents.reduce((acc, item) => {
@@ -149,7 +155,7 @@ export function BoxVariantsDisplay({
       {/* Selector de variantes - Compacto */}
       <div className="flex gap-2">
         {variants.map((variant) => {
-          const info = getVariantInfo(variant, locale);
+          const info = getVariantInfo(variant, locale, resolveVariantData(variant));
           const isSelected = selectedVariant === variant;
           const isExpanded = expandedVariant === variant;
           const variantContents = getFilteredContents(variant);

@@ -43,14 +43,10 @@ export function setBoxRulesMap(rules: BoxRule[]) {
 
 export function getBoxRule(boxId?: string, rulesMap: Record<string, BoxRule> = boxRulesMap): BoxRule | undefined {
   if (!boxId) return undefined;
-  
-  // Normalizar boxId: mapear box-1, box-2, box-3 a GD-CAJA-001, GD-CAJA-002, GD-CAJA-003
-  const normalizedId = boxId
-    .replace(/^box-1/i, "GD-CAJA-001")
-    .replace(/^box-2/i, "GD-CAJA-002")
-    .replace(/^box-3/i, "GD-CAJA-003");
-  
-  return rulesMap[normalizedId] || rulesMap[boxId];
+  if (rulesMap[boxId]) return rulesMap[boxId];
+
+  const upper = boxId.toUpperCase();
+  return rulesMap[upper];
 }
 
 /**

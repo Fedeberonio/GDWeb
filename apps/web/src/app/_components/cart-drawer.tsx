@@ -9,6 +9,7 @@ import { useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { useCatalog } from "@/modules/catalog/context";
+import { ProductImageFallback } from "./product-image-fallback";
 
 const resolveVariantKey = (variant?: string, mix?: string) => {
   if (variant === "fruity" || variant === "veggie" || variant === "mix") return variant;
@@ -221,20 +222,18 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           layout
                           className="flex gap-4 rounded-2xl border border-[var(--color-border)] bg-white p-4 shadow-sm hover:shadow-md transition-shadow"
                         >
-                          {item.image && (
-                            <motion.div
-                              whileHover={{ scale: 1.05 }}
-                              className="relative h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden bg-[var(--color-background-muted)]"
-                            >
-                              <Image
-                                src={item.image}
-                                alt={item.name}
-                                fill
-                                sizes="80px"
-                                className="object-cover"
-                              />
-                            </motion.div>
-                          )}
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            className="relative h-20 w-20 flex-shrink-0 rounded-xl overflow-hidden bg-[var(--color-background-muted)]"
+                          >
+                            <ProductImageFallback
+                              slug={item.slug}
+                              name={item.name}
+                              image={item.image}
+                              className="object-cover"
+                              sizes="80px"
+                            />
+                          </motion.div>
                           <div className="flex-1 space-y-2">
                             <div className="flex items-start justify-between">
                               <div>

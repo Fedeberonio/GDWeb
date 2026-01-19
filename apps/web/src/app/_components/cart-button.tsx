@@ -9,10 +9,20 @@ export function CartButton() {
   const { metrics } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [bumpCount, setBumpCount] = useState(0);
   const itemCount = metrics.itemCount;
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleBump = () => setBumpCount((prev) => prev + 1);
+    window.addEventListener("gd-cart-add", handleBump);
+    return () => {
+      window.removeEventListener("gd-cart-add", handleBump);
+    };
   }, []);
 
   // Renderizar un placeholder durante SSR
@@ -47,6 +57,8 @@ export function CartButton() {
         onClick={() => setIsOpen(true)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
+        animate={bumpCount ? { scale: [1, 1.15, 0.96, 1] } : { scale: 1 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
         className="relative inline-flex items-center justify-center rounded-full bg-[var(--gd-color-forest)] p-3 text-white shadow-lg transition-colors duration-300 hover:bg-[var(--gd-color-leaf)]"
         aria-label="Ver carrito"
       >

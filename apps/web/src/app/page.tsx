@@ -7,24 +7,12 @@ import Image from "next/image";
 import { Container } from "./_components/container";
 import { LunchCombosSection } from "./_components/lunch-combos-section";
 import { BoxesGrid } from "./_components/boxes-grid";
-import { HowItWorksAccordion } from "./_components/how-it-works-accordion";
+import { HowItWorksImage } from "./_components/how-it-works-image";
 import { UnifiedCatalogSection } from "./_components/unified-catalog-section";
 import { HomeSections } from "./_components/home-sections";
 import { fetchBoxRules, fetchBoxes, fetchProductCategories, fetchProducts } from "@/modules/catalog/api";
 
 export const dynamic = "force-dynamic";
-
-const slugToRuleKey: Record<string, string> = {
-  "caribbean-fresh-pack": "GD-CAJA-001",
-  "island-weekssential": "GD-CAJA-002",
-  "allgreenxclusive": "GD-CAJA-003",
-  "box-1-caribbean-fresh-pack-3-dias": "GD-CAJA-001",
-  "box-2-island-weekssential-1-semana": "GD-CAJA-002",
-  "box-3-allgreenxclusive-2-semanas": "GD-CAJA-003",
-  "box-1": "GD-CAJA-001",
-  "box-2": "GD-CAJA-002",
-  "box-3": "GD-CAJA-003",
-};
 
 export default async function HomePage() {
   const [categories, boxes, products, boxRules] = await Promise.all([
@@ -51,16 +39,7 @@ export default async function HomePage() {
   });
 
   const prebuiltBoxes = boxes.map((box) => {
-    // Intentar encontrar la regla por slug exacto, luego por slug parcial, luego por ID
-    let ruleKey = slugToRuleKey[box.slug];
-    if (!ruleKey && box.slug.includes("caribbean")) ruleKey = "GD-CAJA-001";
-    if (!ruleKey && box.slug.includes("island")) ruleKey = "GD-CAJA-002";
-    if (!ruleKey && box.slug.includes("allgreen")) ruleKey = "GD-CAJA-003";
-    if (!ruleKey && box.id === "box-1") ruleKey = "GD-CAJA-001";
-    if (!ruleKey && box.id === "box-2") ruleKey = "GD-CAJA-002";
-    if (!ruleKey && box.id === "box-3") ruleKey = "GD-CAJA-003";
-
-    const rule = ruleKey ? rulesById.get(ruleKey) : undefined;
+    const rule = box.ruleId ? rulesById.get(box.ruleId) : undefined;
     return {
       box,
       rule,
@@ -84,8 +63,8 @@ export default async function HomePage() {
             {/* Grid de Cajas */}
             <BoxesGrid boxes={boxes} prebuiltBoxes={prebuiltBoxes} products={products} boxRules={boxRules} />
 
-            {/* Banner y Pasos (Interactivos) */}
-            <HowItWorksAccordion />
+            {/* Cómo Funciona - Imagen Dinámica */}
+            <HowItWorksImage />
           </Container>
         </section>
 

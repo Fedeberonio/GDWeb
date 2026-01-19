@@ -104,6 +104,17 @@ a {
   }
 }
 
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes splash-fade {
   0% {
     opacity: 0;
@@ -111,7 +122,7 @@ a {
   12% {
     opacity: 1;
   }
-  90% {
+  85% {
     opacity: 1;
   }
   100% {
@@ -174,6 +185,10 @@ a {
   animation: shake-slow 2s ease-in-out infinite;
 }
 
+.animate-modal-in {
+  animation: modal-in 300ms ease-out;
+}
+
 /* Mejoras de tipografía */
 .font-display {
   letter-spacing: -0.02em;
@@ -210,12 +225,12 @@ a {
   align-items: center;
   justify-content: center;
   background: #fff;
-  animation: splash-fade 6s ease-out forwards;
+  animation: splash-fade 2s ease-out forwards;
 }
 
 .logo-splash__logo {
   position: relative;
   width: 100vw;
   height: 100vh;
-  animation: splash-logo 6s ease-out forwards;
+  animation: splash-logo 2s ease-out forwards;
 }

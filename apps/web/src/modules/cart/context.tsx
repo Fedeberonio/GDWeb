@@ -180,6 +180,9 @@ export function CartProvider({ children }: PropsWithChildren) {
         },
       ];
     });
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("gd-cart-add"));
+    }
   };
 
   const updateQuantity = (slug: string, quantity: number) => {

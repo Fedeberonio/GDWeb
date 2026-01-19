@@ -236,7 +236,8 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
             productName.includes("china chinola") ||
             productSlug.includes("jugo") || productSlug.includes("juice") ||
             productSlug.includes("china-chinola") ||
-            productTags.includes("jugo") || productTags.includes("juice");
+            productTags.includes("jugo") || productTags.includes("juice") ||
+            product.categoryId === "jugos-naturales";
           const isPackageProduct = productName.includes("arroz") || productName.includes("habichuela") ||
             productName.includes("frijol") || productName.includes("grano") ||
             productName.includes("lenteja") || productName.includes("quinoa") ||
@@ -258,8 +259,10 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
           // Productos que necesitan verse completos (botellas, paquetes, aceites)
           const needsFullView = isBottleProduct || isPackageProduct || isOilProduct;
           const imageClassName = needsFullView
-            ? "object-contain object-center bg-white p-6"
+            ? "object-contain object-center bg-white p-4"
             : "object-cover";
+          // Altura especial para botellas de jugos
+          const imageContainerHeight = isBottleProduct ? "h-64" : "h-56";
 
           // Si es ensalada, mostrar diseño compacto
           if (isSalad) {
@@ -269,8 +272,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                whileHover={{ y: -4 }}
-                className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-[var(--color-border)] bg-white shadow-md transition-all duration-300 hover:shadow-lg hover:border-[var(--gd-color-leaf)]"
+                className="group flex h-full flex-col overflow-hidden rounded-2xl border-2 border-[var(--color-border)] bg-white shadow-md transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:border-[var(--gd-color-leaf)]"
               >
                 {/* Imagen compacta */}
                 <div className="relative h-40 w-full overflow-hidden">
@@ -383,10 +385,9 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              whileHover={{ y: -4 }}
-              className="group flex h-full flex-col overflow-hidden rounded-3xl border-2 border-[var(--color-border)] bg-white shadow-soft transition-all duration-300 hover:shadow-xl hover:border-[var(--gd-color-leaf)]"
+              className="group flex h-full flex-col overflow-hidden rounded-3xl border-2 border-[var(--color-border)] bg-white shadow-soft transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:border-[var(--gd-color-leaf)]"
             >
-              <div className={`relative h-56 w-full overflow-hidden ${needsFullView ? "bg-[var(--color-background-muted)]" : ""}`}>
+              <div className={`relative ${imageContainerHeight} w-full overflow-hidden ${needsFullView ? "bg-[var(--color-background-muted)] flex items-center justify-center" : ""}`}>
                 <ProductImageFallback
                   product={product}
                   className={imageClassName}
@@ -521,7 +522,7 @@ export function ProductCatalogGrid({ products, categories }: ProductCatalogGridP
       {/* Modal de detalles nutricionales */}
       {selectedProductDetails && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setSelectedProductDetails(null)}>
-          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl animate-modal-in" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setSelectedProductDetails(null)}
               className="absolute right-4 top-4 rounded-full bg-white/90 p-2 text-[var(--color-muted)] hover:bg-[var(--color-background-muted)] hover:text-[var(--color-foreground)] transition"

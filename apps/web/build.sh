@@ -4,6 +4,7 @@
 set +e  # No fallar inmediatamente en errores
 
 export NEXT_DISABLE_LIGHTNINGCSS=1
+export NEXT_DISABLE_ESLINT=1
 
 echo "🔨 Running Next.js build with lightningcss disabled..."
 

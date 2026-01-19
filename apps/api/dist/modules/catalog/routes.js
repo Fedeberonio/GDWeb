@@ -32,6 +32,24 @@ function createCatalogRouter() {
             next(error);
         }
     });
+    router.get("/box-rules", async (_req, res, next) => {
+        try {
+            const rules = await (0, service_1.listBoxRulesPublic)();
+            res.json({ data: rules });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+    router.get("/combos", async (_req, res, next) => {
+        try {
+            const combos = await (0, service_1.getCombos)();
+            res.json({ data: combos });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
     return router;
 }
 //# sourceMappingURL=routes.js.map
