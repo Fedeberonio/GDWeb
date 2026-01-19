@@ -1456,9 +1456,17 @@ function guardarPreferencias() {
   estadoCajas[boxId].ok = true;
 
   // 2. Obtiene los datos de la tarjeta HTML para crear el item del carrito
-  const card = document.querySelector(`.caja-hover[data-box="${boxId}"]`);
+  let card = document.querySelector(`.caja-hover[data-box="${boxId}"]`);
+  // Si no se encuentra, intenta con diferentes formatos
   if (!card) {
-    alert('Error: No se encontró la tarjeta de la caja.');
+    const numeroCaja = obtenerNumeroCaja(boxId);
+    card = document.querySelector(`.caja-hover[data-box="box${numeroCaja}"]`) ||
+           document.querySelector(`.caja-hover[data-box="${numeroCaja}"]`) ||
+           document.querySelector(`.caja-hover[data-box="box-${numeroCaja}"]`);
+  }
+  if (!card) {
+    console.error('No se encontró la tarjeta de la caja para:', boxId);
+    alert('Error: No se encontró la tarjeta de la caja. Por favor, recarga la página.');
     return;
   }
   const numeroCaja = obtenerNumeroCaja(boxId);
@@ -2492,9 +2500,17 @@ function agregarCajaAutoMode() {
   }
 
   // Obtiene los datos de la tarjeta HTML para crear el item del carrito
-  const card = document.querySelector(`.caja-hover[data-box="${boxId}"]`);
+  let card = document.querySelector(`.caja-hover[data-box="${boxId}"]`);
+  // Si no se encuentra, intenta con diferentes formatos
   if (!card) {
-    alert('Error: No se encontró la tarjeta de la caja.');
+    const numeroCaja = obtenerNumeroCaja(boxId);
+    card = document.querySelector(`.caja-hover[data-box="box${numeroCaja}"]`) ||
+           document.querySelector(`.caja-hover[data-box="${numeroCaja}"]`) ||
+           document.querySelector(`.caja-hover[data-box="box-${numeroCaja}"]`);
+  }
+  if (!card) {
+    console.error('No se encontró la tarjeta de la caja para:', boxId);
+    alert('Error: No se encontró la tarjeta de la caja. Por favor, recarga la página.');
     return;
   }
 
