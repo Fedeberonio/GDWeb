@@ -1,5 +1,6 @@
 import { translations } from "@/modules/i18n/translations";
 import type { Locale } from "@/modules/i18n/locales";
+import type { BoxVariant } from "@/modules/catalog/types";
 
 // Función para determinar categoría visual basada en el nombre del producto
 export function getVisualCategory(slug: string, name: string, catalogCategory?: string): string {
@@ -116,7 +117,11 @@ export function calculateVariantComposition(
 /**
  * Obtiene la descripción y tagline de una variante
  */
-export function getVariantInfo(variant: VariantType, locale: Locale = "es"): { tagline: string; description: string; icon: string } {
+export function getVariantInfo(
+  variant: VariantType,
+  locale: Locale = "es",
+  variantData?: BoxVariant | null,
+): { tagline: string; description: string; icon: string } {
   const info = {
     mix: {
       tagline: translations[locale]["variants.mix_tagline"],
@@ -135,5 +140,14 @@ export function getVariantInfo(variant: VariantType, locale: Locale = "es"): { t
     },
   };
 
-  return info[variant];
+  const defaults = info[variant];
+  const localizedName = variantData?.name?.[locale] ?? variantData?.name?.es ?? variantData?.name?.en;
+  const localizedDescription =
+    variantData?.description?.[locale] ?? variantData?.description?.es ?? variantData?.description?.en;
+
+  return {
+    tagline: localizedName || defaults.tagline,
+    description: localizedDescription || defaults.description,
+    icon: defaults.icon,
+  };
 }

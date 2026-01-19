@@ -32,12 +32,26 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
       frutas: "🍎",
       vegetales: "🥦",
       "productos-caseros": "🏠",
-      "productos-granja": "🥚",
+      "productos-de-granja": "🥚",
       "jugos-naturales": "🥤",
-      hierbas: "🌿",
+      "hierbas-y-especias": "🌿",
       otros: "📦",
     };
     return icons[categoryId] || "📦";
+  };
+
+  // Obtener imágenes de fondo por categoría (mismas que en el homepage)
+  const getCategoryImage = (categoryId: string) => {
+    const images: Record<string, string> = {
+      frutas: "/images/categories/Frutas.png",
+      vegetales: "/images/categories/Vegetales.png",
+      "productos-caseros": "/images/categories/productos_caseros.png",
+      "productos-de-granja": "/images/categories/Productos_de_granja.png",
+      "jugos-naturales": "/images/categories/Jugos.png",
+      "hierbas-y-especias": "/images/categories/hierbas_y_especias.png",
+      otros: "/images/categories/Otros.png",
+    };
+    return images[categoryId] || "/images/hero/hero-rainbow-abundance.jpg";
   };
 
   const filteredProducts = useMemo(() => {
@@ -213,12 +227,24 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
             const productName = tData(product.name).toLowerCase();
             const productSlug = product.slug.toLowerCase();
             const productTags = product.tags.join(" ").toLowerCase();
-            const isBottleProduct = productName.includes("jugo") || productName.includes("juice") || productSlug.includes("jugo");
-            const isPackageProduct = productName.includes("arroz") || productName.includes("habichuela") || productName.includes("rice");
-            const needsFullView = isBottleProduct || isPackageProduct;
+            const isBottleProduct = productName.includes("jugo") || productName.includes("juice") || 
+              productSlug.includes("jugo") || productSlug.includes("juice") ||
+              product.categoryId === "jugos-naturales" || productTags.includes("jugo") || productTags.includes("juice");
+            const isPackageProduct = productName.includes("arroz") || productName.includes("habichuela") || 
+              productName.includes("lenteja") || productName.includes("quinoa") ||
+              productName.includes("rice") || productName.includes("lentil") ||
+              productSlug.includes("arroz") || productSlug.includes("habichuela") ||
+              productSlug.includes("lenteja") || productSlug.includes("quinoa") ||
+              productTags.includes("lenteja") || productTags.includes("quinoa");
+            const isOilProduct = productName.includes("aceite") || productName.includes("oil") ||
+              productSlug.includes("aceite") || productSlug.includes("oil") ||
+              productTags.includes("aceite") || productTags.includes("oil");
+            const needsFullView = isBottleProduct || isPackageProduct || isOilProduct;
             const imageClassName = needsFullView
-              ? "object-contain object-center bg-white p-6"
+              ? "object-contain object-center bg-white p-4"
               : "object-cover";
+            // Altura especial para botellas de jugos
+            const imageContainerHeight = isBottleProduct ? "h-64" : "h-56";
 
             return (
               <motion.article
@@ -226,10 +252,9 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                whileHover={{ y: -4 }}
-                className="group flex h-full flex-col overflow-hidden rounded-3xl border-2 border-[var(--color-border)] bg-white shadow-soft transition-all duration-300 hover:shadow-xl hover:border-[var(--gd-color-leaf)]"
+                className="group flex h-full flex-col overflow-hidden rounded-3xl border-2 border-[var(--color-border)] bg-white shadow-soft transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:border-[var(--gd-color-leaf)]"
               >
-                <div className={`relative h-56 w-full overflow-hidden ${needsFullView ? "bg-[var(--color-background-muted)]" : ""}`}>
+                <div className={`relative ${imageContainerHeight} w-full overflow-hidden ${needsFullView ? "bg-[var(--color-background-muted)] flex items-center justify-center" : ""}`}>
                   <ProductImageFallback
                     product={product}
                     className={imageClassName}
@@ -368,16 +393,34 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {otherCategories.slice(0, 5).map((cat) => {
                 const icon = getCategoryIcon(cat.id);
+                const categoryImage = getCategoryImage(cat.id);
                 return (
                   <Link
                     key={cat.id}
                     href={`/categoria/${cat.slug}`}
-                    className="group flex flex-col items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white p-4 text-center transition-all hover:border-[var(--gd-color-leaf)] hover:shadow-md hover:-translate-y-0.5"
+                    className="group relative flex flex-col items-center justify-end gap-2 rounded-xl border-2 border-[var(--color-border)] overflow-hidden min-h-[140px] transition-all hover:border-[var(--gd-color-leaf)] hover:shadow-lg hover:-translate-y-1"
                   >
-                    <span className="text-3xl">{icon}</span>
-                    <span className="text-xs font-semibold text-[var(--gd-color-forest)] group-hover:text-[var(--gd-color-leaf)] line-clamp-2">
-                      {tData(cat.name)}
-                    </span>
+                    {/* Background Image */}
+                    <div className="absolute inset-0">
+                      <Image
+                        src={categoryImage}
+                        alt={tData(cat.name)}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    </div>
+                    
+                    {/* Overlay gradient for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                    
+                    {/* Content */}
+                    <div className="relative z-10 w-full p-3 text-center">
+                      <span className="text-2xl mb-1 block drop-shadow-lg">{icon}</span>
+                      <span className="text-xs font-bold text-white drop-shadow-md line-clamp-2">
+                        {tData(cat.name)}
+                      </span>
+                    </div>
                   </Link>
                 );
               })}

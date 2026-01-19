@@ -47,6 +47,12 @@ export const productSchema = z.object({
       vegan: z.boolean().optional(),
       glutenFree: z.boolean().optional(),
       organic: z.boolean().optional(),
+      calories: z.number().nonnegative().optional(),
+      protein: z.number().nonnegative().optional(),
+      carbs: z.number().nonnegative().optional(),
+      fats: z.number().nonnegative().optional(),
+      fiber: z.number().nonnegative().optional(),
+      sugars: z.number().nonnegative().optional(),
     })
     .optional(),
   logistics: z
@@ -88,6 +94,9 @@ export const boxSchema = z.object({
   description: localizedStringSchema.partial().optional(),
   price: priceSchema,
   durationDays: z.number().int().positive().optional(),
+  ruleId: z.string().min(1).optional(),
+  dimensionsLabel: z.string().min(1).optional(),
+  weightLabel: z.string().min(1).optional(),
   heroImage: z.string().min(1).optional(),
   isFeatured: z.boolean().default(true),
   variants: z.array(boxVariantSchema),
@@ -143,6 +152,33 @@ export const boxRuleSchema = z.object({
     .optional(),
 });
 
+export const comboSchema = z.object({
+  id: z.string().min(1),
+  name: localizedStringSchema,
+  salad: localizedStringSchema,
+  juice: localizedStringSchema,
+  dessert: localizedStringSchema,
+  price: z.number().nonnegative(),
+  cost: z.number().nonnegative().optional(),
+  margin: z.number().nonnegative().optional(),
+  calories: z.number().nonnegative(),
+  protein: z.number().nonnegative(),
+  glutenFree: z.boolean().default(false),
+  benefit: localizedStringSchema,
+  benefitDetail: localizedStringSchema,
+  recommendedFor: localizedStringSchema,
+  carbs: z.number().nonnegative(),
+  fats: z.number().nonnegative(),
+  fiber: z.number().nonnegative(),
+  sugars: z.number().nonnegative(),
+  vitaminA: z.string().optional(),
+  vitaminC: z.string().optional(),
+  image: z.string().min(1).optional(),
+  ingredients: z.array(localizedStringSchema).default([]),
+  status: z.enum(["active", "inactive", "coming_soon"]).default("active"),
+  isFeatured: z.boolean().default(false),
+});
+
 export type LocaleCode = z.infer<typeof localeSchema>;
 export type LocalizedString = z.infer<typeof localizedStringSchema>;
 export type ProductCategory = z.infer<typeof productCategorySchema>;
@@ -150,3 +186,4 @@ export type Product = z.infer<typeof productSchema>;
 export type BoxVariant = z.infer<typeof boxVariantSchema>;
 export type Box = z.infer<typeof boxSchema>;
 export type BoxRule = z.infer<typeof boxRuleSchema>;
+export type Combo = z.infer<typeof comboSchema>;

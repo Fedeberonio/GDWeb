@@ -21,7 +21,7 @@ export function InstagramFloatButton() {
       href={INSTAGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 left-4 md:left-6 z-50 flex items-center gap-2 md:gap-3 rounded-full px-4 py-3 md:px-5 md:py-4 text-white shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 group"
+      className="fixed bottom-4 left-4 z-50 flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full text-white shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
       aria-label="Abrir Instagram de Green Dolio"
       style={{
         background: INSTAGRAM_GRADIENT,
@@ -29,7 +29,7 @@ export function InstagramFloatButton() {
       }}
     >
       <svg
-        className="h-7 w-7 md:h-8 md:w-8 text-white flex-shrink-0"
+        className="h-6 w-6 md:h-7 md:w-7 text-white"
         fill="currentColor"
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
@@ -37,15 +37,6 @@ export function InstagramFloatButton() {
       >
         <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5Zm10.75 2.25a1 1 0 1 1 0 2 1 1 0 0 1 0-2ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" />
       </svg>
-
-      <span className="hidden lg:block text-white font-bold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        Instagram
-      </span>
-
-      <span
-        className="absolute inset-0 rounded-full opacity-20 animate-ping pointer-events-none"
-        style={{ background: INSTAGRAM_GRADIENT }}
-      />
     </a>
   );
 }

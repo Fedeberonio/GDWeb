@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/modules/cart/context";
-import type { Box } from "@/modules/catalog/types";
+import type { Box, BoxRule } from "@/modules/catalog/types";
 import { calculateVariantComposition, getVariantInfo, getVisualCategory, type VariantType } from "./helpers";
 import { useState } from "react";
 import { useTranslation } from "@/modules/i18n/use-translation";
@@ -13,17 +13,19 @@ type BoxPreviewProps = {
   box: Box;
   variant: VariantType;
   baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
+  boxRule?: BoxRule;
   onBack: () => void;
   onChangeVariant: () => void;
 };
 
-export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant }: BoxPreviewProps) {
+export function BoxPreview({ box, variant, baseContents, boxRule, onBack, onChangeVariant }: BoxPreviewProps) {
   const { addItem } = useCart();
   const { locale, t, tData } = useTranslation();
   const { productMap } = useCatalog();
   const [isAdded, setIsAdded] = useState(false);
 
-  const info = getVariantInfo(variant, locale);
+  const variantData = box.variants.find((item) => item.id === variant || item.slug === variant);
+  const info = getVariantInfo(variant, locale, variantData);
   const composition = calculateVariantComposition(baseContents);
 
   // Agrupar productos por categoría visual
@@ -58,13 +60,7 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  const boxImage =
-    box.heroImage ||
-    (box.id === "box-1" || box.slug.includes("caribbean")
-      ? "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png"
-      : box.id === "box-2" || box.slug.includes("island")
-        ? "/images/boxes/box-2-island-weekssential-veggie-product.jpg"
-        : "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg");
+  const boxImage = box.heroImage || "/images/boxes/placeholder.jpg";
 
   // Calcular balance visual (simplificado)
   const getBalancePercentage = (current: number, min: number, max: number): number => {
@@ -73,11 +69,7 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
     return Math.min(100, Math.max(0, (position / range) * 100));
   };
 
-  const rule = box.id === "box-1" || box.slug.includes("caribbean")
-    ? { categoryBudget: { aromatic: { min: 1, max: 2 }, leafy: { min: 1, max: 3 }, fruit_large: { min: 1, max: 2 }, root: { min: 2, max: 4 }, citrus: { min: 2, max: 4 } } }
-    : box.id === "box-2" || box.slug.includes("island")
-      ? { categoryBudget: { aromatic: { min: 1, max: 3 }, leafy: { min: 2, max: 4 }, fruit_large: { min: 2, max: 3 }, root: { min: 3, max: 6 }, citrus: { min: 3, max: 5 } } }
-      : { categoryBudget: { aromatic: { min: 2, max: 4 }, leafy: { min: 3, max: 6 }, fruit_large: { min: 2, max: 4 }, root: { min: 4, max: 8 }, citrus: { min: 4, max: 6 } } };
+  const categoryBudget = boxRule?.categoryBudget ?? {};
 
   return (
     <section className="box-preview space-y-8">
@@ -142,7 +134,7 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
                 { key: "root", label: `🥔 ${t("variants.categories.root")}`, current: composition.root },
                 { key: "citrus", label: `🍊 ${t("variants.categories.citrus")}`, current: composition.citrus },
               ].map(({ key, label, current }) => {
-                const budget = rule.categoryBudget[key as keyof typeof rule.categoryBudget];
+                const budget = categoryBudget[key as keyof typeof categoryBudget];
                 if (!budget) return null;
                 const percentage = getBalancePercentage(current, budget.min, budget.max);
                 const color = percentage >= 50 ? "bg-[var(--gd-color-leaf)]" : percentage >= 25 ? "bg-yellow-500" : "bg-red-400";

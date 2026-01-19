@@ -11,9 +11,11 @@ import { useTranslation } from "@/modules/i18n/use-translation";
 // Componente selector de variante para el flujo guiado
 function VariantSelector({
   baseContents,
+  variants,
   onSelectVariant,
 }: {
   baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
+  variants?: Box["variants"];
   onSelectVariant: (variant: VariantType) => void;
 }) {
   const { t } = useTranslation();
@@ -26,6 +28,7 @@ function VariantSelector({
         </div>
       <BoxVariantsDisplay 
         baseContents={baseContents} 
+        boxVariants={variants}
         compact={false} 
         onVariantSelect={onSelectVariant}
       />
@@ -71,11 +74,13 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
 
   const handleAddToCart = () => {
     if (!selectedBox || !selectedVariant) return;
+    const selectedVariantData = selectedBox.variants.find((item) => item.id === selectedVariant || item.slug === selectedVariant);
+    const selectedVariantInfo = getVariantInfo(selectedVariant, locale, selectedVariantData);
     setIsAdding(true);
     addItem({
       slug: `${selectedBox.slug}-${selectedVariant}`,
       type: "box",
-      name: `${selectedBox.name.es} (${selectedVariant.toUpperCase()})`,
+      name: `${selectedBox.name.es} (${selectedVariantInfo.tagline || selectedVariant.toUpperCase()})`,
       quantity: 1,
       price: selectedBox.price.amount,
       slotValue: 0,
@@ -92,14 +97,7 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
     window.location.href = `/armar?box=${selectedBox.id}&variant=${selectedVariant}`;
   };
 
-  const boxImage = selectedBox
-    ? selectedBox.heroImage ||
-      (selectedBox.id === "box-1" || selectedBox.slug.includes("caribbean")
-        ? "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png"
-        : selectedBox.id === "box-2" || selectedBox.slug.includes("island")
-        ? "/images/boxes/box-2-island-weekssential-veggie-product.jpg"
-        : "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg")
-    : null;
+  const boxImage = selectedBox?.heroImage || "/images/boxes/placeholder.jpg";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
@@ -188,7 +186,11 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                 </h3>
               </div>
               
-              <VariantSelector baseContents={baseContents} onSelectVariant={setSelectedVariant} />
+              <VariantSelector
+                baseContents={baseContents}
+                variants={selectedBox?.variants}
+                onSelectVariant={setSelectedVariant}
+              />
               
               <div className="flex justify-center pt-4">
                 <button
@@ -227,9 +229,19 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                   {t("guided_flow.back_variants")}
                 </button>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[var(--gd-color-leaf)]/20 px-4 py-2 mb-2">
-                  <span className="text-xl">{getVariantInfo(selectedVariant, locale).icon}</span>
+                  <span className="text-xl">
+                    {getVariantInfo(
+                      selectedVariant,
+                      locale,
+                      selectedBox?.variants.find((item) => item.id === selectedVariant || item.slug === selectedVariant),
+                    ).icon}
+                  </span>
                   <span className="text-sm font-bold text-[var(--gd-color-forest)] uppercase">
-                    {selectedVariant.toUpperCase()} - {getVariantInfo(selectedVariant, locale).tagline}
+                    {selectedVariant.toUpperCase()} - {getVariantInfo(
+                      selectedVariant,
+                      locale,
+                      selectedBox?.variants.find((item) => item.id === selectedVariant || item.slug === selectedVariant),
+                    ).tagline}
                   </span>
                 </div>
                 <h3 className="font-display text-xl font-bold text-[var(--gd-color-forest)]">
@@ -272,6 +284,7 @@ export function GuidedBoxFlow({ boxes, prebuiltBoxes, onClose }: GuidedBoxFlowPr
                   
                   <BoxVariantsDisplay 
                     baseContents={baseContents} 
+                    boxVariants={selectedBox?.variants}
                     compact={false}
                     onVariantSelect={(variant) => {
                       // Actualizar la variante seleccionada cuando el usuario hace clic

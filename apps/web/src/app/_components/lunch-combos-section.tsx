@@ -114,7 +114,7 @@ const COMBOS: Combo[] = [
   },
   {
     id: 3,
-    name: { es: "TROPICAL POWER", en: "TROPICAL POWER" },
+    name: { es: "PODER TROPICAL", en: "TROPICAL POWER" },
     salad: { es: "Tropical con Quinoa y Pitahaya", en: "Tropical Salad with Quinoa & Dragon Fruit" },
     juice: { es: "Tropicalote", en: "Tropical Punch" },
     dessert: { es: "Mango en cubos", en: "Diced Mango" },
@@ -152,7 +152,7 @@ const COMBOS: Combo[] = [
   },
   {
     id: 4,
-    name: { es: "ENERGY BOOST", en: "ENERGY BOOST" },
+    name: { es: "IMPULSO ENERGÉTICO", en: "ENERGY BOOST" },
     salad: { es: "Verde Detox Simplificada", en: "Simplified Green Detox" },
     juice: { es: "Zanahoria Manzana Limón", en: "Carrot Apple Lemon" },
     dessert: { es: "Piña en cubos", en: "Diced Pineapple" },
@@ -186,7 +186,7 @@ const COMBOS: Combo[] = [
   },
   {
     id: 5,
-    name: { es: "GREEK DOLIO", en: "GREEK DOLIO" },
+    name: { es: "GRIEGA DOLIO", en: "GREEK DOLIO" },
     salad: { es: "Griega Simplificada", en: "Simplified Greek" },
     juice: { es: "Sandía y Manzana", en: "Watermelon & Apple" },
     dessert: { es: "Banana", en: "Banana" },
@@ -459,12 +459,6 @@ export function LunchCombosSection() {
                   )}
                   {/* Badges superiores */}
                   <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-2">
-                    {combo.margin >= 65 && (
-                      <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[var(--gd-color-citrus)]/95 to-[var(--gd-color-apple)]/95 px-3 py-1 text-xs font-bold text-white shadow-lg backdrop-blur-sm">
-                        <span>⭐</span>
-                        <span>{combo.margin}% margen</span>
-                      </div>
-                    )}
                     {combo.glutenFree && (
                       <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-[var(--gd-color-forest)]/95 to-[var(--gd-color-leaf)]/95 px-3 py-1 text-xs font-bold text-white shadow-lg">
                         <span>🌾</span>

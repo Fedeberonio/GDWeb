@@ -178,7 +178,7 @@ export function AuthModal() {
       onClick={closeModal}
     >
       <div
-        className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000]"
+        className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000] animate-modal-in"
         onClick={(event) => {
           event.stopPropagation();
         }}

@@ -1,3 +1,5 @@
+import { z } from "zod";
+import { boxRuleSchema } from "./schemas";
 import { type CatalogChangeContext, type CatalogChange } from "./history";
 export declare function getCategories(): Promise<{
     id: string;
@@ -42,10 +44,21 @@ export declare function getProducts(): Promise<{
         currency: string;
     };
     image?: string;
+    metadata?: {
+        [x: string]: unknown;
+        slotValue?: number;
+        wholesaleCost?: number;
+    };
     nutrition?: {
         vegan?: boolean;
         glutenFree?: boolean;
         organic?: boolean;
+        calories?: number;
+        protein?: number;
+        carbs?: number;
+        fats?: number;
+        fiber?: number;
+        sugars?: number;
     };
     logistics?: {
         weightKg?: number;
@@ -101,6 +114,9 @@ export declare function getBoxes(): Promise<{
         en?: string;
     };
     durationDays?: number;
+    ruleId?: string;
+    dimensionsLabel?: string;
+    weightLabel?: string;
     heroImage?: string;
 }[]>;
 export declare function listProductsForAdmin(): Promise<{
@@ -132,10 +148,21 @@ export declare function listProductsForAdmin(): Promise<{
         currency: string;
     };
     image?: string;
+    metadata?: {
+        [x: string]: unknown;
+        slotValue?: number;
+        wholesaleCost?: number;
+    };
     nutrition?: {
         vegan?: boolean;
         glutenFree?: boolean;
         organic?: boolean;
+        calories?: number;
+        protein?: number;
+        carbs?: number;
+        fats?: number;
+        fiber?: number;
+        sugars?: number;
     };
     logistics?: {
         weightKg?: number;
@@ -191,8 +218,180 @@ export declare function listBoxesForAdmin(): Promise<{
         en?: string;
     };
     durationDays?: number;
+    ruleId?: string;
+    dimensionsLabel?: string;
+    weightLabel?: string;
     heroImage?: string;
 }[]>;
+export declare function listBoxRulesForAdmin(): Promise<{
+    id: string;
+    displayName: string;
+    slotBudget: number;
+    targetWeightKg: number;
+    categoryBudget: Record<string, {
+        min: number;
+        max: number;
+    }>;
+    baseContents: {
+        productSlug: string;
+        quantity: number;
+    }[];
+    minMargin?: number;
+    variantContents?: {
+        mix?: {
+            productSlug: string;
+            quantity: number;
+        }[];
+        fruity?: {
+            productSlug: string;
+            quantity: number;
+        }[];
+        veggie?: {
+            productSlug: string;
+            quantity: number;
+        }[];
+    };
+}[]>;
+export declare function listCombosForAdmin(): Promise<{
+    id: string;
+    name: {
+        es: string;
+        en: string;
+    };
+    salad: {
+        es: string;
+        en: string;
+    };
+    juice: {
+        es: string;
+        en: string;
+    };
+    dessert: {
+        es: string;
+        en: string;
+    };
+    price: number;
+    calories: number;
+    protein: number;
+    glutenFree: boolean;
+    benefit: {
+        es: string;
+        en: string;
+    };
+    benefitDetail: {
+        es: string;
+        en: string;
+    };
+    recommendedFor: {
+        es: string;
+        en: string;
+    };
+    carbs: number;
+    fats: number;
+    fiber: number;
+    sugars: number;
+    ingredients: {
+        es: string;
+        en: string;
+    }[];
+    status: "active" | "inactive" | "coming_soon";
+    isFeatured: boolean;
+    cost?: number;
+    margin?: number;
+    vitaminA?: string;
+    vitaminC?: string;
+    image?: string;
+}[]>;
+export declare function getCombos(): Promise<{
+    id: string;
+    name: {
+        es: string;
+        en: string;
+    };
+    salad: {
+        es: string;
+        en: string;
+    };
+    juice: {
+        es: string;
+        en: string;
+    };
+    dessert: {
+        es: string;
+        en: string;
+    };
+    price: number;
+    calories: number;
+    protein: number;
+    glutenFree: boolean;
+    benefit: {
+        es: string;
+        en: string;
+    };
+    benefitDetail: {
+        es: string;
+        en: string;
+    };
+    recommendedFor: {
+        es: string;
+        en: string;
+    };
+    carbs: number;
+    fats: number;
+    fiber: number;
+    sugars: number;
+    ingredients: {
+        es: string;
+        en: string;
+    }[];
+    status: "active" | "inactive" | "coming_soon";
+    isFeatured: boolean;
+    cost?: number;
+    margin?: number;
+    vitaminA?: string;
+    vitaminC?: string;
+    image?: string;
+}[]>;
+export declare function listBoxRulesPublic(): Promise<{
+    id: string;
+    displayName: string;
+    slotBudget: number;
+    targetWeightKg: number;
+    categoryBudget: Record<string, {
+        min: number;
+        max: number;
+    }>;
+    baseContents: {
+        productSlug: string;
+        quantity: number;
+    }[];
+    minMargin?: number;
+    variantContents?: {
+        mix?: {
+            productSlug: string;
+            quantity: number;
+        }[];
+        fruity?: {
+            productSlug: string;
+            quantity: number;
+        }[];
+        veggie?: {
+            productSlug: string;
+            quantity: number;
+        }[];
+    };
+}[]>;
+export type ProductMetaSnapshot = {
+    slug: string;
+    name: string;
+    categoryId: string;
+    weightKg?: number;
+    slotValue?: number;
+    wholesaleCost?: number;
+    tags: string[];
+};
+export declare function getProductMetaMap(): Promise<Record<string, ProductMetaSnapshot>>;
+export declare function getBoxRulesMap(): Promise<Record<string, z.infer<typeof boxRuleSchema>>>;
 export type CatalogHistoryEntry = CatalogChange;
 export declare function listCatalogHistoryEntries(limit?: number): Promise<CatalogHistoryEntry[]>;
 export declare function updateProductById(id: string, payload: unknown, context?: CatalogChangeContext): Promise<{
@@ -224,10 +423,21 @@ export declare function updateProductById(id: string, payload: unknown, context?
         currency: string;
     };
     image?: string;
+    metadata?: {
+        [x: string]: unknown;
+        slotValue?: number;
+        wholesaleCost?: number;
+    };
     nutrition?: {
         vegan?: boolean;
         glutenFree?: boolean;
         organic?: boolean;
+        calories?: number;
+        protein?: number;
+        carbs?: number;
+        fats?: number;
+        fiber?: number;
+        sugars?: number;
     };
     logistics?: {
         weightKg?: number;
@@ -283,6 +493,9 @@ export declare function updateBoxById(id: string, payload: unknown, context?: Ca
         en?: string;
     };
     durationDays?: number;
+    ruleId?: string;
+    dimensionsLabel?: string;
+    weightLabel?: string;
     heroImage?: string;
 }>;
 export declare function createProduct(payload: unknown, context?: CatalogChangeContext): Promise<{
@@ -314,10 +527,21 @@ export declare function createProduct(payload: unknown, context?: CatalogChangeC
         currency: string;
     };
     image?: string;
+    metadata?: {
+        [x: string]: unknown;
+        slotValue?: number;
+        wholesaleCost?: number;
+    };
     nutrition?: {
         vegan?: boolean;
         glutenFree?: boolean;
         organic?: boolean;
+        calories?: number;
+        protein?: number;
+        carbs?: number;
+        fats?: number;
+        fiber?: number;
+        sugars?: number;
     };
     logistics?: {
         weightKg?: number;
@@ -330,6 +554,85 @@ export declare function createProduct(payload: unknown, context?: CatalogChangeC
             es?: string;
             en?: string;
         };
+    };
+}>;
+export declare function updateComboById(id: string, payload: unknown, context?: CatalogChangeContext): Promise<{
+    id: string;
+    name: {
+        es: string;
+        en: string;
+    };
+    salad: {
+        es: string;
+        en: string;
+    };
+    juice: {
+        es: string;
+        en: string;
+    };
+    dessert: {
+        es: string;
+        en: string;
+    };
+    price: number;
+    calories: number;
+    protein: number;
+    glutenFree: boolean;
+    benefit: {
+        es: string;
+        en: string;
+    };
+    benefitDetail: {
+        es: string;
+        en: string;
+    };
+    recommendedFor: {
+        es: string;
+        en: string;
+    };
+    carbs: number;
+    fats: number;
+    fiber: number;
+    sugars: number;
+    ingredients: {
+        es: string;
+        en: string;
+    }[];
+    status: "active" | "inactive" | "coming_soon";
+    isFeatured: boolean;
+    cost?: number;
+    margin?: number;
+    vitaminA?: string;
+    vitaminC?: string;
+    image?: string;
+}>;
+export declare function updateBoxRuleById(id: string, payload: unknown, context?: CatalogChangeContext): Promise<{
+    id: string;
+    displayName: string;
+    slotBudget: number;
+    targetWeightKg: number;
+    categoryBudget: Record<string, {
+        min: number;
+        max: number;
+    }>;
+    baseContents: {
+        productSlug: string;
+        quantity: number;
+    }[];
+    minMargin?: number;
+    variantContents?: {
+        mix?: {
+            productSlug: string;
+            quantity: number;
+        }[];
+        fruity?: {
+            productSlug: string;
+            quantity: number;
+        }[];
+        veggie?: {
+            productSlug: string;
+            quantity: number;
+        }[];
     };
 }>;
 //# sourceMappingURL=service.d.ts.map

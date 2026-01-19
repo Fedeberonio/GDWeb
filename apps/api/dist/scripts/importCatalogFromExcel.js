@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// @ts-nocheck
 const dotenv_1 = __importDefault(require("dotenv"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -135,7 +136,10 @@ function buildCatalog(rows) {
             const boxPayload = {
                 id: sku,
                 slug: slugify(name),
-                name: { es: name, en: name },
+                name: {
+                    es: name,
+                    en: row.Nombre_Producto_EN?.toString().trim() || name
+                },
                 price: {
                     amount: toNumber(row.Precio_DOP) ?? 0,
                     currency: "DOP",
@@ -143,7 +147,12 @@ function buildCatalog(rows) {
                 durationDays: parseDurationDays(name),
                 isFeatured: toBoolean(row.Destacado_Web),
                 variants: BOX_VARIANTS,
-                ...(row.Descripcion_Corta ? { description: { es: row.Descripcion_Corta, en: row.Descripcion_Corta } } : {}),
+                ...(row.Descripcion_Corta ? {
+                    description: {
+                        es: row.Descripcion_Corta,
+                        en: row.Descripcion_Corta_EN || row.Descripcion_Corta
+                    }
+                } : {}),
                 ...(row.URL_Imagen ? { heroImage: row.URL_Imagen } : {}),
             };
             const box = schemas_1.boxSchema.parse(boxPayload);
@@ -176,7 +185,10 @@ function buildCatalog(rows) {
             id: sku,
             slug: slugify(name),
             sku,
-            name: { es: name, en: name },
+            name: {
+                es: name,
+                en: row.Nombre_Producto_EN?.toString().trim() || name
+            },
             categoryId,
             price: {
                 amount: toNumber(row.Precio_DOP) ?? 0,
@@ -185,8 +197,18 @@ function buildCatalog(rows) {
             status: toBoolean(row.Activo) ? "active" : "inactive",
             tags,
             isFeatured: toBoolean(row.Destacado_Web),
-            ...(row.Descripcion_Corta ? { description: { es: row.Descripcion_Corta, en: row.Descripcion_Corta } } : {}),
-            ...(row.Unidad_Venta ? { unit: { es: row.Unidad_Venta, en: row.Unidad_Venta } } : {}),
+            ...(row.Descripcion_Corta ? {
+                description: {
+                    es: row.Descripcion_Corta,
+                    en: row.Descripcion_Corta_EN || row.Descripcion_Corta
+                }
+            } : {}),
+            ...(row.Unidad_Venta ? {
+                unit: {
+                    es: row.Unidad_Venta,
+                    en: row.Unidad_Venta_EN?.toString().trim() || row.Unidad_Venta
+                }
+            } : {}),
             ...(row.URL_Imagen ? { image: row.URL_Imagen } : {}),
             ...(nutrition ? { nutrition } : {}),
             ...(logistics ? { logistics } : {}),
@@ -257,5 +279,4 @@ run().catch((error) => {
     console.error("Error al importar catálogo", error);
     process.exit(1);
 });
-// @ts-nocheck
 //# sourceMappingURL=importCatalogFromExcel.js.map

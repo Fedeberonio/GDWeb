@@ -4,12 +4,14 @@ import { requireAdminSession, type AdminRequest } from "../../middleware/require
 import {
   listBoxesForAdmin,
   listBoxRulesForAdmin,
+  listCombosForAdmin,
   listCatalogHistoryEntries,
   listProductsForAdmin,
   createProduct,
   updateBoxById,
   updateBoxRuleById,
   updateProductById,
+  updateComboById,
 } from "./service";
 
 export function createAdminCatalogRouter() {
@@ -106,6 +108,32 @@ export function createAdminCatalogRouter() {
         actorEmail: adminUser?.email ?? null,
         actorUid: adminUser?.uid ?? null,
       });
+      res.json({ data: updated });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get("/combos", async (_req, res, next) => {
+    try {
+      const combos = await listCombosForAdmin();
+      res.json({ data: combos });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.put("/combos/:id", async (req, res, next) => {
+    try {
+      const adminUser = (req as AdminRequest).adminUser;
+      const updated = await updateComboById(req.params.id, req.body, {
+        actorEmail: adminUser?.email ?? null,
+        actorUid: adminUser?.uid ?? null,
+      });
+      if (!updated) {
+        res.status(404).json({ error: "Combo not found" });
+        return;
+      }
       res.json({ data: updated });
     } catch (error) {
       next(error);

@@ -66,25 +66,8 @@ function getVisualCategory(slug: string, name: string, catalogCategory?: string)
   return "otros";
 }
 
-const BOX_RULE_KEY_MAP: Record<string, string> = {
-  "box-1": "GD-CAJA-001",
-  "box-2": "GD-CAJA-002",
-  "box-3": "GD-CAJA-003",
-  "box-1-caribbean-fresh-pack-3-dias": "GD-CAJA-001",
-  "box-2-island-weekssential-1-semana": "GD-CAJA-002",
-  "box-3-allgreenxclusive-2-semanas": "GD-CAJA-003",
-  "caribbean-fresh-pack": "GD-CAJA-001",
-  "island-weekssential": "GD-CAJA-002",
-  "allgreenxclusive": "GD-CAJA-003",
-};
-
 function resolveRuleKey(box: Box): string | undefined {
-  if (BOX_RULE_KEY_MAP[box.id]) return BOX_RULE_KEY_MAP[box.id];
-  if (BOX_RULE_KEY_MAP[box.slug]) return BOX_RULE_KEY_MAP[box.slug];
-  if (box.slug.includes("caribbean")) return "GD-CAJA-001";
-  if (box.slug.includes("island")) return "GD-CAJA-002";
-  if (box.slug.includes("allgreen")) return "GD-CAJA-003";
-  return undefined;
+  return box.ruleId;
 }
 
 export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }: DiscoverBoxViewProps) {
@@ -92,11 +75,12 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const { t, tData, locale } = useTranslation();
   const { productMap, boxRules } = useCatalog();
-  const ruleKey = resolveRuleKey(box) || box.id;
+  const ruleKey = resolveRuleKey(box);
   const rulesMap = useMemo(() => Object.fromEntries(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
-  const rule = useMemo(() => getBoxRule(ruleKey, rulesMap), [ruleKey, rulesMap]);
+  const rule = useMemo(() => (ruleKey ? getBoxRule(ruleKey, rulesMap) : undefined), [ruleKey, rulesMap]);
   const baseContents = useMemo(() => rule?.baseContents ?? [], [rule]);
-  const variantInfo = getVariantInfo(variant, locale);
+  const variantData = box.variants.find((item) => item.id === variant || item.slug === variant);
+  const variantInfo = getVariantInfo(variant, locale, variantData);
 
   // Filtrar contenido según variante
   const filteredContents = useMemo(() => {
@@ -207,19 +191,7 @@ export function DiscoverBoxView({ box, variant = "mix", onAccept, onCustomize }:
   };
 
   // Mapeo de imágenes de cajas
-  const boxImages: Record<string, string> = {
-    "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-    "box-2": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-    "box-3": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-    "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-    "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-    "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-    "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-    "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-    "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-  };
-
-  const boxImage = boxImages[box.id] || boxImages[box.slug] || box.heroImage || "/images/boxes/placeholder.jpg";
+  const boxImage = box.heroImage || "/images/boxes/placeholder.jpg";
 
   const categoryLabels: Record<string, string> = {
     leafy: `🥬 ${t("variants.categories.leafy")}`,

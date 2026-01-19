@@ -13,10 +13,10 @@ export function PrimaryNav() {
   const { t } = useTranslation();
 
   const NAV_LINKS = [
-    { href: "#cajas", label: t("nav.boxes") },
-    { href: "#combos", label: t("nav.combos") },
-    { href: "#catalogo", label: t("nav.catalog") },
-    { href: "#confianza", label: t("nav.about") },
+    { href: "/#cajas", label: t("nav.boxes") },
+    { href: "/#combos", label: t("nav.combos") },
+    { href: "/#catalogo", label: t("nav.catalog") },
+    { href: "/#confianza", label: t("nav.about") },
   ];
 
   return (

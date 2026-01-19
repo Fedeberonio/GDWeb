@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useCart } from "@/modules/cart/context";
 import { useAuth } from "@/modules/auth/context";
@@ -33,9 +34,41 @@ const getVariantLabel = (variantKey: string, t: TranslateFn) => {
   return t("cart.variant_mix");
 };
 
+type StepperProps = {
+  currentStep: number;
+  steps: string[];
+};
+
+const Stepper = ({ currentStep, steps }: StepperProps) => (
+  <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
+    {steps.map((step, index) => {
+      const stepNumber = index + 1;
+      const isActive = stepNumber === currentStep;
+      const isComplete = stepNumber < currentStep;
+      return (
+        <div key={step} className="flex items-center gap-3">
+          <div
+            className={`flex h-7 w-7 items-center justify-center rounded-full border text-[0.6rem] ${
+              isActive
+                ? "border-[var(--gd-color-forest)] text-[var(--gd-color-forest)]"
+                : isComplete
+                ? "border-[var(--gd-color-leaf)] text-[var(--gd-color-leaf)]"
+                : "border-[var(--color-border)] text-[var(--color-muted)]"
+            }`}
+          >
+            {stepNumber}
+          </div>
+          <span className={isActive ? "text-[var(--gd-color-forest)]" : ""}>{step}</span>
+        </div>
+      );
+    })}
+  </div>
+);
+
 const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
 const CHECKOUT_AUTH_KEY = "gd-checkout-auth";
 const AUTH_MODE_KEY = "gd-auth-mode";
+const ORDER_CONFIRMATION_KEY = "gd-order-confirmation";
 
 type AuthChoice = "undecided" | "guest";
 type PaymentPreference = "Cash" | "Transferencia" | "PayPal";
@@ -70,7 +103,9 @@ export function CheckoutClient() {
   const { user } = useAuth();
   const { profile, updateProfile } = useUser();
   const { t, tData } = useTranslation();
+  const router = useRouter();
   const { productMap } = useCatalog();
+  const steps = [t("checkout.step_delivery"), t("checkout.step_review"), t("checkout.step_confirmation")];
   const [form, setForm] = useState<FormState>({
     contactName: "",
     contactPhone: "",
@@ -463,7 +498,12 @@ ${metodoPago}`;
       const numeroWhatsApp = "18493757338";
       
       const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
-      const whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+      let whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+      if (whatsappUrl.length > 4000) {
+        console.warn("URL de WhatsApp muy larga, puede causar problemas");
+        toast.error(t("checkout.whatsapp_long"));
+        whatsappUrl = `https://wa.me/${numeroWhatsApp}`;
+      }
       
       // Verificar que el mensaje no esté vacío
       if (!mensajeWhatsApp || mensajeWhatsApp.trim().length === 0) {
@@ -473,7 +513,8 @@ ${metodoPago}`;
         return;
       }
 
-      // Registrar pedido en el backend (si falla, igual enviamos por WhatsApp)
+      let orderId = `temp-${Date.now()}`;
+      // Registrar pedido en el backend (si falla, igual seguimos con confirmación)
       try {
         const response = await fetch("/api/orders", {
           method: "POST",
@@ -485,7 +526,8 @@ ${metodoPago}`;
         if (!response.ok) {
           throw new Error(`Backend responded with ${response.status}`);
         }
-        await response.json();
+        const responseData = await response.json();
+        orderId = responseData?.data?.id ?? responseData?.id ?? orderId;
       } catch (apiError: any) {
         console.error("Error al registrar pedido en API:", apiError);
         toast.error(
@@ -494,76 +536,35 @@ ${metodoPago}`;
         );
       }
 
-      // Abrir WhatsApp con toda la información (SIEMPRE al final, después de guardar)
-      // Verificar si la URL es demasiado larga (límite de WhatsApp es ~4096 caracteres)
-      if (whatsappUrl.length > 4000) {
-        console.warn("URL de WhatsApp muy larga, puede causar problemas");
-        toast.error("El mensaje es muy largo. Por favor contacta directamente por WhatsApp.");
-        setSubmitting(false);
-        return;
-      }
-      
-      // Usar método más confiable: crear link y hacer click programáticamente
-      try {
-        const link = document.createElement("a");
-        link.href = whatsappUrl;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.style.display = "none";
-        document.body.appendChild(link);
-        
-        // Hacer click en el link
-        link.click();
-        
-        // Limpiar después de un momento
-        setTimeout(() => {
-          if (document.body.contains(link)) {
-            document.body.removeChild(link);
-          }
-        }, 1000);
-        
-      } catch (error) {
-        console.error("Error al abrir WhatsApp:", error);
-        // Fallback: intentar window.open
-        try {
-          const newWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-          if (!newWindow) {
-            // Si fue bloqueado, mostrar mensaje al usuario con opción de abrir manualmente
-            toast.error("No se pudo abrir WhatsApp automáticamente. Por favor haz click en el botón de abajo para abrir WhatsApp manualmente.", {
-              duration: 10000,
-            });
-            // Crear un botón visible para abrir WhatsApp
-            const button = document.createElement("button");
-            button.textContent = "Abrir WhatsApp";
-            button.className = "fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50";
-            button.onclick = () => {
-              window.location.href = whatsappUrl;
-              document.body.removeChild(button);
-            };
-            document.body.appendChild(button);
-          }
-        } catch (e) {
-          console.error("Error en fallback:", e);
-          toast.error("Error al abrir WhatsApp. Por favor contacta directamente por WhatsApp.", { duration: 8000 });
-        }
-      }
+      const confirmationPayload = {
+        orderId,
+        whatsappUrl,
+        contactName: form.contactName,
+        contactPhone: form.contactPhone,
+        contactEmail: form.contactEmail || "",
+        address: form.direccion,
+        deliveryDay: form.deliveryDay,
+        paymentMethod: metodoPago,
+        items: items.map((item) => {
+          const unitPrice = item.configuration?.price?.final ?? item.price;
+          return {
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice,
+            total: unitPrice * item.quantity,
+          };
+        }),
+        totals: {
+          subtotal,
+          delivery: cargoEnvio,
+          total: totalFinalDOP,
+        },
+      };
 
-      // Mensaje de éxito
-      if (requierePaypal) {
-        toast.success("¡Pedido enviado! Revisa WhatsApp y completa el pago usando el link de PayPal. Recibirás los detalles del pago por WhatsApp.", { duration: 6000 });
-      } else {
-        toast.success("¡Pedido enviado con éxito! Revisa WhatsApp para confirmar. Recibirás los detalles del pago por WhatsApp.", { duration: 5000 });
-      }
-      
-      // Limpiar carrito y redirigir después de enviar
-      clear();
       if (typeof window !== "undefined") {
-        window.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
-        window.sessionStorage.removeItem(CHECKOUT_AUTH_KEY);
+        window.sessionStorage.setItem(ORDER_CONFIRMATION_KEY, JSON.stringify(confirmationPayload));
       }
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 2000);
+      router.push("/pedido-confirmado");
     } catch (error) {
       const message = error instanceof Error ? error.message : t("checkout.order_error");
       toast.error(message);
@@ -641,6 +642,7 @@ ${metodoPago}`;
             <p className="text-sm text-[var(--color-muted)]">
               Revisa todos los detalles antes de enviar
             </p>
+            <Stepper currentStep={2} steps={steps} />
           </header>
 
           <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
@@ -714,6 +716,7 @@ ${metodoPago}`;
           <p className="text-sm text-[var(--color-muted)]">
             {t("checkout.description")}
           </p>
+          <Stepper currentStep={1} steps={steps} />
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
@@ -748,13 +751,16 @@ ${metodoPago}`;
                     onChange={(e) => setForm((s) => ({ ...s, contactEmail: e.target.value }))}
                     className="mt-2 w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
                   />
+                  <span className="mt-2 block text-xs font-normal normal-case tracking-normal text-[var(--color-muted)]">
+                    {t("checkout.email_hint")}
+                  </span>
                 </label>
                 <label className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">
                   Dirección <span className="text-red-500">*</span>
                   <textarea
                     value={form.direccion}
                     onChange={(e) => setForm((s) => ({ ...s, direccion: e.target.value }))}
-                    placeholder="Calle Principal #123, Santo Domingo"
+                    placeholder={t("checkout.address_placeholder")}
                     rows={2}
                     className="mt-2 w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
                     required

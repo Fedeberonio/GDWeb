@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// @ts-nocheck
 const dotenv_1 = __importDefault(require("dotenv"));
 const firestore_1 = require("../lib/firestore");
 const mock_data_1 = require("../modules/catalog/mock-data");
@@ -31,5 +32,4 @@ seedCatalog().catch((error) => {
     console.error("Failed to seed catalog", error);
     process.exit(1);
 });
-// @ts-nocheck
 //# sourceMappingURL=seedCatalog.js.map

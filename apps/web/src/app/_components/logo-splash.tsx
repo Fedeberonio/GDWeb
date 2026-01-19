@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-const SPLASH_DURATION_MS = 6000;
+const SPLASH_DURATION_MS = 2000; // Reducido de 6s a 2s
 
 export function LogoSplash() {
   const [isVisible, setIsVisible] = useState(false);

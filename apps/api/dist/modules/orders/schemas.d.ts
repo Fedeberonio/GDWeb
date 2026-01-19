@@ -25,7 +25,7 @@ export declare const orderItemSchema: z.ZodObject<{
         amount: z.ZodNumber;
         currency: z.ZodDefault<z.ZodString>;
     }, z.core.$strip>;
-    metadata: z.ZodOptional<z.ZodRecord<z.core.$ZodRecordKey, z.core.SomeType>>;
+    metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, z.core.$strip>;
 export declare const orderTotalsSchema: z.ZodObject<{
     subtotal: z.ZodObject<{
@@ -85,7 +85,7 @@ export declare const orderSchema: z.ZodObject<{
             amount: z.ZodNumber;
             currency: z.ZodDefault<z.ZodString>;
         }, z.core.$strip>;
-        metadata: z.ZodOptional<z.ZodRecord<z.core.$ZodRecordKey, z.core.SomeType>>;
+        metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
     }, z.core.$strip>>;
     totals: z.ZodObject<{
         subtotal: z.ZodObject<{

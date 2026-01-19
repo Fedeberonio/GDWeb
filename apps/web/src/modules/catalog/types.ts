@@ -41,6 +41,12 @@ export type Product = {
     vegan?: boolean;
     glutenFree?: boolean;
     organic?: boolean;
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fats?: number;
+    fiber?: number;
+    sugars?: number;
   };
   logistics?: {
     weightKg?: number;
@@ -73,6 +79,9 @@ export type Box = {
   description?: Partial<LocalizedString>;
   price: Price;
   durationDays?: number;
+  ruleId?: string;
+  dimensionsLabel?: string;
+  weightLabel?: string;
   heroImage?: string;
   isFeatured: boolean;
   variants: BoxVariant[];
@@ -87,4 +96,31 @@ export type BoxRule = {
   categoryBudget: Record<string, { min: number; max: number }>;
   baseContents: Array<{ productSlug: string; quantity: number }>;
   variantContents?: Partial<Record<"mix" | "fruity" | "veggie", Array<{ productSlug: string; quantity: number }>>>;
+};
+
+export type Combo = {
+  id: string;
+  name: LocalizedString;
+  salad: LocalizedString;
+  juice: LocalizedString;
+  dessert: LocalizedString;
+  price: number;
+  cost?: number;
+  margin?: number;
+  calories: number;
+  protein: number;
+  glutenFree: boolean;
+  benefit: LocalizedString;
+  benefitDetail: LocalizedString;
+  recommendedFor: LocalizedString;
+  carbs: number;
+  fats: number;
+  fiber: number;
+  sugars: number;
+  vitaminA?: string;
+  vitaminC?: string;
+  image?: string;
+  ingredients: LocalizedString[];
+  status: "active" | "inactive" | "coming_soon";
+  isFeatured: boolean;
 };

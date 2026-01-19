@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { getClientEnv } from "@/lib/config/env";
-import { staticProducts } from "@/modules/catalog/static-data";
 
 export async function GET() {
   try {
@@ -9,14 +8,10 @@ export async function GET() {
     const apiBase = NEXT_PUBLIC_API_BASE_URL ?? "";
     const hasRemoteApi =
       apiBase !== "" && !apiBase.includes("localhost") && !apiBase.includes("mock");
-    const allowStaticFallback = process.env.NODE_ENV !== "production";
 
     if (!hasRemoteApi) {
-      if (allowStaticFallback) {
-        return NextResponse.json({ data: staticProducts });
-      }
       console.warn("Catalog API base URL not configured for products.");
-      return NextResponse.json({ data: [] });
+      return NextResponse.json({ error: "Catalog API base URL not configured." }, { status: 500 });
     }
 
     const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/catalog/products`, {
@@ -31,11 +26,7 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("Failed to fetch products from API, using static data:", error);
-      return NextResponse.json({ data: staticProducts });
-    }
-    console.warn("Failed to fetch products from API, returning empty data:", error);
-    return NextResponse.json({ data: [] });
+    console.warn("Failed to fetch products from API:", error);
+    return NextResponse.json({ error: "Failed to fetch products from API." }, { status: 502 });
   }
 }

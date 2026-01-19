@@ -19,7 +19,7 @@ export declare function createOrder(order: Omit<Order, "createdAt" | "updatedAt"
             amount: number;
             currency: string;
         };
-        metadata?: Record<string | number | symbol, unknown>;
+        metadata?: Record<string, unknown>;
     }[];
     totals: {
         subtotal: {

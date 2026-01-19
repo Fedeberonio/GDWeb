@@ -48,7 +48,8 @@ export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: 
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {variants.map((variant) => {
-          const info = getVariantInfo(variant, locale);
+          const variantData = box.variants.find((item) => item.id === variant || item.slug === variant);
+          const info = getVariantInfo(variant, locale, variantData);
           const composition = calculateVariantComposition(baseContents);
           const isSelected = selectedVariant === variant;
 

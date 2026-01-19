@@ -33,9 +33,10 @@ export function QuickAddModal({
   onCustomize,
 }: QuickAddModalProps) {
   const { addItem } = useCart();
-  const { locale, t } = useTranslation();
+  const { locale, t, tData } = useTranslation();
   const [selectedVariant, setSelectedVariant] = useState<VariantType>("mix");
   const [isAdding, setIsAdding] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
@@ -81,7 +82,8 @@ export function QuickAddModal({
   };
 
   const filteredContents = getFilteredContents(selectedVariant);
-  const variantInfo = getVariantInfo(selectedVariant, locale);
+  const selectedVariantData = box.variants.find((item) => item.id === selectedVariant || item.slug === selectedVariant);
+  const variantInfo = getVariantInfo(selectedVariant, locale, selectedVariantData);
 
   // Calcular estadísticas
   const totalProducts = filteredContents.length;
@@ -95,22 +97,15 @@ export function QuickAddModal({
   // Mostrar TODOS los productos, no solo 6
   const allProducts = filteredContents;
 
-  const boxImage =
-    propBoxImage ||
-    box.heroImage ||
-    (box.id === "box-1" || box.slug.includes("caribbean")
-      ? "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png"
-      : box.id === "box-2" || box.slug.includes("island")
-      ? "/images/boxes/box-2-island-weekssential-veggie-product.jpg"
-      : "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg");
+  const boxImage = propBoxImage || box.heroImage || "/images/boxes/placeholder.jpg";
 
   const handleAddToCart = async () => {
     setIsAdding(true);
     addItem({
       slug: `${box.slug}-${selectedVariant}`,
       type: "box",
-      name: `${box.name.es} (${selectedVariant.toUpperCase()})`,
-      quantity: 1,
+      name: `${tData(box.name)} (${selectedVariant.toUpperCase()})`,
+      quantity,
       price: box.price.amount,
       slotValue: 0,
       weightKg: 0,
@@ -143,7 +138,7 @@ export function QuickAddModal({
         <div className="sticky top-0 z-10 bg-white border-b-2 border-[var(--gd-color-leaf)]/20 px-6 py-4">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
-              Tu {box.name.es} está lista
+              Tu {tData(box.name)} está lista
             </h2>
             <button
               type="button"
@@ -164,7 +159,8 @@ export function QuickAddModal({
             </p>
             <div className="grid grid-cols-3 gap-3">
               {(["mix", "fruity", "veggie"] as VariantType[]).map((variant) => {
-                const info = getVariantInfo(variant, locale);
+                const variantData = box.variants.find((item) => item.id === variant || item.slug === variant);
+                const info = getVariantInfo(variant, locale, variantData);
                 const isSelected = selectedVariant === variant;
                 return (
                   <button
@@ -195,10 +191,11 @@ export function QuickAddModal({
               <div className="relative aspect-square rounded-xl overflow-hidden bg-[var(--color-background-muted)]">
                 <Image
                   src={boxImage}
-                  alt={box.name.es}
+                  alt={tData(box.name)}
                   fill
                   sizes="(max-width: 768px) 100vw, 300px"
                   className="object-contain object-center p-4"
+                  unoptimized={boxImage?.startsWith('http') || boxImage?.startsWith('https')}
                 />
               </div>
 
@@ -305,7 +302,34 @@ export function QuickAddModal({
           </div>
 
           {/* Acciones */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[var(--gd-color-leaf)]/20">
+          <div className="pt-4 border-t border-[var(--gd-color-leaf)]/20 space-y-4">
+            <div className="flex items-center justify-between rounded-2xl border border-[var(--gd-color-leaf)]/20 bg-[var(--color-background-muted)] px-4 py-3">
+              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--color-muted)]">
+                {t("common.quantity")}
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--gd-color-leaf)]/40 text-lg text-[var(--gd-color-forest)] transition hover:bg-white"
+                  aria-label={t("common.decrease")}
+                >
+                  −
+                </button>
+                <span className="min-w-[2ch] text-center text-base font-semibold text-[var(--color-foreground)]">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((prev) => prev + 1)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--gd-color-leaf)]/40 text-lg text-[var(--gd-color-forest)] transition hover:bg-white"
+                  aria-label={t("common.increase")}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="button"
               onClick={handleAddToCart}
@@ -321,6 +345,7 @@ export function QuickAddModal({
             >
               ✏️ Personalizar productos
             </button>
+            </div>
           </div>
         </div>
       </div>

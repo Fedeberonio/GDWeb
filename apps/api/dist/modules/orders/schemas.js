@@ -21,7 +21,7 @@ exports.orderItemSchema = zod_1.z.object({
     name: schemas_2.localizedStringSchema,
     quantity: zod_1.z.number().int().positive().default(1),
     unitPrice: schemas_2.priceSchema,
-    metadata: zod_1.z.record(zod_1.z.unknown()).optional(),
+    metadata: zod_1.z.record(zod_1.z.string(), zod_1.z.unknown()).optional(),
 });
 exports.orderTotalsSchema = zod_1.z.object({
     subtotal: schemas_2.priceSchema,

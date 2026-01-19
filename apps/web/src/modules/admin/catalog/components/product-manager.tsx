@@ -17,7 +17,11 @@ type ProductManagerProps = {
 };
 
 type FormState = {
+  sku: string;
+  nameEs: string;
+  nameEn: string;
   priceAmount: string;
+  salePriceAmount: string;
   priceCurrency: string;
   descriptionEs: string;
   descriptionEn: string;
@@ -31,11 +35,29 @@ type FormState = {
   slotValue: string;
   wholesaleCost: string;
   weightKg: string;
+  storageEs: string;
+  storageEn: string;
+  dimensionLength: string;
+  dimensionWidth: string;
+  dimensionHeight: string;
+  vegan: boolean;
+  glutenFree: boolean;
+  organic: boolean;
+  calories: string;
+  protein: string;
+  carbs: string;
+  fats: string;
+  fiber: string;
+  sugars: string;
 };
 
 function buildInitialForm(product: Product): FormState {
   return {
+    sku: product.sku ?? "",
+    nameEs: product.name.es ?? "",
+    nameEn: product.name.en ?? "",
     priceAmount: product.price.amount.toString(),
+    salePriceAmount: product.salePrice?.amount.toString() ?? "",
     priceCurrency: product.price.currency,
     descriptionEs: product.description?.es ?? "",
     descriptionEn: product.description?.en ?? "",
@@ -49,6 +71,20 @@ function buildInitialForm(product: Product): FormState {
     slotValue: product.metadata?.slotValue?.toString() ?? "",
     wholesaleCost: product.metadata?.wholesaleCost?.toString() ?? "",
     weightKg: product.logistics?.weightKg?.toString() ?? "",
+    storageEs: product.logistics?.storage?.es ?? "",
+    storageEn: product.logistics?.storage?.en ?? "",
+    dimensionLength: product.logistics?.dimensionsCm?.length.toString() ?? "",
+    dimensionWidth: product.logistics?.dimensionsCm?.width.toString() ?? "",
+    dimensionHeight: product.logistics?.dimensionsCm?.height.toString() ?? "",
+    vegan: product.nutrition?.vegan ?? false,
+    glutenFree: product.nutrition?.glutenFree ?? false,
+    organic: product.nutrition?.organic ?? false,
+    calories: product.nutrition?.calories?.toString() ?? "",
+    protein: product.nutrition?.protein?.toString() ?? "",
+    carbs: product.nutrition?.carbs?.toString() ?? "",
+    fats: product.nutrition?.fats?.toString() ?? "",
+    fiber: product.nutrition?.fiber?.toString() ?? "",
+    sugars: product.nutrition?.sugars?.toString() ?? "",
   };
 }
 
@@ -78,25 +114,88 @@ function ProductForm({
   }
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit} noValidate>
-      <div>
-        <h3 className="text-lg font-semibold text-slate-900">{selectedProduct.name.es}</h3>
-        <p className="text-xs text-slate-500">SKU: {selectedProduct.sku || selectedProduct.id}</p>
+    <form className="space-y-6" onSubmit={onSubmit} noValidate>
+      {/* Información del producto */}
+      <div className="border-b border-slate-200 pb-4">
+        <h3 className="text-lg font-semibold text-slate-900 mb-2">Información del Producto</h3>
         <p className="text-xs text-slate-400">ID: {selectedProduct.id}</p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* SKU */}
+      <div className="space-y-3 border-b border-slate-200 pb-4">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">SKU</h4>
         <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Precio (DOP)
+          SKU (Código de producto)
           <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={formState.priceAmount}
-            onChange={(event) => setFormState({ ...formState, priceAmount: event.target.value })}
+            type="text"
+            value={formState.sku}
+            onChange={(event) => setFormState({ ...formState, sku: event.target.value })}
+            placeholder="Opcional"
             className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
           />
         </label>
+      </div>
+
+      {/* Nombres */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Nombres</h4>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Nombre (ES) *
+            <input
+              type="text"
+              value={formState.nameEs}
+              onChange={(event) => setFormState({ ...formState, nameEs: event.target.value })}
+              required
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Nombre (EN) *
+            <input
+              type="text"
+              value={formState.nameEn}
+              onChange={(event) => setFormState({ ...formState, nameEn: event.target.value })}
+              required
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* Precios */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Precios</h4>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Precio Regular (DOP) *
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formState.priceAmount}
+              onChange={(event) => setFormState({ ...formState, priceAmount: event.target.value })}
+              required
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Precio de Oferta (DOP)
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formState.salePriceAmount}
+              onChange={(event) => setFormState({ ...formState, salePriceAmount: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* Estado y Categoría */}
+      <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
           Estado
           <select
@@ -111,150 +210,348 @@ function ProductForm({
             ))}
           </select>
         </label>
-      </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+        {/* Categoría */}
         <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Slots
-          <input
-            type="number"
-            min="1"
-            step="1"
-            value={formState.slotValue}
-            onChange={(event) => setFormState({ ...formState, slotValue: event.target.value })}
+          Categoría
+          <select
+            value={formState.categoryId}
+            onChange={(event) => setFormState({ ...formState, categoryId: event.target.value })}
             className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-          />
-        </label>
-        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Costo mayorista (DOP)
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={formState.wholesaleCost}
-            onChange={(event) => setFormState({ ...formState, wholesaleCost: event.target.value })}
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-          />
-        </label>
-        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Peso (kg)
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={formState.weightKg}
-            onChange={(event) => setFormState({ ...formState, weightKg: event.target.value })}
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-          />
+          >
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name.es}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 
-      <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-        Categoría
-        <select
-          value={formState.categoryId}
-          onChange={(event) => setFormState({ ...formState, categoryId: event.target.value })}
-          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-        >
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name.es}
-            </option>
-          ))}
-        </select>
-      </label>
+      {/* Descripciones */}
+      <div className="space-y-3 border-t border-slate-200 pt-4">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Descripciones</h4>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Descripción (ES)
+          <textarea
+            value={formState.descriptionEs}
+            onChange={(event) => setFormState({ ...formState, descriptionEs: event.target.value })}
+            rows={3}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
 
-      <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-        Imagen (URL o ruta relativa)
-        <input
-          type="text"
-          inputMode="url"
-          value={formState.image}
-          onChange={(event) => setFormState({ ...formState, image: event.target.value })}
-          placeholder="https://... o /images/products/..."
-          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-        />
-        {formState.image && (
-          <div className="mt-2">
-            <Image
-              src={formState.image}
-              alt="Preview"
-              width={128}
-              height={128}
-              className="h-32 w-32 rounded-lg border border-slate-200 object-cover"
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Descripción (EN)
+          <textarea
+            value={formState.descriptionEn}
+            onChange={(event) => setFormState({ ...formState, descriptionEn: event.target.value })}
+            rows={3}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+      </div>
+
+      {/* Unidades */}
+      <div className="space-y-3 border-t border-slate-200 pt-4">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Unidades de Venta</h4>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Unidad (ES)
+            <input
+              type="text"
+              value={formState.unitEs}
+              onChange={(event) => setFormState({ ...formState, unitEs: event.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
             />
-          </div>
-        )}
-      </label>
-
-      {selectedProduct && (
-        <ImageUploadField
-          label="Subir nueva imagen"
-          pathPrefix={`products/${selectedProduct.id}`}
-          onUploaded={(url) => setFormState((state) => ({ ...state!, image: url }))}
-        />
-      )}
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Unidad (ES)
-          <input
-            type="text"
-            value={formState.unitEs}
-            onChange={(event) => setFormState({ ...formState, unitEs: event.target.value })}
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-          />
-        </label>
-        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Unidad (EN)
-          <input
-            type="text"
-            value={formState.unitEn}
-            onChange={(event) => setFormState({ ...formState, unitEn: event.target.value })}
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-          />
-        </label>
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Unidad (EN)
+            <input
+              type="text"
+              value={formState.unitEn}
+              onChange={(event) => setFormState({ ...formState, unitEn: event.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
       </div>
 
-      <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-        Descripción (ES)
-        <textarea
-          value={formState.descriptionEs}
-          onChange={(event) => setFormState({ ...formState, descriptionEs: event.target.value })}
-          rows={3}
-          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-        />
-      </label>
+      {/* Imagen */}
+      <div className="space-y-3 border-t border-slate-200 pt-4">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Imagen</h4>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          URL de Imagen
+          <input
+            type="text"
+            inputMode="url"
+            value={formState.image}
+            onChange={(event) => setFormState({ ...formState, image: event.target.value })}
+            placeholder="https://... o /images/products/..."
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+          {formState.image && (
+            <div className="mt-2">
+              <Image
+                src={formState.image}
+                alt="Preview"
+                width={128}
+                height={128}
+                className="h-32 w-32 rounded-lg border border-slate-200 object-cover"
+              />
+            </div>
+          )}
+        </label>
 
-      <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-        Descripción (EN)
-        <textarea
-          value={formState.descriptionEn}
-          onChange={(event) => setFormState({ ...formState, descriptionEn: event.target.value })}
-          rows={3}
-          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-        />
-      </label>
+        {selectedProduct && (
+          <ImageUploadField
+            label="Subir nueva imagen"
+            pathPrefix={`products/${selectedProduct.id}`}
+            onUploaded={(url) => setFormState((state) => ({ ...state!, image: url }))}
+          />
+        )}
+      </div>
 
-      <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-        Tags (separados por coma)
-        <input
-          type="text"
-          value={formState.tags}
-          onChange={(event) => setFormState({ ...formState, tags: event.target.value })}
-          className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-        />
-      </label>
+      {/* Metadata y Logística */}
+      <div className="space-y-3 border-t border-slate-200 pt-4">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Metadata y Logística</h4>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Slots
+            <input
+              type="number"
+              min="1"
+              step="1"
+              value={formState.slotValue}
+              onChange={(event) => setFormState({ ...formState, slotValue: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Costo mayorista (DOP)
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formState.wholesaleCost}
+              onChange={(event) => setFormState({ ...formState, wholesaleCost: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Peso (kg)
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formState.weightKg}
+              onChange={(event) => setFormState({ ...formState, weightKg: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+      </div>
 
-      <label className="inline-flex items-center gap-2 text-sm text-slate-600">
-        <input
-          type="checkbox"
-          checked={formState.isFeatured}
-          onChange={(event) => setFormState({ ...formState, isFeatured: event.target.checked })}
-          className="h-4 w-4 rounded border border-slate-300"
-        />
-        Mostrar como destacado en la web
-      </label>
+      {/* Valores Nutricionales */}
+      <div className="space-y-3 border-t border-slate-200 pt-4">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Valores Nutricionales</h4>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              checked={formState.vegan}
+              onChange={(event) => setFormState({ ...formState, vegan: event.target.checked })}
+              className="h-4 w-4 rounded border border-slate-300"
+            />
+            Vegano
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              checked={formState.glutenFree}
+              onChange={(event) => setFormState({ ...formState, glutenFree: event.target.checked })}
+              className="h-4 w-4 rounded border border-slate-300"
+            />
+            Sin Gluten
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              checked={formState.organic}
+              onChange={(event) => setFormState({ ...formState, organic: event.target.checked })}
+              className="h-4 w-4 rounded border border-slate-300"
+            />
+            Orgánico
+          </label>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Calorías
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={formState.calories}
+              onChange={(event) => setFormState({ ...formState, calories: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Proteínas (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formState.protein}
+              onChange={(event) => setFormState({ ...formState, protein: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Carbohidratos (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formState.carbs}
+              onChange={(event) => setFormState({ ...formState, carbs: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Grasas (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formState.fats}
+              onChange={(event) => setFormState({ ...formState, fats: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Fibra (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formState.fiber}
+              onChange={(event) => setFormState({ ...formState, fiber: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Azúcares (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formState.sugars}
+              onChange={(event) => setFormState({ ...formState, sugars: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* Logística y Dimensiones */}
+      <div className="space-y-3 border-t border-slate-200 pt-4">
+        <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Logística</h4>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Almacenamiento (ES)
+            <input
+              type="text"
+              value={formState.storageEs}
+              onChange={(event) => setFormState({ ...formState, storageEs: event.target.value })}
+              placeholder="Ej: Refrigerado"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Almacenamiento (EN)
+            <input
+              type="text"
+              value={formState.storageEn}
+              onChange={(event) => setFormState({ ...formState, storageEn: event.target.value })}
+              placeholder="Ej: Refrigerated"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Largo (cm)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formState.dimensionLength}
+              onChange={(event) => setFormState({ ...formState, dimensionLength: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Ancho (cm)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formState.dimensionWidth}
+              onChange={(event) => setFormState({ ...formState, dimensionWidth: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Alto (cm)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={formState.dimensionHeight}
+              onChange={(event) => setFormState({ ...formState, dimensionHeight: event.target.value })}
+              placeholder="Opcional"
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* Tags y Destacado */}
+      <div className="space-y-3 border-t border-slate-200 pt-4">
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Tags (separados por coma)
+          <input
+            type="text"
+            value={formState.tags}
+            onChange={(event) => setFormState({ ...formState, tags: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+
+        <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+          <input
+            type="checkbox"
+            checked={formState.isFeatured}
+            onChange={(event) => setFormState({ ...formState, isFeatured: event.target.checked })}
+            className="h-4 w-4 rounded border border-slate-300"
+          />
+          Mostrar como destacado en la web
+        </label>
+      </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
       {message && <p className="text-sm text-green-600">{message}</p>}
@@ -293,6 +590,20 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
     slotValue: "",
     wholesaleCost: "",
     weightKg: "",
+    storageEs: "",
+    storageEn: "",
+    dimensionLength: "",
+    dimensionWidth: "",
+    dimensionHeight: "",
+    vegan: false,
+    glutenFree: false,
+    organic: false,
+    calories: "",
+    protein: "",
+    carbs: "",
+    fats: "",
+    fiber: "",
+    sugars: "",
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -312,6 +623,17 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
       const slotValue = form.slotValue.trim();
       const wholesaleCost = form.wholesaleCost.trim();
       const weightKg = form.weightKg.trim();
+      const storageEs = form.storageEs.trim();
+      const storageEn = form.storageEn.trim();
+      const dimensionLength = form.dimensionLength.trim();
+      const dimensionWidth = form.dimensionWidth.trim();
+      const dimensionHeight = form.dimensionHeight.trim();
+      const calories = form.calories.trim();
+      const protein = form.protein.trim();
+      const carbs = form.carbs.trim();
+      const fats = form.fats.trim();
+      const fiber = form.fiber.trim();
+      const sugars = form.sugars.trim();
       const metadata =
         slotValue || wholesaleCost
           ? {
@@ -319,7 +641,49 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
               wholesaleCost: wholesaleCost ? Number(wholesaleCost) : undefined,
             }
           : undefined;
-      const logistics = weightKg ? { weightKg: Number(weightKg) } : undefined;
+      const dimensions = dimensionLength && dimensionWidth && dimensionHeight
+        ? {
+            length: Number(dimensionLength),
+            width: Number(dimensionWidth),
+            height: Number(dimensionHeight),
+          }
+        : undefined;
+      const storage = storageEs || storageEn
+        ? {
+            es: storageEs || storageEn,
+            en: storageEn || storageEs,
+          }
+        : undefined;
+      const logistics =
+        weightKg || dimensions || storage
+          ? {
+              ...(weightKg ? { weightKg: Number(weightKg) } : {}),
+              ...(dimensions ? { dimensionsCm: dimensions } : {}),
+              ...(storage ? { storage } : {}),
+            }
+          : undefined;
+      const nutrition =
+        form.vegan ||
+        form.glutenFree ||
+        form.organic ||
+        calories ||
+        protein ||
+        carbs ||
+        fats ||
+        fiber ||
+        sugars
+          ? {
+              vegan: form.vegan || undefined,
+              glutenFree: form.glutenFree || undefined,
+              organic: form.organic || undefined,
+              calories: calories ? Number(calories) : undefined,
+              protein: protein ? Number(protein) : undefined,
+              carbs: carbs ? Number(carbs) : undefined,
+              fats: fats ? Number(fats) : undefined,
+              fiber: fiber ? Number(fiber) : undefined,
+              sugars: sugars ? Number(sugars) : undefined,
+            }
+          : undefined;
 
       const response = await adminFetch("/api/admin/catalog/products", {
         method: "POST",
@@ -347,6 +711,7 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
           image: form.image || undefined,
           isFeatured: form.isFeatured,
           ...(metadata ? { metadata } : {}),
+          ...(nutrition ? { nutrition } : {}),
           ...(logistics ? { logistics } : {}),
         }),
       });
@@ -373,6 +738,20 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
         slotValue: "",
         wholesaleCost: "",
         weightKg: "",
+        storageEs: "",
+        storageEn: "",
+        dimensionLength: "",
+        dimensionWidth: "",
+        dimensionHeight: "",
+        vegan: false,
+        glutenFree: false,
+        organic: false,
+        calories: "",
+        protein: "",
+        carbs: "",
+        fats: "",
+        fiber: "",
+        sugars: "",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado");
@@ -536,6 +915,163 @@ function NewProductForm({ categories, onCreated }: NewProductFormProps) {
           />
         </label>
       </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Almacenamiento (ES)
+          <input
+            type="text"
+            value={form.storageEs}
+            onChange={(event) => setForm({ ...form, storageEs: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Almacenamiento (EN)
+          <input
+            type="text"
+            value={form.storageEn}
+            onChange={(event) => setForm({ ...form, storageEn: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Largo (cm)
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={form.dimensionLength}
+            onChange={(event) => setForm({ ...form, dimensionLength: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Ancho (cm)
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={form.dimensionWidth}
+            onChange={(event) => setForm({ ...form, dimensionWidth: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          Alto (cm)
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            value={form.dimensionHeight}
+            onChange={(event) => setForm({ ...form, dimensionHeight: event.target.value })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+        </label>
+      </div>
+      <div className="space-y-2 rounded-2xl border border-slate-200 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Valores Nutricionales</p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              checked={form.vegan}
+              onChange={(event) => setForm({ ...form, vegan: event.target.checked })}
+              className="h-4 w-4 rounded border border-slate-300"
+            />
+            Vegano
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              checked={form.glutenFree}
+              onChange={(event) => setForm({ ...form, glutenFree: event.target.checked })}
+              className="h-4 w-4 rounded border border-slate-300"
+            />
+            Sin Gluten
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              checked={form.organic}
+              onChange={(event) => setForm({ ...form, organic: event.target.checked })}
+              className="h-4 w-4 rounded border border-slate-300"
+            />
+            Orgánico
+          </label>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Calorías
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={form.calories}
+              onChange={(event) => setForm({ ...form, calories: event.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Proteínas (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={form.protein}
+              onChange={(event) => setForm({ ...form, protein: event.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Carbohidratos (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={form.carbs}
+              onChange={(event) => setForm({ ...form, carbs: event.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Grasas (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={form.fats}
+              onChange={(event) => setForm({ ...form, fats: event.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Fibra (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={form.fiber}
+              onChange={(event) => setForm({ ...form, fiber: event.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+          <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Azúcares (g)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={form.sugars}
+              onChange={(event) => setForm({ ...form, sugars: event.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </label>
+        </div>
+      </div>
       <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
         <input
           type="checkbox"
@@ -624,6 +1160,19 @@ export function ProductManager({ initialProducts, categories, onProductCreated }
     const slotValue = formState.slotValue.trim();
     const wholesaleCost = formState.wholesaleCost.trim();
     const weightKg = formState.weightKg.trim();
+    const salePriceAmount = formState.salePriceAmount.trim();
+    const storageEs = formState.storageEs.trim();
+    const storageEn = formState.storageEn.trim();
+    const dimensionLength = formState.dimensionLength.trim();
+    const dimensionWidth = formState.dimensionWidth.trim();
+    const dimensionHeight = formState.dimensionHeight.trim();
+    const calories = formState.calories.trim();
+    const protein = formState.protein.trim();
+    const carbs = formState.carbs.trim();
+    const fats = formState.fats.trim();
+    const fiber = formState.fiber.trim();
+    const sugars = formState.sugars.trim();
+
     const metadata =
       slotValue || wholesaleCost
         ? {
@@ -631,30 +1180,87 @@ export function ProductManager({ initialProducts, categories, onProductCreated }
             wholesaleCost: wholesaleCost ? Number(wholesaleCost) : undefined,
           }
         : undefined;
-    const logistics = weightKg ? { weightKg: Number(weightKg) } : undefined;
+
+    const nutrition =
+      formState.vegan ||
+      formState.glutenFree ||
+      formState.organic ||
+      calories ||
+      protein ||
+      carbs ||
+      fats ||
+      fiber ||
+      sugars
+        ? {
+            vegan: formState.vegan || undefined,
+            glutenFree: formState.glutenFree || undefined,
+            organic: formState.organic || undefined,
+            calories: calories ? Number(calories) : undefined,
+            protein: protein ? Number(protein) : undefined,
+            carbs: carbs ? Number(carbs) : undefined,
+            fats: fats ? Number(fats) : undefined,
+            fiber: fiber ? Number(fiber) : undefined,
+            sugars: sugars ? Number(sugars) : undefined,
+          }
+        : undefined;
+
+    const dimensions = dimensionLength && dimensionWidth && dimensionHeight
+      ? {
+          length: Number(dimensionLength),
+          width: Number(dimensionWidth),
+          height: Number(dimensionHeight),
+        }
+      : undefined;
+
+    const storage = storageEs || storageEn
+      ? {
+          es: storageEs || storageEn,
+          en: storageEn || storageEs,
+        }
+      : undefined;
+
+    const logistics = weightKg || dimensions || storage
+      ? {
+          ...(weightKg ? { weightKg: Number(weightKg) } : {}),
+          ...(dimensions ? { dimensionsCm: dimensions } : {}),
+          ...(storage ? { storage } : {}),
+        }
+      : undefined;
 
     const payload: Record<string, unknown> = {
+      sku: formState.sku.trim() || undefined,
+      name: {
+        es: formState.nameEs.trim(),
+        en: formState.nameEn.trim(),
+      },
       price: {
         amount: Number(formState.priceAmount),
         currency: formState.priceCurrency || "DOP",
       },
+      salePrice: salePriceAmount 
+        ? {
+            amount: Number(salePriceAmount),
+            currency: formState.priceCurrency || "DOP",
+          }
+        : null,
       description: {
-        es: formState.descriptionEs,
-        en: formState.descriptionEn,
+        es: formState.descriptionEs.trim(),
+        en: formState.descriptionEn.trim(),
       },
       unit:
         formState.unitEs || formState.unitEn
           ? {
-            es: formState.unitEs || formState.unitEn,
-            en: formState.unitEn || formState.unitEs,
+            es: formState.unitEs.trim() || formState.unitEn.trim(),
+            en: formState.unitEn.trim() || formState.unitEs.trim(),
           }
           : undefined,
-      image: formState.image || undefined,
+      image: formState.image.trim() || undefined,
       tags,
       status: formState.status,
       isFeatured: formState.isFeatured,
       categoryId: formState.categoryId,
       ...(metadata ? { metadata } : {}),
+      ...(nutrition ? { nutrition } : {}),
       ...(logistics ? { logistics } : {}),
     };
 
