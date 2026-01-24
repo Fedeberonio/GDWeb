@@ -1,43 +1,60 @@
 import type { Box, Product, ProductCategory } from "./types";
-import { MOCK_BOXES, MOCK_CATEGORIES, MOCK_PRODUCTS } from "./mock-data";
+import { getFirebaseFirestore } from "@/lib/firebase/client";
+import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 
-// Función helper para usar rutas locales de Next.js API
-async function fetchLocal<T>(path: string, fallback: T): Promise<T> {
-  // En el servidor de Next.js, podemos usar fetch con URL absoluta o relativa
-  // Usamos URL absoluta para evitar problemas con baseUrl
-  const baseUrl = typeof window !== "undefined"
-    ? window.location.origin
-    : process.env.NEXT_PUBLIC_APP_URL || "https://greendolio.shop";
+// Helper para obtener DB
+function getDb() {
+  return getFirebaseFirestore();
+}
 
-  const url = `${baseUrl}/api${path}`;
-
+export async function fetchProductCategories(): Promise<ProductCategory[]> {
   try {
-    const response = await fetch(url, {
-      cache: "force-cache",
-      next: { revalidate: 60 } // Revalidate every minute
-    });
-
-    if (!response.ok) {
-      console.error(`Failed to fetch ${path}: ${response.statusText}`);
-      return fallback;
-    }
-
-    const json = await response.json();
-    return json.data;
+    const db = getDb();
+    const q = query(collection(db, "categories"), orderBy("sortOrder", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => doc.data() as ProductCategory);
   } catch (error) {
-    console.error(`Error fetching ${path}:`, error);
-    return fallback;
+    console.error("Error fetching categories from Firestore:", error);
+    return [];
   }
 }
 
-export async function fetchProductCategories() {
-  return fetchLocal<ProductCategory[]>("/catalog/categories", MOCK_CATEGORIES);
+export async function fetchBoxes(): Promise<Box[]> {
+  try {
+    const db = getDb();
+    // Fetch all boxes
+    const q = query(collection(db, "boxes"));
+    const snapshot = await getDocs(q);
+
+    // Mapear y asegurar que los datos coincidan con el tipo Box
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data
+      } as Box;
+    });
+  } catch (error) {
+    console.error("Error fetching boxes from Firestore:", error);
+    return [];
+  }
 }
 
-export async function fetchBoxes() {
-  return fetchLocal<Box[]>("/catalog/boxes", MOCK_BOXES);
-}
-
-export async function fetchProducts() {
-  return fetchLocal<Product[]>("/catalog/products", MOCK_PRODUCTS);
+export async function fetchProducts(): Promise<Product[]> {
+  try {
+    const db = getDb();
+    // Traer solo productos activos por defecto para el catálogo público
+    const q = query(collection(db, "products"), where("status", "==", "active"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data
+      } as Product;
+    });
+  } catch (error) {
+    console.error("Error fetching products from Firestore:", error);
+    return [];
+  }
 }
