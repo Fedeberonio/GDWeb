@@ -23,22 +23,25 @@ function ProductsContent() {
       setStatus("loading");
       setError(null);
 
-      const [productsRes, categoriesRes] = await Promise.all([
-        adminFetch("/api/admin/catalog/products", { cache: "no-store" }),
-        fetch("/api/catalog/categories", { cache: "force-cache" }),
-      ]);
+      // Importar dinámicamente para no romper SSR si fuera el caso, aunque es 'use client'
+      const { getFirebaseFirestore } = await import("@/lib/firebase/client");
+      const { collection, getDocs } = await import("firebase/firestore");
+      const db = getFirebaseFirestore();
 
-      if (!productsRes.ok || !categoriesRes.ok) {
-        throw new Error("No se pudieron cargar los datos del catálogo");
-      }
+      // Fetch products directly
+      const productsSnapshot = await getDocs(collection(db, "products"));
+      const productsData = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Product[];
 
-      const [productsJson, categoriesJson] = await Promise.all([productsRes.json(), categoriesRes.json()]);
+      // Fetch categories directly
+      const categoriesSnapshot = await getDocs(collection(db, "categories"));
+      const categoriesData = categoriesSnapshot.docs.map(doc => doc.data()) as ProductCategory[];
 
-      setProducts(Array.isArray(productsJson.data) ? productsJson.data : []);
-      setCategories(Array.isArray(categoriesJson.data) ? categoriesJson.data : []);
+      setProducts(productsData);
+      setCategories(categoriesData);
       setStatus("ready");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error inesperado");
+      console.error(err);
+      setError(err instanceof Error ? err.message : "Error inesperado al cargar de Firestore");
       setStatus("error");
     }
   }, []);
