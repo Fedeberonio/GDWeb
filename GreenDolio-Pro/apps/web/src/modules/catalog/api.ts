@@ -4,12 +4,12 @@ import type { Box, Product, ProductCategory } from "./types";
 async function fetchLocal<T>(path: string): Promise<T> {
   // En el servidor de Next.js, podemos usar fetch con URL absoluta o relativa
   // Usamos URL absoluta para evitar problemas con baseUrl
-  const baseUrl = typeof window !== "undefined" 
-    ? window.location.origin 
-    : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  
+  const baseUrl = typeof window !== "undefined"
+    ? window.location.origin
+    : process.env.NEXT_PUBLIC_APP_URL || "https://greendolio.shop";
+
   const url = `${baseUrl}/api${path}`;
-  
+
   const response = await fetch(url, {
     cache: "force-cache",
   });
