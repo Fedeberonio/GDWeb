@@ -4,7 +4,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_API_BASE_URL: z
     .string()
     .url()
-    .default("http://localhost:5001/api"),
+    .default("https://api.greendolio.shop/api"),
   NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1),
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().min(1),
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1),
