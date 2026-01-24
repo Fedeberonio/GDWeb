@@ -1,7 +1,8 @@
 import type { Box, Product, ProductCategory } from "./types";
+import { MOCK_BOXES, MOCK_CATEGORIES, MOCK_PRODUCTS } from "./mock-data";
 
 // Función helper para usar rutas locales de Next.js API
-async function fetchLocal<T>(path: string): Promise<T> {
+async function fetchLocal<T>(path: string, fallback: T): Promise<T> {
   // En el servidor de Next.js, podemos usar fetch con URL absoluta o relativa
   // Usamos URL absoluta para evitar problemas con baseUrl
   const baseUrl = typeof window !== "undefined"
@@ -10,26 +11,33 @@ async function fetchLocal<T>(path: string): Promise<T> {
 
   const url = `${baseUrl}/api${path}`;
 
-  const response = await fetch(url, {
-    cache: "force-cache",
-  });
+  try {
+    const response = await fetch(url, {
+      cache: "force-cache",
+      next: { revalidate: 60 } // Revalidate every minute
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${path}: ${response.statusText}`);
+    if (!response.ok) {
+      console.error(`Failed to fetch ${path}: ${response.statusText}`);
+      return fallback;
+    }
+
+    const json = await response.json();
+    return json.data;
+  } catch (error) {
+    console.error(`Error fetching ${path}:`, error);
+    return fallback;
   }
-
-  const json = await response.json();
-  return json.data;
 }
 
 export async function fetchProductCategories() {
-  return fetchLocal<ProductCategory[]>("/catalog/categories");
+  return fetchLocal<ProductCategory[]>("/catalog/categories", MOCK_CATEGORIES);
 }
 
 export async function fetchBoxes() {
-  return fetchLocal<Box[]>("/catalog/boxes");
+  return fetchLocal<Box[]>("/catalog/boxes", MOCK_BOXES);
 }
 
 export async function fetchProducts() {
-  return fetchLocal<Product[]>("/catalog/products");
+  return fetchLocal<Product[]>("/catalog/products", MOCK_PRODUCTS);
 }
