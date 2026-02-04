@@ -1,6 +1,8 @@
 "use client";
 
+import { Package } from "lucide-react";
 import type { Box } from "@/modules/catalog/types";
+import { useTranslation } from "@/modules/i18n/use-translation";
 
 type BoxSizeSelectorProps = {
   boxes: Box[];
@@ -8,6 +10,7 @@ type BoxSizeSelectorProps = {
 };
 
 export function BoxSizeSelector({ boxes, onSelectSize }: BoxSizeSelectorProps) {
+  const { tData } = useTranslation();
   // Ordenar cajas por días (3, 7, 14)
   const sortedBoxes = [...boxes].sort((a, b) => (a.durationDays || 0) - (b.durationDays || 0));
 
@@ -25,7 +28,7 @@ export function BoxSizeSelector({ boxes, onSelectSize }: BoxSizeSelectorProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {sortedBoxes.map((box) => {
           const days = box.durationDays || 0;
-          const displayName = box.name.es;
+          const displayName = tData(box.name);
           const price = box.price.amount;
 
           return (
@@ -38,7 +41,9 @@ export function BoxSizeSelector({ boxes, onSelectSize }: BoxSizeSelectorProps) {
               <div className="absolute inset-0 bg-gradient-to-br from-[var(--gd-color-leaf)]/0 via-transparent to-[var(--gd-color-sky)]/0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-3xl" />
               
               <div className="relative z-10 flex flex-col items-center text-center space-y-4">
-                <div className="text-6xl mb-2">📦</div>
+                <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center mb-2">
+                  <Package className="w-8 h-8 text-green-600" />
+                </div>
                 
                 <div className="space-y-2">
                   <h3 className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
@@ -72,4 +77,3 @@ export function BoxSizeSelector({ boxes, onSelectSize }: BoxSizeSelectorProps) {
     </section>
   );
 }
-

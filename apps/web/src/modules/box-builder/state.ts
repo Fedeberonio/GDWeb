@@ -10,8 +10,6 @@ export type BuilderState = {
   likes: string[];
   dislikes: string[];
   notes: string;
-  highlightedProducts: string[];
-  selectedProducts: Record<string, number>;
   deliveryZone?: string;
   deliveryDay?: string;
   contactName: string;
@@ -32,9 +30,7 @@ export function useBoxBuilderState() {
           likes: [],
           dislikes: [],
           notes: "",
-          highlightedProducts: [],
           ...parsed,
-          selectedProducts: parsed.selectedProducts ?? {},
           contactName: parsed.contactName ?? "",
           contactEmail: parsed.contactEmail ?? "",
           contactPhone: parsed.contactPhone ?? "",
@@ -48,8 +44,6 @@ export function useBoxBuilderState() {
       likes: [],
       dislikes: [],
       notes: "",
-      highlightedProducts: [],
-      selectedProducts: {},
       contactName: "",
       contactEmail: "",
       contactPhone: "",
@@ -69,8 +63,6 @@ export function useBoxBuilderState() {
         likes: [],
         dislikes: [],
         notes: "",
-        highlightedProducts: [],
-        selectedProducts: {},
         contactName: "",
         contactEmail: "",
         contactPhone: "",

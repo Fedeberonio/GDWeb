@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Router } from "express";
 import { z } from "zod";
 import crypto from "crypto";
@@ -7,10 +6,7 @@ import { createOrder } from "./repository";
 import type { OrderItem } from "./schemas";
 
 function generateId(length = 12): string {
-  if (typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID().replace(/-/g, '').substring(0, length);
-  }
-  return Math.random().toString(36).substring(2, 2 + length);
+  return crypto.randomUUID().replace(/-/g, "").slice(0, length);
 }
 
 const boxConfigurationSchema = z.object({
@@ -129,4 +125,3 @@ export function createPublicOrdersRouter() {
 
   return router;
 }
-// @ts-nocheck

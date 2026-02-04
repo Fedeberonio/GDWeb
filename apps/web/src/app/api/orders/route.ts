@@ -1,52 +1,117 @@
 import { NextResponse } from "next/server";
+import { FieldValue } from "firebase-admin/firestore";
+import { getAdminFirestore, getAdminAuth } from "@/lib/firebase/admin";
 
-import { getClientEnv } from "@/lib/config/env";
+// Tipos básicos para el payload (simplificados)
+type OrderPayload = {
+  contactName: string;
+  contactPhone: string;
+  contactEmail?: string;
+  address?: string;
+  deliveryDay?: string;
+  deliveryZone?: string;
+  notes?: string;
+  paymentMethod?: string;
+  items: any[];
+};
 
 export async function POST(request: Request) {
   try {
-    const payload = await request.json();
-    const { NEXT_PUBLIC_API_BASE_URL } = getClientEnv();
+    const body = await request.json() as OrderPayload;
 
-    try {
-      const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Backend responded with ${response.status}`);
-      }
-
-      const data = await response.json();
-      return NextResponse.json(data, { status: response.status });
-    } catch (backendError) {
-      console.warn("⚠️ Backend API unavailable or failed. Returning MOCK success for demo purpose.", backendError);
-
-      // FALLBACK MOCK RESPONSE
-      const mockOrder = {
-        id: `mock-${Date.now()}`,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        items: payload.items,
-        delivery: {
-          address: {
-            contactName: payload.contactName,
-            zone: payload.deliveryZone,
-          }
-        },
-        totals: {
-          total: { amount: 0, currency: "DOP" } // Simplified
-        }
-      };
-
-      return NextResponse.json({ data: mockOrder }, { status: 201 });
+    // Validación básica
+    if (!body.contactName || !body.contactPhone || !body.items?.length) {
+      return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
+
+    // AUTH IDENTITY
+    let userId = null;
+    const authHeader = request.headers.get("authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const idToken = authHeader.split("Bearer ")[1];
+        const decodedToken = await getAdminAuth().verifyIdToken(idToken);
+        userId = decodedToken.uid;
+      } catch (e) {
+        console.warn("Failed to verify ID token in order creation:", e);
+        // Continue as guest
+      }
+    }
+
+    // Calcular Totales (Replicando lógica del cliente para consistencia inicial)
+    const diasConCargo = ["Martes", "Jueves", "Sábado"];
+    const deliveryDay = body.deliveryDay || "";
+    const deliveryFeeAmount = diasConCargo.includes(deliveryDay) ? 100 : 0;
+
+    // Calcular subtotal
+    const subtotal = body.items.reduce((sum: number, item: any) => {
+      const price = Number(item.price) || 0;
+      const quantity = Number(item.quantity) || 1;
+      return sum + (price * quantity);
+    }, 0);
+
+    // Calcular fee de PayPal si aplica
+    const isPayPal = body.paymentMethod === "online" || body.paymentMethod === "PayPal"; // "online" es el valor mapeado
+    const paypalFeeAmount = isPayPal ? (subtotal + deliveryFeeAmount) * 0.10 : 0;
+
+    const totalAmount = subtotal + deliveryFeeAmount + paypalFeeAmount;
+
+    // Construir objeto de orden
+    const orderData = {
+      status: "pending",
+      paymentStatus: "unpaid", // Root level
+      paymentMethod: body.paymentMethod || "cash", // Root level
+      userId: userId, // Identity
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+      guestEmail: body.contactEmail || null,
+      delivery: {
+        address: {
+          contactName: body.contactName,
+          phone: body.contactPhone,
+          label: body.address || "Dirección principal",
+          city: "Santo Domingo",
+          zone: body.deliveryZone || "Zona Metropolitana",
+          notes: body.notes || null, // FIX: Avoid undefined
+        },
+        window: {
+          day: deliveryDay,
+          slot: "12:30 PM - 8:00 PM"
+        }
+      },
+      payment: { // Keep for backward compatibility if needed, but rely on root
+        method: body.paymentMethod || "cash",
+        status: "pending"
+      },
+      items: body.items.map((item: any) => ({
+        id: item.slug || item.id, // Fallback
+        productId: item.slug || item.id, // Ensure productId exists for restoration
+        type: item.type || "product",
+        name: { es: item.name, en: item.name }, // Simple map
+        quantity: item.quantity,
+        unitPrice: { amount: item.price, currency: "DOP" },
+        startPrice: { amount: item.price, currency: "DOP" },
+        metadata: item.metadata || item.configuration || {}
+      })),
+      totals: {
+        subtotal: { amount: subtotal, currency: "DOP" },
+        deliveryFee: { amount: deliveryFeeAmount, currency: "DOP" },
+        // incluir fee de servicio/paypal si es necesario en un campo 'fees' o sumado
+        total: { amount: totalAmount, currency: "DOP" }
+      }
+    };
+
+    const db = getAdminFirestore();
+    const docRef = await db.collection("orders").add(orderData);
+
+    return NextResponse.json({
+      success: true,
+      id: docRef.id,
+      data: { id: docRef.id } // Compatibilidad con ambos formatos
+    }, { status: 201 });
+
   } catch (error) {
-    console.error("Failed to process order request", error);
-    return NextResponse.json({ error: "No se pudo procesar el pedido" }, { status: 500 });
+    console.error("❌ Error creating order in Firestore:", error);
+    return NextResponse.json({ error: "Error interno al crear la orden" }, { status: 500 });
   }
 }

@@ -34,7 +34,7 @@ export function LogoSplash() {
     <div className="logo-splash" aria-hidden="true">
       <div className="logo-splash__logo">
         <Image
-          src="/images/hero/WelcomeBillboard.png"
+          src="/assets/images/hero/hero-welcome-banner.png"
           alt=""
           fill
           sizes="100vw"

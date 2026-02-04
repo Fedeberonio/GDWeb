@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import type { BoxRule, Product } from "./types";
-import { setBoxRulesMap, setProductMetaMap } from "@/modules/box-builder/utils";
+
 
 type CatalogContextValue = {
   products: Product[];
@@ -54,15 +54,18 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    setProductMetaMap(products);
+
+
+  const productMap = useMemo(() => {
+    const map = new Map<string, Product>();
+    products.forEach((product) => {
+      map.set(product.slug, product);
+      if (product.sku) {
+        map.set(product.sku, product);
+      }
+    });
+    return map;
   }, [products]);
-
-  useEffect(() => {
-    setBoxRulesMap(boxRules);
-  }, [boxRules]);
-
-  const productMap = useMemo(() => new Map(products.map((product) => [product.slug, product])), [products]);
   const value = useMemo(
     () => ({ products, boxRules, productMap, isLoading }),
     [products, boxRules, productMap, isLoading],

@@ -1,19 +1,31 @@
 "use client";
 
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { useCart } from "@/modules/cart/context";
+import { useCatalog } from "@/modules/catalog/context";
 import { useAuth } from "@/modules/auth/context";
 import { useUser } from "@/modules/user/context";
 import type { CartItem } from "@/modules/cart/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
-import { useCatalog } from "@/modules/catalog/context";
+import productMetadata from "@/data/productMetadata.json";
 
 type TranslateFn = ReturnType<typeof useTranslation>["t"];
+type TDataFn = ReturnType<typeof useTranslation>["tData"];
+
+const productNameMap = new Map(productMetadata.map((item: { slug: string; name: string }) => [item.slug, item.name]));
+
+/** Resolve product/preference label: catalog (SKU/slug → name_es|name_en) first, then productMetadata, then raw value. */
+function makeResolvePreferenceLabel(productMap: Map<string, { name: { es?: string; en?: string } }>, tData: TDataFn) {
+  return (value: string): string => {
+    const product = productMap.get(value);
+    if (product?.name) return tData(product.name);
+    return productNameMap.get(value) ?? value;
+  };
+}
 
 const resolveVariantKey = (variant?: string, mix?: string) => {
   if (variant === "fruity" || variant === "veggie" || variant === "mix") return variant;
@@ -34,41 +46,8 @@ const getVariantLabel = (variantKey: string, t: TranslateFn) => {
   return t("cart.variant_mix");
 };
 
-type StepperProps = {
-  currentStep: number;
-  steps: string[];
-};
-
-const Stepper = ({ currentStep, steps }: StepperProps) => (
-  <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-muted)]">
-    {steps.map((step, index) => {
-      const stepNumber = index + 1;
-      const isActive = stepNumber === currentStep;
-      const isComplete = stepNumber < currentStep;
-      return (
-        <div key={step} className="flex items-center gap-3">
-          <div
-            className={`flex h-7 w-7 items-center justify-center rounded-full border text-[0.6rem] ${
-              isActive
-                ? "border-[var(--gd-color-forest)] text-[var(--gd-color-forest)]"
-                : isComplete
-                ? "border-[var(--gd-color-leaf)] text-[var(--gd-color-leaf)]"
-                : "border-[var(--color-border)] text-[var(--color-muted)]"
-            }`}
-          >
-            {stepNumber}
-          </div>
-          <span className={isActive ? "text-[var(--gd-color-forest)]" : ""}>{step}</span>
-        </div>
-      );
-    })}
-  </div>
-);
-
 const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
-const CHECKOUT_AUTH_KEY = "gd-checkout-auth";
 const AUTH_MODE_KEY = "gd-auth-mode";
-const ORDER_CONFIRMATION_KEY = "gd-order-confirmation";
 
 type AuthChoice = "undecided" | "guest";
 type PaymentPreference = "Cash" | "Transferencia" | "PayPal";
@@ -100,12 +79,14 @@ type FormState = {
 
 export function CheckoutClient() {
   const { items, clear, metrics } = useCart();
-  const { user } = useAuth();
-  const { profile, updateProfile } = useUser();
-  const { t, tData } = useTranslation();
-  const router = useRouter();
   const { productMap } = useCatalog();
-  const steps = [t("checkout.step_delivery"), t("checkout.step_review"), t("checkout.step_confirmation")];
+  const { user } = useAuth();
+  const { profile, updateProfile, syncCart } = useUser();
+  const { t, tData } = useTranslation();
+  const resolvePreferenceLabel = useMemo(
+    () => makeResolvePreferenceLabel(productMap, tData),
+    [productMap, tData],
+  );
   const [form, setForm] = useState<FormState>({
     contactName: "",
     contactPhone: "",
@@ -120,13 +101,6 @@ export function CheckoutClient() {
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [authChoice, setAuthChoice] = useState<AuthChoice>("undecided");
   const [showAuthGate, setShowAuthGate] = useState(false);
-  const resolvePreferenceLabel = useCallback(
-    (value: string) => {
-      const product = productMap.get(value);
-      return product ? tData(product.name) : value;
-    },
-    [productMap, tData],
-  );
 
   // Pre-llenar formulario con datos del perfil
   useEffect(() => {
@@ -165,18 +139,6 @@ export function CheckoutClient() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const storedChoice = window.sessionStorage.getItem(CHECKOUT_AUTH_KEY);
-      if (storedChoice === "guest") {
-        setAuthChoice("guest");
-      }
-    } catch {
-      // ignore storage errors
-    }
-  }, []);
-
-  useEffect(() => {
     if (!showAuthGate) return;
     document.body.style.overflow = "hidden";
     return () => {
@@ -185,17 +147,18 @@ export function CheckoutClient() {
   }, [showAuthGate]);
 
   useEffect(() => {
+    if (!draftLoaded) return;
+    if (user) return;
+    if (authChoice !== "undecided") return;
+    if (!items.length) return;
+    setShowAuthGate(true);
+  }, [authChoice, draftLoaded, items.length, user]);
+
+  useEffect(() => {
     if (!user) return;
     setShowAuthGate(false);
     if (authChoice !== "undecided") {
       setAuthChoice("undecided");
-      try {
-        if (typeof window !== "undefined") {
-          window.sessionStorage.removeItem(CHECKOUT_AUTH_KEY);
-        }
-      } catch {
-        // ignore storage errors
-      }
     }
   }, [user, authChoice]);
 
@@ -297,7 +260,6 @@ export function CheckoutClient() {
       if (typeof window !== "undefined") {
         window.sessionStorage.setItem("gd-show-auth-modal", "true");
         window.sessionStorage.setItem(AUTH_MODE_KEY, "signup");
-        window.sessionStorage.removeItem(CHECKOUT_AUTH_KEY);
       }
     } catch {
       // ignore storage errors
@@ -311,13 +273,6 @@ export function CheckoutClient() {
   const handleAuthGuest = () => {
     setAuthChoice("guest");
     setShowAuthGate(false);
-    try {
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(CHECKOUT_AUTH_KEY, "guest");
-      }
-    } catch {
-      // ignore storage errors
-    }
   };
 
   const handleAuthClose = () => {
@@ -336,15 +291,15 @@ export function CheckoutClient() {
       return;
     }
     if (!form.direccion.trim()) {
-      toast.error("La dirección es requerida");
+      toast.error(t("checkout.address_required"));
       return;
     }
     if (!form.deliveryDay.trim()) {
-      toast.error("El día de entrega es requerido");
+      toast.error(t("checkout.delivery_day_required"));
       return;
     }
     if (!form.metodoPago.trim()) {
-      toast.error("El método de pago es requerido");
+      toast.error(t("checkout.payment_required"));
       return;
     }
 
@@ -364,7 +319,7 @@ export function CheckoutClient() {
     setShowSummary(true);
   };
 
-  // Paso 2: Enviar pedido por WhatsApp
+  // Paso 2: Enviar pedido por WhatsApp (SOLO si se guarda en BD)
   const handleSendOrder = async () => {
     if (!ensureCheckoutAccess()) {
       return;
@@ -383,7 +338,73 @@ export function CheckoutClient() {
         totalFinalUSD,
       } = orderCalculations;
 
-      // Crear detalle del pedido para WhatsApp
+      const deliveryZone = boxItems.find((item) => item.configuration?.deliveryZone)?.configuration?.deliveryZone;
+      const checkoutItems = items.map((item) => {
+        const unitPrice = item.configuration?.price?.final ?? item.price;
+        const metadata: Record<string, unknown> = {};
+        if (item.notes) metadata.notes = item.notes;
+        if (item.excludedIngredients?.length) {
+          metadata.excludedIngredients = item.excludedIngredients;
+        }
+        return {
+          type: item.type,
+          slug: item.slug,
+          name: item.name,
+          quantity: item.quantity,
+          price: unitPrice,
+          image: item.image,
+          configuration: item.type === "box" ? item.configuration : undefined,
+          metadata: Object.keys(metadata).length ? metadata : undefined,
+        };
+      });
+
+      const checkoutPayload = {
+        contactName: form.contactName,
+        contactPhone: form.contactPhone,
+        contactEmail: form.contactEmail?.trim() || undefined,
+        address: form.direccion?.trim() || undefined,
+        deliveryZone,
+        deliveryDay: form.deliveryDay || undefined,
+        notes: form.notes?.trim() || undefined,
+        paymentMethod: mapPaymentMethod(metodoPago),
+        items: checkoutItems,
+      };
+
+      // 1. Guardar primero en el Backend
+      let orderId = "PENDIENTE";
+      try {
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (user) {
+          const token = await user.getIdToken();
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch("/api/orders", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(checkoutPayload),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Backend responded with ${response.status}`);
+        }
+
+        const responseData = await response.json();
+        // Intentar obtener ID del formato de respuesta { data: { id: ... } } o { id: ... }
+        orderId = responseData.data?.id || responseData.id || "N/A";
+
+      } catch (apiError: any) {
+        console.error("Error al registrar pedido en API:", apiError);
+        toast.error(`No pudimos procesar tu pedido: ${apiError?.message || "Error de conexión"}. Por favor intenta de nuevo.`);
+        setSubmitting(false);
+        return; // DETENER SI FALLA LA API
+      }
+
+      // 2. Construir mensaje de WhatsApp con el ID real
       const detallePedido = items
         .map((item) => {
           const unitPrice = item.configuration?.price?.final ?? item.price;
@@ -419,7 +440,6 @@ export function CheckoutClient() {
         })
         .join("\n");
 
-      // Crear desglose de totales
       let desgloseTotal = `Subtotal: DOP ${subtotal.toFixed(2)}`;
       if (cargoEnvio > 0) {
         desgloseTotal += `\nEnvío: DOP ${cargoEnvio.toFixed(2)}`;
@@ -429,14 +449,12 @@ export function CheckoutClient() {
         desgloseTotal += `\nCargo ${metodoTexto} (10%): DOP ${cargoPaypal.toFixed(2)}`;
       }
       desgloseTotal += `\n*Total a Pagar: DOP ${totalFinalDOP.toFixed(2)}*`;
-      
-      // Agregar conversión a USD si es PayPal o Tarjeta
+
       if (requierePaypal && totalFinalUSD > 0) {
         desgloseTotal += `\n*Total en USD: $${totalFinalUSD.toFixed(2)}* (Tasa: 1 USD = 55 DOP)`;
       }
 
-      // Crear mensaje para WhatsApp (SIEMPRE se envía primero)
-      let mensajeWhatsApp = `¡Hola Green Dolio! 👋 Quisiera confirmar mi pedido:
+      let mensajeWhatsApp = `¡Hola Green Dolio! 👋 Nuevo Pedido #${orderId}:
 
 *👤 DATOS DEL CLIENTE:*
 - Nombre: ${form.contactName}
@@ -454,117 +472,65 @@ ${desgloseTotal}
 *💳 MÉTODO DE PAGO:*
 ${metodoPago}`;
 
-      // Solo indicar el método de pago, sin links ni instrucciones adicionales
-      // Green Dolio enviará los detalles del pago por WhatsApp después
-      
       mensajeWhatsApp += `\n\n*📝 OBSERVACIONES:*\n${form.notes || "Sin observaciones."}`;
-      
-      // Nota final sobre detalles del pago
       mensajeWhatsApp += `\n\n*💬 Recibirás los detalles del pago por WhatsApp.*`;
 
-      const deliveryZone = boxItems.find((item) => item.configuration?.deliveryZone)?.configuration?.deliveryZone;
-      const checkoutItems = items.map((item) => {
-        const unitPrice = item.configuration?.price?.final ?? item.price;
-        const metadata: Record<string, unknown> = {};
-        if (item.notes) metadata.notes = item.notes;
-        if (item.excludedIngredients?.length) {
-          metadata.excludedIngredients = item.excludedIngredients;
-        }
-        return {
-          type: item.type,
-          slug: item.slug,
-          name: item.name,
-          quantity: item.quantity,
-          price: unitPrice,
-          image: item.image,
-          configuration: item.type === "box" ? item.configuration : undefined,
-          metadata: Object.keys(metadata).length ? metadata : undefined,
-        };
-      });
-
-      const checkoutPayload = {
-        contactName: form.contactName,
-        contactPhone: form.contactPhone,
-        contactEmail: form.contactEmail?.trim() || undefined,
-        address: form.direccion?.trim() || undefined,
-        deliveryZone,
-        deliveryDay: form.deliveryDay || undefined,
-        notes: form.notes?.trim() || undefined,
-        paymentMethod: mapPaymentMethod(metodoPago),
-        items: checkoutItems,
-      };
-
-      // Preparar URL de WhatsApp antes de enviar
-      const numeroWhatsApp = "18493757338";
-      
+      // 3. Abrir WhatsApp
+      const numeroWhatsApp = "18097537338";
       const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
-      let whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+      const whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
+
       if (whatsappUrl.length > 4000) {
-        console.warn("URL de WhatsApp muy larga, puede causar problemas");
-        toast.error(t("checkout.whatsapp_long"));
-        whatsappUrl = `https://wa.me/${numeroWhatsApp}`;
-      }
-      
-      // Verificar que el mensaje no esté vacío
-      if (!mensajeWhatsApp || mensajeWhatsApp.trim().length === 0) {
-        console.error("ERROR: El mensaje de WhatsApp está vacío!");
-        toast.error("Error: No se pudo construir el mensaje del pedido.");
+        console.warn("URL de WhatsApp muy larga");
+        toast.error("El mensaje es muy largo. Por favor contacta soporte.");
         setSubmitting(false);
         return;
       }
 
-      let orderId = `temp-${Date.now()}`;
-      // Registrar pedido en el backend (si falla, igual seguimos con confirmación)
       try {
-        const response = await fetch("/api/orders", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(checkoutPayload),
-        });
-        if (!response.ok) {
-          throw new Error(`Backend responded with ${response.status}`);
+        // Usar window.open directamente para asegurar redirección, 
+        // ya que estamos en un contexto de evento de usuario (click)
+        const newWindow = window.open(whatsappUrl, "_blank");
+        if (!newWindow) {
+          // Fallback si el popup blocker lo detiene
+          window.location.href = whatsappUrl;
         }
-        const responseData = await response.json();
-        orderId = responseData?.data?.id ?? responseData?.id ?? orderId;
-      } catch (apiError: any) {
-        console.error("Error al registrar pedido en API:", apiError);
-        toast.error(
-          `Error al guardar el pedido en sistema: ${apiError?.message || "Error desconocido"}. El pedido se enviará por WhatsApp de todas formas.`,
-          { duration: 5000 }
-        );
+      } catch (error) {
+        console.error("Error al abrir WhatsApp:", error);
+        toast.error("Pedido guardado, pero no se pudo abrir WhatsApp. Revisa tus popups.");
       }
 
-      const confirmationPayload = {
-        orderId,
-        whatsappUrl,
-        contactName: form.contactName,
-        contactPhone: form.contactPhone,
-        contactEmail: form.contactEmail || "",
-        address: form.direccion,
-        deliveryDay: form.deliveryDay,
-        paymentMethod: metodoPago,
-        items: items.map((item) => {
-          const unitPrice = item.configuration?.price?.final ?? item.price;
-          return {
-            name: item.name,
-            quantity: item.quantity,
-            unitPrice,
-            total: unitPrice * item.quantity,
-          };
-        }),
-        totals: {
-          subtotal,
-          delivery: cargoEnvio,
-          total: totalFinalDOP,
-        },
-      };
+      // 4. Finalizar
+      if (requierePaypal) {
+        toast.success("¡Pedido creado! Completando proceso en WhatsApp...", { duration: 6000 });
+      } else {
+        toast.success("¡Pedido creado con éxito!", { duration: 5000 });
+      }
+
+      clear();
+
+      // Force sync for logged in users to avoid "zombie cart" on reload
+      if (user) {
+        await syncCart([]);
+      }
 
       if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(ORDER_CONFIRMATION_KEY, JSON.stringify(confirmationPayload));
+        // Explicitly clear local buffers to prevent restoration on reload
+        const STORAGE_KEY = "gd-cart";
+        const GUEST_STORAGE_KEY = "gd-cart-guest";
+
+        if (user?.uid) {
+          window.localStorage.removeItem(`${STORAGE_KEY}-${user.uid}`);
+        }
+        window.sessionStorage.removeItem(GUEST_STORAGE_KEY);
+        window.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
       }
-      router.push("/pedido-confirmado");
+
+      // Dar tiempo para que el usuario vea el toast antes de redirigir/limpiar UI
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+
     } catch (error) {
       const message = error instanceof Error ? error.message : t("checkout.order_error");
       toast.error(message);
@@ -576,131 +542,108 @@ ${metodoPago}`;
   const authGate =
     showAuthGate && !user && typeof window !== "undefined"
       ? createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+          onClick={handleAuthClose}
+        >
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
-            onClick={handleAuthClose}
+            className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000]"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
           >
-            <div
-              className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000]"
-              onClick={(event) => {
-                event.stopPropagation();
-              }}
-            >
-              <div className="p-6 pb-4 border-b border-gray-200">
-                <h2 className="mb-2 font-display text-2xl text-[var(--color-foreground)]">
-                  {t("checkout.auth_title")}
-                </h2>
-                <p className="text-sm text-[var(--color-muted)]">{t("checkout.auth_desc")}</p>
-                <ul className="mt-4 space-y-2 text-sm text-[var(--color-muted)]">
-                  <li>✓ {t("checkout.auth_benefit_1")}</li>
-                  <li>✓ {t("checkout.auth_benefit_2")}</li>
-                  <li>✓ {t("checkout.auth_benefit_3")}</li>
-                </ul>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 p-6 pt-4 border-t border-gray-200 bg-white rounded-b-3xl">
-                <button
-                  type="button"
-                  onClick={handleAuthLogin}
-                  className="flex-1 rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)]"
-                >
-                  {t("checkout.auth_login")}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAuthGuest}
-                  className="flex-1 rounded-full border border-[var(--gd-color-forest)]/30 px-6 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition hover:bg-[var(--gd-color-leaf)]/10"
-                >
-                  {t("checkout.auth_guest")}
-                </button>
-              </div>
-              <p className="px-6 pb-6 text-xs text-[var(--color-muted)]">
-                {t("checkout.auth_guest_hint")}
-              </p>
-              <div className="px-6 pb-6">
-                <button
-                  type="button"
-                  onClick={handleAuthClose}
-                  className="w-full rounded-full border border-[var(--color-border)] px-6 py-3 text-sm font-semibold text-[var(--color-foreground)] transition hover:bg-[var(--color-background-muted)]"
-                >
-                  {t("checkout.auth_back")}
-                </button>
-              </div>
+            <div className="p-6 pb-4 border-b border-gray-200">
+              <h2 className="mb-2 font-display text-2xl text-[var(--color-foreground)]">
+                {t("checkout.auth_title")}
+              </h2>
+              <p className="text-sm text-[var(--color-muted)]">{t("checkout.auth_desc")}</p>
+              <ul className="mt-4 space-y-2 text-sm text-[var(--color-muted)]">
+                <li>✓ {t("checkout.auth_benefit_1")}</li>
+                <li>✓ {t("checkout.auth_benefit_2")}</li>
+                <li>✓ {t("checkout.auth_benefit_3")}</li>
+              </ul>
             </div>
-          </div>,
-          document.body
-        )
+            <div className="flex flex-col sm:flex-row gap-3 p-6 pt-4 border-t border-gray-200 bg-white rounded-b-3xl">
+              <button
+                type="button"
+                onClick={handleAuthLogin}
+                className="flex-1 rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)]"
+              >
+                {t("checkout.auth_login")}
+              </button>
+              <button
+                type="button"
+                onClick={handleAuthGuest}
+                className="flex-1 rounded-full border border-[var(--gd-color-forest)]/30 px-6 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition hover:bg-[var(--gd-color-leaf)]/10"
+              >
+                {t("checkout.auth_guest")}
+              </button>
+            </div>
+            <p className="px-6 pb-6 text-xs text-[var(--color-muted)]">
+              {t("checkout.auth_guest_hint")}
+            </p>
+            <div className="px-6 pb-6">
+              <button
+                type="button"
+                onClick={handleAuthClose}
+                className="w-full rounded-full border border-[var(--color-border)] px-6 py-3 text-sm font-semibold text-[var(--color-foreground)] transition hover:bg-[var(--color-background-muted)]"
+              >
+                {t("checkout.auth_back")}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )
       : null;
 
-  // Si showSummary es true, mostrar resumen del pedido
+  // Si showSummary es true, mostrar solo el resumen del pedido (sin aside duplicado)
   if (showSummary) {
     return (
       <main className="min-h-screen bg-[var(--color-background)]">
-        <div className="mx-auto max-w-5xl px-4 py-10 space-y-8">
+        <div className="mx-auto max-w-3xl px-4 py-10 space-y-8">
           <header className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.35em] text-[var(--color-muted)]">Resumen del Pedido</p>
-            <h1 className="font-display text-3xl text-[var(--color-foreground)]">Confirma tu Pedido</h1>
+            <p className="text-xs uppercase tracking-[0.35em] text-[var(--color-muted)]">{t("checkout.review_title")}</p>
+            <h1 className="font-display text-3xl text-[var(--color-foreground)]">{t("checkout.review_heading")}</h1>
             <p className="text-sm text-[var(--color-muted)]">
-              Revisa todos los detalles antes de enviar
+              {t("checkout.review_subtitle")}
             </p>
-            <Stepper currentStep={2} steps={steps} />
           </header>
 
-          <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-            <section className="space-y-6 rounded-3xl border border-[var(--color-border)] bg-white p-6 shadow-soft">
-              <OrderSummaryView 
-                form={form}
-                items={items}
-                orderCalculations={orderCalculations}
-              />
-              
-              <div className="pt-6 border-t-2 border-[var(--color-border)] space-y-4">
-                <button
-                  onClick={() => setShowSummary(false)}
-                  className="w-full rounded-full border-2 border-[var(--color-border)] px-8 py-4 text-base font-semibold text-[var(--color-foreground)] transition-all hover:bg-[var(--color-background-muted)]"
-                >
-                  ← Volver a Editar
-                </button>
-                <button
-                  onClick={handleSendOrder}
-                  disabled={submitting}
-                  className="w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                >
-                  {submitting ? (
-                    <>
-                      <span className="animate-spin">⏳</span>
-                      <span>Enviando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>📱</span>
-                      <span>Enviar Pedido por WhatsApp</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </section>
+          <section className="space-y-6 rounded-3xl border border-[var(--color-border)] bg-white p-6 shadow-soft">
+            <OrderSummaryView
+              form={form}
+              items={items}
+              orderCalculations={orderCalculations}
+              resolvePreferenceLabel={resolvePreferenceLabel}
+            />
 
-            <aside className="space-y-4 rounded-3xl border border-[var(--color-border)] bg-white p-6 shadow-soft">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-[var(--color-muted)]">{t("checkout.summary")}</p>
-                <p className="font-display text-2xl text-[var(--color-foreground)]">{t("checkout.your_cart")}</p>
-                <p className="text-sm text-[var(--color-muted)]">{items.length} {t("checkout.items")} · {metrics.itemCount} {t("checkout.units")}</p>
-              </div>
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <CartLine key={`${item.slug}-${item.configuration ? "box" : "simple"}`} item={item} />
-                ))}
-              </div>
-              {boxItems.length > 0 && (
-                <AlaCarteReminder catalogHref={catalogHref} hasPreferences={hasPreferences} />
-              )}
-              <OrderSummary 
-                subtotal={subtotal} 
-                deliveryDay={form.deliveryDay} 
-                metodoPago={form.metodoPago} 
-              />
-            </aside>
-          </div>
+            <div className="pt-6 border-t-2 border-[var(--color-border)] space-y-4">
+              <button
+                onClick={() => setShowSummary(false)}
+                className="w-full rounded-full border-2 border-[var(--color-border)] px-8 py-4 text-base font-semibold text-[var(--color-foreground)] transition-all hover:bg-[var(--color-background-muted)]"
+              >
+                {t("checkout.review_back")}
+              </button>
+              <button
+                onClick={handleSendOrder}
+                disabled={submitting}
+                className="w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    <span>{t("checkout.review_sending")}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📱</span>
+                    <span>{t("checkout.review_send_whatsapp")}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </section>
         </div>
         {authGate}
       </main>
@@ -716,7 +659,6 @@ ${metodoPago}`;
           <p className="text-sm text-[var(--color-muted)]">
             {t("checkout.description")}
           </p>
-          <Stepper currentStep={1} steps={steps} />
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
@@ -751,16 +693,13 @@ ${metodoPago}`;
                     onChange={(e) => setForm((s) => ({ ...s, contactEmail: e.target.value }))}
                     className="mt-2 w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
                   />
-                  <span className="mt-2 block text-xs font-normal normal-case tracking-normal text-[var(--color-muted)]">
-                    {t("checkout.email_hint")}
-                  </span>
                 </label>
                 <label className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">
                   Dirección <span className="text-red-500">*</span>
                   <textarea
                     value={form.direccion}
                     onChange={(e) => setForm((s) => ({ ...s, direccion: e.target.value }))}
-                    placeholder={t("checkout.address_placeholder")}
+                    placeholder="Calle Principal #123, Santo Domingo"
                     rows={2}
                     className="mt-2 w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
                     required
@@ -843,36 +782,28 @@ ${metodoPago}`;
               <p className="text-sm text-[var(--color-muted)]">{items.length} {t("checkout.items")} · {metrics.itemCount} {t("checkout.units")}</p>
             </div>
             <div className="space-y-3">
-              {items.map((item) => (
-                <CartLine key={`${item.slug}-${item.configuration ? "box" : "simple"}`} item={item} />
+              {items.map((item, index) => (
+                <CartLine key={`${item.slug}-${item.configuration ? "box" : "simple"}-${index}`} item={item} resolvePreferenceLabel={resolvePreferenceLabel} />
               ))}
             </div>
             {boxItems.length > 0 && (
               <AlaCarteReminder catalogHref={catalogHref} hasPreferences={hasPreferences} />
             )}
-            <OrderSummary 
-              subtotal={subtotal} 
-              deliveryDay={form.deliveryDay} 
-              metodoPago={form.metodoPago} 
+            <OrderSummary
+              subtotal={subtotal}
+              deliveryDay={form.deliveryDay}
+              metodoPago={form.metodoPago}
             />
           </aside>
         </div>
-        </div>
-        {authGate}
-      </main>
-    );
-  }
-
-function CartLine({ item }: { item: CartItem }) {
-  const { t, tData } = useTranslation();
-  const { productMap } = useCatalog();
-  const resolvePreferenceLabel = useCallback(
-    (value: string) => {
-      const product = productMap.get(value);
-      return product ? tData(product.name) : value;
-    },
-    [productMap, tData],
+      </div>
+      {authGate}
+    </main>
   );
+}
+
+function CartLine({ item, resolvePreferenceLabel }: { item: CartItem; resolvePreferenceLabel: (value: string) => string }) {
+  const { t } = useTranslation();
   const isBox = item.type === "box" && item.configuration;
   const unitPrice = item.configuration?.price?.final ?? item.price;
   const variantKey = item.configuration
@@ -933,13 +864,13 @@ function CartLine({ item }: { item: CartItem }) {
   );
 }
 
-function OrderSummary({ 
-  subtotal, 
-  deliveryDay, 
-  metodoPago 
-}: { 
-  subtotal: number; 
-  deliveryDay: string; 
+function OrderSummary({
+  subtotal,
+  deliveryDay,
+  metodoPago
+}: {
+  subtotal: number;
+  deliveryDay: string;
   metodoPago: string;
 }) {
   const { t } = useTranslation();
@@ -992,12 +923,13 @@ function OrderSummary({
   );
 }
 
-function OrderSummaryView({ 
-  form, 
-  items, 
-  orderCalculations 
-}: { 
-  form: FormState; 
+function OrderSummaryView({
+  form,
+  items,
+  orderCalculations,
+  resolvePreferenceLabel,
+}: {
+  form: FormState;
   items: CartItem[];
   orderCalculations: {
     cargoEnvio: number;
@@ -1007,18 +939,11 @@ function OrderSummaryView({
     totalFinalDOP: number;
     totalFinalUSD: number;
   };
+  resolvePreferenceLabel: (value: string) => string;
 }) {
-  const { t, tData } = useTranslation();
-  const { productMap } = useCatalog();
-  const resolvePreferenceLabel = useCallback(
-    (value: string) => {
-      const product = productMap.get(value);
-      return product ? tData(product.name) : value;
-    },
-    [productMap, tData],
-  );
+  const { t } = useTranslation();
   const { cargoEnvio, metodoPago, requierePaypal, cargoPaypal, totalFinalDOP, totalFinalUSD } = orderCalculations;
-  
+
   const subtotal = items.reduce(
     (sum, item) => sum + (item.configuration?.price?.final ?? item.price) * item.quantity,
     0
@@ -1182,14 +1107,5 @@ function buildNotesFromProfile(profile: { likes?: string; dislikes?: string }): 
   return notes.join("\n");
 }
 
-function mapCartItemToOrderItem(item: CartItem) {
-  return {
-    type: item.type,
-    slug: item.slug,
-    name: item.name,
-    quantity: item.quantity,
-    price: item.configuration?.price?.final ?? item.price,
-    image: item.image,
-    configuration: item.configuration,
-  };
-}
+
+

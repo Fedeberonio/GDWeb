@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, type PropsWithChildren } from "react";
 
 import { useAuth } from "@/modules/auth/context";
 import { useUser } from "@/modules/user/context";
-import { cartItemsToFirestore } from "./firestore-sync";
+import { cartItemsToFirestore, firestoreToCartItems } from "./firestore-sync";
 import type { CartItem, CartMetrics } from "./types";
 
 type CartItemInput = Omit<CartItem, "quantity"> & {
@@ -53,74 +53,83 @@ function calculateMetrics(items: CartItem[]): CartMetrics {
 export function CartProvider({ children }: PropsWithChildren) {
   const { user } = useAuth();
   const { profile, syncCart: syncCartToFirestore, loading: profileLoading } = useUser();
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      if (user?.uid) {
-        const stored = window.localStorage.getItem(`${STORAGE_KEY}-${user.uid}`);
-        if (stored) return parseStoredItems(stored);
-        const legacyStored = window.localStorage.getItem(STORAGE_KEY);
-        if (legacyStored) return parseStoredItems(legacyStored);
-      }
-      const stored = window.sessionStorage.getItem(GUEST_STORAGE_KEY);
-      return parseStoredItems(stored);
-    } catch {
-      return [];
-    }
-  });
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-  // Cargar carrito desde Firestore cuando el usuario inicia sesión
-  useEffect(() => {
-    if (user && profile?.carrito && profile.carrito.length > 0) {
-      // Si hay carrito en Firestore, sincronizar con localStorage
-      // Nota: Por ahora mantenemos el formato actual del carrito
-      // En el futuro podríamos convertir desde Firestore al formato actual
-    }
-  }, [user, profile?.carrito]);
-
-  // Cargar carrito cuando cambia el usuario (guest vs logged-in)
+  // 1. Initial Load & Guest Migration logic
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       if (user?.uid) {
+        // Logged In: Check for existing user cart
         const userKey = `${STORAGE_KEY}-${user.uid}`;
-        const stored = window.localStorage.getItem(userKey);
+        const storedUserCart = window.localStorage.getItem(userKey);
+
+        if (storedUserCart) {
+          // Returning user with saved cart -> Restore it
+          const parsed = parseStoredItems(storedUserCart);
+          if (parsed.length > 0) {
+            setItems(parsed);
+            setHasInitialized(true);
+            return;
+          }
+        }
+
+        // New user OR User with empty cart -> Check for Guest Cart to migrate
+        // We check sessionStorage (where guest cart lives)
+        const storedGuestCart = window.sessionStorage.getItem(GUEST_STORAGE_KEY);
+        if (storedGuestCart) {
+          const parsedGuest = parseStoredItems(storedGuestCart);
+          if (parsedGuest.length > 0) {
+            // Found guest items! Migrate them to this user.
+            console.log("🛒 Migrating guest cart to user cart", parsedGuest.length);
+            setItems(parsedGuest);
+            // We don't remove guest storage yet; let the persist effect handle overwriting the user storage
+            setHasInitialized(true);
+            return;
+          }
+        }
+
+        // Fallback: No user cart, no guest cart
+        setItems([]);
+      } else {
+        // Guest Mode: Load guest cart
+        const stored = window.sessionStorage.getItem(GUEST_STORAGE_KEY);
         if (stored) {
           setItems(parseStoredItems(stored));
-          return;
+        } else {
+          setItems([]);
         }
-
-        const legacyStored = window.localStorage.getItem(STORAGE_KEY);
-        if (legacyStored) {
-          const parsed = parseStoredItems(legacyStored);
-          window.localStorage.setItem(userKey, legacyStored);
-          window.localStorage.removeItem(STORAGE_KEY);
-          setItems(parsed);
-          return;
-        }
-
-        const guestStored = window.sessionStorage.getItem(GUEST_STORAGE_KEY);
-        if (guestStored) {
-          const parsed = parseStoredItems(guestStored);
-          window.localStorage.setItem(userKey, guestStored);
-          window.sessionStorage.removeItem(GUEST_STORAGE_KEY);
-          setItems(parsed);
-          return;
-        }
-
-        setItems([]);
-        return;
       }
-
-      const guestStored = window.sessionStorage.getItem(GUEST_STORAGE_KEY);
-      setItems(parseStoredItems(guestStored));
+      setHasInitialized(true);
     } catch {
-      setItems([]);
+      setHasInitialized(true);
     }
   }, [user?.uid]);
 
-  // Guardar en storage (guest por sesión, usuario por cuenta)
+  // 2. Merge with Firestore when Profile is ready
   useEffect(() => {
+    if (user && profile && hasInitialized) {
+      const firestoreItems = profile.carrito ? firestoreToCartItems(profile.carrito) : [];
+      if (firestoreItems.length === 0) return;
+
+      setItems(prev => {
+        // Merge strategy: Firestore takes precedence for same slugs, 
+        // but guest items not in Firestore are kept.
+        const merged = [...firestoreItems];
+        prev.forEach(localItem => {
+          if (!merged.find(m => m.slug === localItem.slug)) {
+            merged.push(localItem);
+          }
+        });
+        return merged;
+      });
+    }
+  }, [user, profile?.carrito, hasInitialized]);
+
+  // 3. Persist to Local Storage
+  useEffect(() => {
+    if (!hasInitialized) return;
     try {
       const payload = JSON.stringify(items);
       if (user?.uid) {
@@ -131,22 +140,22 @@ export function CartProvider({ children }: PropsWithChildren) {
     } catch {
       // ignore
     }
-  }, [items, user?.uid]);
+  }, [items, user?.uid, hasInitialized]);
 
-  // Sincronizar con Firestore cuando el usuario está autenticado
+  // 4. Sync to Firestore
   useEffect(() => {
-    if (user && !profileLoading && syncCartToFirestore) {
+    // Only sync if we have a valid profile (document exists) to avoid "No document to update" race condition
+    if (user && profile && !profileLoading && hasInitialized && syncCartToFirestore) {
       const firestoreCart = cartItemsToFirestore(items);
       syncCartToFirestore(firestoreCart).catch((error) => {
         console.error("Error al sincronizar carrito con Firestore:", error);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, user, profileLoading]);
+  }, [items, user, profile, profileLoading, hasInitialized, syncCartToFirestore]);
 
   const metrics = useMemo(() => calculateMetrics(items), [items]);
 
-  const addItem = (item: CartItemInput) => {
+  const addItem = useCallback((item: CartItemInput) => {
     setItems((prev) => {
       const existingIndex = prev.findIndex((entry) => entry.slug === item.slug);
       const quantity = item.quantity ?? 1;
@@ -183,32 +192,32 @@ export function CartProvider({ children }: PropsWithChildren) {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("gd-cart-add"));
     }
-  };
+  }, []);
 
-  const updateQuantity = (slug: string, quantity: number) => {
+  const updateQuantity = useCallback((slug: string, quantity: number) => {
     setItems((prev) =>
       prev
         .map((item) => (item.slug === slug ? { ...item, quantity: Math.max(0, quantity) } : item))
         .filter((item) => item.quantity > 0),
     );
-  };
+  }, []);
 
-  const removeItem = (slug: string) => {
+  const removeItem = useCallback((slug: string) => {
     setItems((prev) => prev.filter((item) => item.slug !== slug));
-  };
+  }, []);
 
-  const clear = () => {
+  const clear = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
-  const value: CartContextValue = {
+  const value: CartContextValue = useMemo(() => ({
     items,
     addItem,
     updateQuantity,
     removeItem,
     clear,
     metrics,
-  };
+  }), [items, addItem, updateQuantity, removeItem, clear, metrics]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

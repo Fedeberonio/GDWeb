@@ -1,151 +1,140 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useId, useRef, useState } from "react";
+import { ChevronDown, LogOut, ShoppingBag, User } from "lucide-react";
+
 import { useAuth } from "@/modules/auth/context";
+
+const openAuthModal = (mode: "login" | "signup" = "login") => {
+  try {
+    window.sessionStorage.setItem("gd-show-auth-modal", "true");
+    window.sessionStorage.setItem("gd-auth-mode", mode);
+  } catch {
+    // ignore storage errors
+  }
+  window.dispatchEvent(new Event("gd-auth-modal-open"));
+};
 
 export function UserAuthButton() {
   const { user, loading, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const menuId = useId();
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const handleLogin = () => {
-    try {
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem("gd-show-auth-modal", "true");
-        window.sessionStorage.setItem("gd-auth-mode", "login");
-      }
-    } catch {
-      // ignore storage errors
-    }
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("gd-auth-modal-open"));
-    }
-  };
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    const onPointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (buttonRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+    };
+  }, [open]);
 
   if (loading) {
     return (
       <button
+        type="button"
         disabled
-        className="hidden md:flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/30 px-4 py-2 text-sm font-semibold text-[var(--gd-color-forest)] opacity-50"
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/30 bg-white/80 px-3 py-2 text-sm font-semibold text-[var(--gd-color-forest)] opacity-50"
+        aria-label="Cargando usuario"
       >
-        <span className="animate-pulse">Cargando...</span>
+        <span className="hidden sm:inline">Cargando...</span>
+        <User className="h-6 w-6" aria-hidden="true" />
       </button>
     );
   }
 
   if (!user) {
     return (
-      <>
-        {/* Versión móvil */}
-        <button
-          onClick={handleLogin}
-          className="md:hidden flex items-center justify-center rounded-full border border-[var(--gd-color-leaf)]/30 bg-white p-2.5 text-[var(--gd-color-forest)] transition-all hover:bg-[var(--gd-color-leaf)]/10"
-          title="Iniciar sesión"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="h-5 w-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-            />
-          </svg>
-        </button>
-        {/* Versión desktop */}
-        <button
-          onClick={handleLogin}
-          className="hidden md:flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/30 bg-white px-4 py-2 text-sm font-semibold text-[var(--gd-color-forest)] transition-all hover:bg-[var(--gd-color-leaf)]/10 hover:border-[var(--gd-color-leaf)] hover:scale-105"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="h-5 w-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-            />
-          </svg>
-          Iniciar sesión
-        </button>
-      </>
+      <button
+        type="button"
+        onClick={() => openAuthModal("login")}
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/30 bg-white/90 px-3 py-2 text-sm font-semibold text-[var(--gd-color-forest)] shadow-sm transition-all duration-300 ease-in-out hover:bg-white hover:shadow-md"
+        aria-label="Iniciar sesión"
+      >
+        <User className="h-6 w-6" aria-hidden="true" />
+        <span className="hidden sm:inline">Iniciar Sesión</span>
+      </button>
     );
   }
 
   return (
-    <>
-      {/* Versión móvil */}
-      <div className="md:hidden flex items-center gap-2">
-        {user.photoURL ? (
-          <Image
-            src={user.photoURL}
-            alt={user.displayName ?? user.email ?? "Usuario"}
-            width={32}
-            height={32}
-            className="h-8 w-8 rounded-full object-cover border-2 border-[var(--gd-color-leaf)]"
-          />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] text-xs font-semibold text-white border-2 border-[var(--gd-color-leaf)]">
-            {user.displayName?.charAt(0).toUpperCase() ?? user.email?.charAt(0).toUpperCase() ?? "U"}
-          </div>
-        )}
-        <button
-          onClick={logout}
-          className="rounded-full border border-red-200 p-2 text-red-600 transition-all hover:bg-red-50"
-          title="Cerrar sesión"
+    <div className="relative">
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/30 bg-white/90 px-3 py-2 text-sm font-semibold text-[var(--gd-color-forest)] shadow-sm transition-all duration-300 ease-in-out hover:bg-white hover:shadow-md"
+        aria-label="Menú de usuario"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={menuId}
+      >
+        <User className="h-6 w-6" aria-hidden="true" />
+        <ChevronDown className="h-4 w-4 text-[var(--gd-color-forest)]/70" aria-hidden="true" />
+      </button>
+
+      {open && (
+        <div
+          ref={menuRef}
+          id={menuId}
+          role="menu"
+          aria-label="Opciones de usuario"
+          className="absolute right-0 mt-2 w-56 rounded-2xl border border-[var(--color-border)] bg-white/95 p-1 shadow-xl backdrop-blur-md"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="h-4 w-4"
+          <Link
+            href="/mi-cuenta"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-[var(--color-foreground)] transition-colors duration-300 ease-in-out hover:bg-[var(--color-background-muted)]"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-            />
-          </svg>
-        </button>
-      </div>
-      {/* Versión desktop */}
-      <div className="hidden md:flex items-center gap-3">
-        {user.photoURL ? (
-          <Image
-            src={user.photoURL}
-            alt={user.displayName ?? user.email ?? "Usuario"}
-            width={32}
-            height={32}
-            className="h-8 w-8 rounded-full object-cover border-2 border-[var(--gd-color-leaf)]"
-          />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] text-xs font-semibold text-white border-2 border-[var(--gd-color-leaf)]">
-            {user.displayName?.charAt(0).toUpperCase() ?? user.email?.charAt(0).toUpperCase() ?? "U"}
-          </div>
-        )}
-        <div className="hidden lg:block text-xs">
-          <p className="font-semibold text-[var(--gd-color-forest)]">
-            {user.displayName ?? user.email?.split("@")[0]}
-          </p>
+            <User className="h-4 w-4 text-[var(--gd-color-forest)]" aria-hidden="true" />
+            <span>Mi Cuenta</span>
+          </Link>
+          <Link
+            href="/mis-pedidos"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-[var(--color-foreground)] transition-colors duration-300 ease-in-out hover:bg-[var(--color-background-muted)]"
+          >
+            <ShoppingBag className="h-4 w-4 text-[var(--gd-color-forest)]" aria-hidden="true" />
+            <span>Mis Pedidos</span>
+          </Link>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={async () => {
+              try {
+                await logout();
+              } finally {
+                setOpen(false);
+              }
+            }}
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-[var(--color-foreground)] transition-colors duration-300 ease-in-out hover:bg-[var(--color-background-muted)]"
+          >
+            <LogOut className="h-4 w-4 text-red-600" aria-hidden="true" />
+            <span>Cerrar Sesión</span>
+          </button>
         </div>
-        <button
-          onClick={logout}
-          className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition-all hover:bg-red-50 hover:scale-105"
-          title="Cerrar sesión"
-        >
-          Salir
-        </button>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

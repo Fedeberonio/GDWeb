@@ -25,6 +25,7 @@ import {
   boxRuleSchema,
   comboSchema,
   localizedStringSchema,
+  optionalLocalizedStringSchema,
   priceSchema,
   productCategorySchema,
   productSchema,
@@ -83,18 +84,18 @@ const logisticsUpdateSchema = z
         length: z.number().nonnegative(),
         width: z.number().nonnegative(),
         height: z.number().nonnegative(),
-      })
+        })
       .optional(),
-    storage: localizedStringSchema.partial().optional(),
+    storage: optionalLocalizedStringSchema,
   })
   .partial();
 
 const productUpdateSchema = z
   .object({
     sku: z.string().optional().nullable(),
-    name: localizedStringSchema.partial().optional(),
-    description: localizedStringSchema.partial().optional(),
-    unit: localizedStringSchema.partial().optional(),
+    name: optionalLocalizedStringSchema,
+    description: optionalLocalizedStringSchema,
+    unit: optionalLocalizedStringSchema,
     price: priceSchema.partial().optional(),
     salePrice: priceSchema.partial().optional().nullable(),
     status: productSchema.shape.status.optional(),
@@ -110,8 +111,8 @@ const productUpdateSchema = z
 
 const boxUpdateSchema = z
   .object({
-    name: localizedStringSchema.partial().optional(),
-    description: localizedStringSchema.partial().optional(),
+    name: optionalLocalizedStringSchema,
+    description: optionalLocalizedStringSchema,
     price: priceSchema.partial().optional(),
     ruleId: z.string().min(1).optional(),
     dimensionsLabel: z.string().min(1).optional(),
@@ -125,19 +126,19 @@ const boxUpdateSchema = z
 
 const comboUpdateSchema = z
   .object({
-    name: localizedStringSchema.partial().optional(),
-    salad: localizedStringSchema.partial().optional(),
-    juice: localizedStringSchema.partial().optional(),
-    dessert: localizedStringSchema.partial().optional(),
+    name: optionalLocalizedStringSchema,
+    salad: optionalLocalizedStringSchema,
+    juice: optionalLocalizedStringSchema,
+    dessert: optionalLocalizedStringSchema,
     price: z.number().nonnegative().optional(),
     cost: z.number().nonnegative().optional(),
     margin: z.number().nonnegative().optional(),
     calories: z.number().nonnegative().optional(),
     protein: z.number().nonnegative().optional(),
     glutenFree: z.boolean().optional(),
-    benefit: localizedStringSchema.partial().optional(),
-    benefitDetail: localizedStringSchema.partial().optional(),
-    recommendedFor: localizedStringSchema.partial().optional(),
+    benefit: optionalLocalizedStringSchema,
+    benefitDetail: optionalLocalizedStringSchema,
+    recommendedFor: optionalLocalizedStringSchema,
     carbs: z.number().nonnegative().optional(),
     fats: z.number().nonnegative().optional(),
     fiber: z.number().nonnegative().optional(),
@@ -369,8 +370,8 @@ const productCreationSchema = z.object({
   categoryId: z.string().min(1),
   price: priceSchema,
   status: productSchema.shape.status.optional(),
-  description: localizedStringSchema.partial().optional(),
-  unit: localizedStringSchema.partial().optional(),
+  description: optionalLocalizedStringSchema,
+  unit: optionalLocalizedStringSchema,
   tags: z.array(z.string()).optional(),
   image: z.string().min(1).optional(),
   isFeatured: z.boolean().optional(),

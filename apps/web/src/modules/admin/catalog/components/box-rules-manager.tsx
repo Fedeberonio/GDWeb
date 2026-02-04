@@ -3,10 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { adminFetch } from "@/modules/admin/api/client";
-import type { BoxRule } from "@/modules/catalog/types";
+import { useTranslation } from "@/modules/i18n/use-translation";
+import type { BoxRule, ProductCategory, Product } from "@/modules/catalog/types";
 
 type BoxRulesManagerProps = {
   initialRules: BoxRule[];
+  categories: ProductCategory[];
+  products: Product[];
 };
 
 type FormState = {
@@ -14,32 +17,38 @@ type FormState = {
   slotBudget: string;
   targetWeightKg: string;
   minMargin: string;
-  categoryBudget: string; // JSON string
-  baseContents: string; // JSON string
+  categoryBudget: Record<string, { min: number; max: number }>;
+  baseContents: Array<{ productSku: string; quantity: number }>;
   variantContents: {
-    mix?: string; // JSON string
-    fruity?: string; // JSON string
-    veggie?: string; // JSON string
+    mix: Array<{ productSku: string; quantity: number }>;
+    fruity: Array<{ productSku: string; quantity: number }>;
+    veggie: Array<{ productSku: string; quantity: number }>;
   };
 };
 
-function buildInitialForm(rule: BoxRule): FormState {
+function buildInitialForm(rule: BoxRule, categories: ProductCategory[]): FormState {
+  const defaultCategoryBudget: Record<string, { min: number; max: number }> = {};
+  categories.forEach((cat) => {
+    defaultCategoryBudget[cat.id] = rule.categoryBudget[cat.id] || { min: 0, max: 0 };
+  });
+
   return {
     displayName: rule.displayName ?? "",
     slotBudget: rule.slotBudget.toString(),
     targetWeightKg: rule.targetWeightKg.toString(),
     minMargin: rule.minMargin?.toString() ?? "",
-    categoryBudget: JSON.stringify(rule.categoryBudget, null, 2),
-    baseContents: JSON.stringify(rule.baseContents, null, 2),
+    categoryBudget: defaultCategoryBudget,
+    baseContents: rule.baseContents ?? [],
     variantContents: {
-      mix: rule.variantContents?.mix ? JSON.stringify(rule.variantContents.mix, null, 2) : "",
-      fruity: rule.variantContents?.fruity ? JSON.stringify(rule.variantContents.fruity, null, 2) : "",
-      veggie: rule.variantContents?.veggie ? JSON.stringify(rule.variantContents.veggie, null, 2) : "",
+      mix: rule.variantContents?.mix ?? [],
+      fruity: rule.variantContents?.fruity ?? [],
+      veggie: rule.variantContents?.veggie ?? [],
     },
   };
 }
 
-export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
+export function BoxRulesManager({ initialRules, categories, products }: BoxRulesManagerProps) {
+  const { t } = useTranslation();
   const [rules, setRules] = useState<BoxRule[]>(initialRules);
   const [selectedId, setSelectedId] = useState<string | null>(initialRules[0]?.id ?? null);
   const [formState, setFormState] = useState<FormState | null>(null);
@@ -54,11 +63,11 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
 
   useEffect(() => {
     if (selectedRule) {
-      setFormState(buildInitialForm(selectedRule));
+      setFormState(buildInitialForm(selectedRule, categories));
       setError(null);
       setMessage(null);
     }
-  }, [selectedRule]);
+  }, [selectedRule, categories]);
 
   useEffect(() => {
     setRules(initialRules);
@@ -69,7 +78,7 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
 
   const handleReset = () => {
     if (!selectedRule) return;
-    setFormState(buildInitialForm(selectedRule));
+    setFormState(buildInitialForm(selectedRule, categories));
     setError(null);
     setMessage(null);
   };
@@ -81,50 +90,12 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
     setError(null);
 
     try {
-      // Parse JSON fields
-      let categoryBudget: Record<string, { min: number; max: number }>;
-      let baseContents: Array<{ productSlug: string; quantity: number }>;
-      const variantContents: {
-        mix?: Array<{ productSlug: string; quantity: number }>;
-        fruity?: Array<{ productSlug: string; quantity: number }>;
-        veggie?: Array<{ productSlug: string; quantity: number }>;
-      } = {};
-
-      try {
-        categoryBudget = JSON.parse(formState.categoryBudget);
-      } catch {
-        throw new Error("categoryBudget tiene un formato JSON inválido");
-      }
-
-      try {
-        baseContents = JSON.parse(formState.baseContents);
-      } catch {
-        throw new Error("baseContents tiene un formato JSON inválido");
-      }
-
-      if (formState.variantContents.mix) {
-        try {
-          variantContents.mix = JSON.parse(formState.variantContents.mix);
-        } catch {
-          throw new Error("variantContents.mix tiene un formato JSON inválido");
-        }
-      }
-
-      if (formState.variantContents.fruity) {
-        try {
-          variantContents.fruity = JSON.parse(formState.variantContents.fruity);
-        } catch {
-          throw new Error("variantContents.fruity tiene un formato JSON inválido");
-        }
-      }
-
-      if (formState.variantContents.veggie) {
-        try {
-          variantContents.veggie = JSON.parse(formState.variantContents.veggie);
-        } catch {
-          throw new Error("variantContents.veggie tiene un formato JSON inválido");
-        }
-      }
+      const categoryBudget = formState.categoryBudget;
+      const variantContents = {
+        mix: formState.variantContents.mix.length > 0 ? formState.variantContents.mix : undefined,
+        fruity: formState.variantContents.fruity.length > 0 ? formState.variantContents.fruity : undefined,
+        veggie: formState.variantContents.veggie.length > 0 ? formState.variantContents.veggie : undefined,
+      };
 
       const payload: Partial<BoxRule> = {
         displayName: formState.displayName.trim(),
@@ -132,8 +103,8 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
         targetWeightKg: Number(formState.targetWeightKg),
         minMargin: formState.minMargin ? Number(formState.minMargin) : undefined,
         categoryBudget,
-        baseContents,
-        variantContents: Object.keys(variantContents).length > 0 ? variantContents : undefined,
+        baseContents: formState.baseContents,
+        variantContents: Object.values(variantContents).some((v) => v !== undefined) ? variantContents : undefined,
       };
 
       const response = await adminFetch(`/api/admin/catalog/box-rules/${selectedRule.id}`, {
@@ -144,40 +115,97 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
 
       const json = await response.json();
       if (!response.ok) {
-        throw new Error(json?.error ?? "No se pudo guardar la regla");
+        throw new Error(json?.error ?? t("admin.rules.error_save"));
       }
 
       const updated = json.data as BoxRule;
       setRules((prev) => prev.map((rule) => (rule.id === updated.id ? updated : rule)));
-      setMessage("Regla actualizada");
+      setMessage(t("admin.rules.updated"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error inesperado");
+      setError(err instanceof Error ? err.message : t("admin.rules.error_unexpected"));
     } finally {
       setSaving(false);
     }
   };
 
+  const renderContentEditor = (
+    contents: Array<{ productSku: string; quantity: number }>,
+    onChange: (newContents: Array<{ productSku: string; quantity: number }>) => void,
+    label: string
+  ) => (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</label>
+        <button
+          type="button"
+          onClick={() => onChange([...contents, { productSku: "", quantity: 1 }])}
+          className="text-xs text-green-600 hover:text-green-700 font-semibold"
+        >
+          {t("admin.box_manager.add")}
+        </button>
+      </div>
+      {contents.map((item, idx) => (
+        <div key={idx} className="flex items-center gap-2">
+          <select
+            value={item.productSku}
+            onChange={(e) => {
+              const newContents = [...contents];
+              newContents[idx] = { ...item, productSku: e.target.value };
+              onChange(newContents);
+            }}
+            className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          >
+            <option value="">{t("admin.box_manager.select_box")}</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.sku ?? p.slug}>
+                {p.name.es} ({p.sku ?? p.slug})
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            min="1"
+            value={item.quantity}
+            onChange={(e) => {
+              const newContents = [...contents];
+              newContents[idx] = { ...item, quantity: Number(e.target.value) };
+              onChange(newContents);
+            }}
+            className="w-20 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => onChange(contents.filter((_, i) => i !== idx))}
+            className="text-red-500 hover:text-red-700 font-bold px-2"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      {contents.length === 0 && <p className="text-xs text-slate-400 italic">{t("admin.box_manager.no_reference_content")}</p>}
+    </div>
+  );
+
   return (
     <div className="grid gap-6 lg:grid-cols-[260px,1fr]">
       <aside className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Reglas</p>
+        <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{t("admin.rules.title")}</p>
         <div className="space-y-2">
           {rules.map((rule) => (
             <button
               key={rule.id}
               type="button"
               onClick={() => setSelectedId(rule.id)}
-              className={`w-full rounded-2xl border px-3 py-2 text-left text-sm transition ${
-                rule.id === selectedId
-                  ? "border-green-500 bg-green-50 text-green-800"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-green-300"
-              }`}
+              className={`w-full rounded-2xl border px-3 py-2 text-left text-sm transition ${rule.id === selectedId
+                ? "border-green-500 bg-green-50 text-green-800"
+                : "border-slate-200 bg-white text-slate-600 hover:border-green-300"
+                }`}
             >
               <p className="font-semibold">{rule.displayName}</p>
               <p className="text-xs text-slate-400">{rule.id}</p>
             </button>
           ))}
-          {!rules.length && <p className="text-sm text-slate-500">No hay reglas cargadas.</p>}
+          {!rules.length && <p className="text-sm text-slate-500">{t("admin.rules.no_rules")}</p>}
         </div>
       </aside>
 
@@ -192,7 +220,7 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">Editar regla</h3>
+                <h3 className="text-lg font-semibold text-slate-900">{t("admin.rules.edit_title")}</h3>
                 <p className="text-xs text-slate-500">ID: {selectedRule.id}</p>
               </div>
               <div className="flex items-center gap-2">
@@ -201,14 +229,14 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
                   onClick={handleReset}
                   className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-green-500 hover:text-green-700"
                 >
-                  Revertir cambios
+                  {t("admin.rules.revert")}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="rounded-full bg-green-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {saving ? "Guardando..." : "Guardar regla"}
+                  {saving ? t("admin.rules.saving") : t("admin.rules.save")}
                 </button>
               </div>
             </div>
@@ -218,9 +246,9 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
 
             {/* Información Básica */}
             <div className="space-y-3 border-b border-slate-200 pb-4">
-              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Información Básica</h4>
+              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">{t("admin.rules.basic_info")}</h4>
               <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Nombre de Visualización *
+                {t("admin.rules.display_name")}
                 <input
                   type="text"
                   value={formState.displayName}
@@ -231,7 +259,7 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
               </label>
               <div className="grid gap-3 sm:grid-cols-3">
                 <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Presupuesto de Slots *
+                  {t("admin.rules.slot_budget")}
                   <input
                     type="number"
                     min="1"
@@ -243,7 +271,7 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
                   />
                 </label>
                 <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Peso Objetivo (kg) *
+                  {t("admin.rules.target_weight")}
                   <input
                     type="number"
                     min="0.1"
@@ -255,7 +283,7 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
                   />
                 </label>
                 <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Margen Mínimo (%)
+                  {t("admin.rules.min_margin")}
                   <input
                     type="number"
                     min="0"
@@ -271,105 +299,88 @@ export function BoxRulesManager({ initialRules }: BoxRulesManagerProps) {
 
             {/* Presupuesto por Categoría */}
             <div className="space-y-3 border-b border-slate-200 pb-4">
-              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Presupuesto por Categoría</h4>
-              <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Presupuesto por Categoría (JSON) *
-                <textarea
-                  value={formState.categoryBudget}
-                  onChange={(event) => setFormState({ ...formState, categoryBudget: event.target.value })}
-                  rows={6}
-                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono focus:border-green-500 focus:outline-none"
-                  placeholder='{"categoria-id": {"min": 0, "max": 10}, ...}'
-                  required
-                />
-                <p className="mt-1 text-xs text-slate-400">
-                  Formato: objeto con IDs de categoría como claves, cada una con min y max (números enteros)
-                </p>
-              </label>
+              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">{t("admin.rules.category_budget")}</h4>
+              <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                {categories.map((cat) => (
+                  <div key={cat.id} className="flex items-center justify-between gap-4 p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-100">
+                    <span className="text-sm font-medium text-slate-700 flex-1">{cat.name.es}</span>
+                    <div className="flex items-center gap-2">
+                      <label className="text-[10px] text-slate-400 uppercase">Min</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formState.categoryBudget[cat.id]?.min ?? 0}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setFormState({
+                            ...formState,
+                            categoryBudget: {
+                              ...formState.categoryBudget,
+                              [cat.id]: { ...formState.categoryBudget[cat.id] || { min: 0, max: 0 }, min: val },
+                            },
+                          });
+                        }}
+                        className="w-16 rounded-md border border-slate-300 px-2 py-1 text-sm text-center"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-[10px] text-slate-400 uppercase">Max</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formState.categoryBudget[cat.id]?.max ?? 0}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setFormState({
+                            ...formState,
+                            categoryBudget: {
+                              ...formState.categoryBudget,
+                              [cat.id]: { ...formState.categoryBudget[cat.id] || { min: 0, max: 0 }, max: val },
+                            },
+                          });
+                        }}
+                        className="w-16 rounded-md border border-slate-300 px-2 py-1 text-sm text-center"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Contenido Base */}
             <div className="space-y-3 border-b border-slate-200 pb-4">
-              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Contenido Base</h4>
-              <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Contenido Base (JSON) *
-                <textarea
-                  value={formState.baseContents}
-                  onChange={(event) => setFormState({ ...formState, baseContents: event.target.value })}
-                  rows={6}
-                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono focus:border-green-500 focus:outline-none"
-                  placeholder='[{"productSlug": "producto-slug", "quantity": 2}, ...]'
-                  required
-                />
-                <p className="mt-1 text-xs text-slate-400">
-                  Formato: array de objetos con productSlug (string) y quantity (número entero positivo)
-                </p>
-              </label>
+              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">{t("admin.rules.base_content")}</h4>
+              {renderContentEditor(
+                formState.baseContents,
+                (newContents) => setFormState({ ...formState, baseContents: newContents }),
+                t("admin.rules.base_products")
+              )}
             </div>
 
             {/* Contenido por Variante */}
             <div className="space-y-3 border-b border-slate-200 pb-4">
-              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Contenido por Variante</h4>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Mix (JSON)
-                    <textarea
-                      value={formState.variantContents.mix ?? ""}
-                      onChange={(event) =>
-                        setFormState({
-                          ...formState,
-                          variantContents: { ...formState.variantContents, mix: event.target.value },
-                        })
-                      }
-                      rows={4}
-                      className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono focus:border-green-500 focus:outline-none"
-                      placeholder='[{"productSlug": "producto-slug", "quantity": 2}, ...]'
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Fruity (JSON)
-                    <textarea
-                      value={formState.variantContents.fruity ?? ""}
-                      onChange={(event) =>
-                        setFormState({
-                          ...formState,
-                          variantContents: { ...formState.variantContents, fruity: event.target.value },
-                        })
-                      }
-                      rows={4}
-                      className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono focus:border-green-500 focus:outline-none"
-                      placeholder='[{"productSlug": "producto-slug", "quantity": 2}, ...]'
-                    />
-                  </label>
-                </div>
-                <div>
-                  <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    Veggie (JSON)
-                    <textarea
-                      value={formState.variantContents.veggie ?? ""}
-                      onChange={(event) =>
-                        setFormState({
-                          ...formState,
-                          variantContents: { ...formState.variantContents, veggie: event.target.value },
-                        })
-                      }
-                      rows={4}
-                      className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono focus:border-green-500 focus:outline-none"
-                      placeholder='[{"productSlug": "producto-slug", "quantity": 2}, ...]'
-                    />
-                  </label>
-                </div>
+              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">{t("admin.rules.variant_content")}</h4>
+              <div className="space-y-6">
+                {renderContentEditor(
+                  formState.variantContents.mix,
+                  (newContents) => setFormState({ ...formState, variantContents: { ...formState.variantContents, mix: newContents } }),
+                  t("admin.rules.mix_variant_content")
+                )}
+                {renderContentEditor(
+                  formState.variantContents.fruity,
+                  (newContents) => setFormState({ ...formState, variantContents: { ...formState.variantContents, fruity: newContents } }),
+                  t("admin.rules.fruity_variant_content")
+                )}
+                {renderContentEditor(
+                  formState.variantContents.veggie,
+                  (newContents) => setFormState({ ...formState, variantContents: { ...formState.variantContents, veggie: newContents } }),
+                  t("admin.rules.veggie_variant_content")
+                )}
               </div>
-              <p className="mt-1 text-xs text-slate-400">
-                Opcional: contenido específico para cada variante. Formato: array de objetos con productSlug y quantity
-              </p>
             </div>
           </form>
         ) : (
-          <p className="text-sm text-slate-500">Selecciona una regla para editar sus datos.</p>
+          <p className="text-sm text-slate-500">{t("admin.box_manager.select_box")}</p>
         )}
       </section>
     </div>

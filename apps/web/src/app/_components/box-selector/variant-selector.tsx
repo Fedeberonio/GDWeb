@@ -1,5 +1,6 @@
 "use client";
 
+import { Apple, Citrus, Leaf, Salad } from "lucide-react";
 import { useState } from "react";
 import type { Box } from "@/modules/catalog/types";
 import { calculateVariantComposition, getVariantInfo, type VariantType } from "./helpers";
@@ -7,7 +8,7 @@ import { useTranslation } from "@/modules/i18n/use-translation";
 
 type VariantSelectorProps = {
   box: Box;
-  baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
+  baseContents: Array<{ productSku: string; quantity: number; name: string }>;
   onSelectVariant: (variant: VariantType) => void;
   onBack: () => void;
 };
@@ -17,6 +18,11 @@ export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: 
   const [selectedVariant, setSelectedVariant] = useState<VariantType | null>(null);
 
   const variants: VariantType[] = ["mix", "fruity", "veggie"];
+  const variantIcons: Record<VariantType, React.ReactNode> = {
+    mix: <Apple className="w-6 h-6 text-red-500" />,
+    fruity: <Citrus className="w-6 h-6 text-orange-500" />,
+    veggie: <Salad className="w-6 h-6 text-green-600" />,
+  };
 
   const handleVariantChange = (variant: VariantType) => {
     setSelectedVariant(variant);
@@ -74,7 +80,7 @@ export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: 
               
               <div className="card-content p-6 space-y-4">
                 <div className="text-center">
-                  <div className="text-5xl mb-3">{info.icon}</div>
+                  <div className="text-5xl mb-3">{variantIcons[info.icon]}</div>
                   <h3 className="font-display text-2xl font-bold text-[var(--gd-color-forest)] mb-1">
                     {variant.toUpperCase()}
                   </h3>
@@ -90,23 +96,38 @@ export function VariantSelector({ box, baseContents, onSelectVariant, onBack }: 
                 <div className="pt-4 border-t border-[var(--gd-color-leaf)]/20 space-y-2">
                   <ul className="space-y-1.5 text-xs text-[var(--color-foreground)]">
                     <li className="flex items-center justify-between">
-                      <span>🌶️ {t("variants.categories.aromatic")}</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Leaf className="w-4 h-4 text-green-600" />
+                        {t("variants.categories.aromatic")}
+                      </span>
                       <span className="font-semibold">{composition.aromatic}</span>
                     </li>
                     <li className="flex items-center justify-between">
-                      <span>🥬 {t("variants.categories.leafy")}</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Salad className="w-4 h-4 text-green-600" />
+                        {t("variants.categories.leafy")}
+                      </span>
                       <span className="font-semibold">{composition.leafy}</span>
                     </li>
                     <li className="flex items-center justify-between">
-                      <span>🍎 {t("variants.categories.fruit")}</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Apple className="w-4 h-4 text-red-500" />
+                        {t("variants.categories.fruit")}
+                      </span>
                       <span className="font-semibold">{composition.fruit}</span>
                     </li>
                     <li className="flex items-center justify-between">
-                      <span>🥔 {t("variants.categories.root")}</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Leaf className="w-4 h-4 text-green-600" />
+                        {t("variants.categories.root")}
+                      </span>
                       <span className="font-semibold">{composition.root}</span>
                     </li>
                     <li className="flex items-center justify-between">
-                      <span>🍊 {t("variants.categories.citrus")}</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Citrus className="w-4 h-4 text-orange-500" />
+                        {t("variants.categories.citrus")}
+                      </span>
                       <span className="font-semibold">{composition.citrus}</span>
                     </li>
                   </ul>

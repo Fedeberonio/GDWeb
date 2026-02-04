@@ -12,7 +12,7 @@ export type BoxRule = {
   targetWeightKg: number;
   minMargin: number;
   categoryBudget: Record<string, CategoryBudget>;
-  baseContents: Array<{ productSlug: string; quantity: number }>;
+  baseContents: Array<{ productSku: string; quantity: number }>;
 };
 
 const rulesPath = path.join(process.cwd(), "src", "data", "boxRules.json");

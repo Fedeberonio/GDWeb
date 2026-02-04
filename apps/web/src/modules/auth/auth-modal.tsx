@@ -2,15 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import toast from "react-hot-toast";
 
 import { useAuth } from "@/modules/auth/context";
+import { useUser } from "@/modules/user/context";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { getFirestoreDb } from "@/lib/firebase/client";
+import { createUserProfile } from "@/modules/user/firestore";
+import { OnboardingForm, type OnboardingFormData } from "@/modules/user/onboarding-form";
 
 const AUTH_MODAL_FLAG = "gd-show-auth-modal";
 const AUTH_MODAL_EVENT = "gd-auth-modal-open";
 const AUTH_MODE_KEY = "gd-auth-mode";
 
-type AuthMode = "login" | "signup";
+type AuthMode = "login" | "signup" | "onboarding";
 
 export function AuthModal() {
   const {
@@ -18,14 +23,17 @@ export function AuthModal() {
     loginWithGoogle,
     loginWithEmailPassword,
     signupWithEmailPassword,
+    logout,
     clearError,
-    loading,
+    loading: authLoading,
     error,
   } = useAuth();
+  const { profile, loading: profileLoading, refreshProfile } = useUser();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [onboardingSubmitting, setOnboardingSubmitting] = useState(false);
   const [formState, setFormState] = useState({
     name: "",
     email: "",
@@ -71,30 +79,55 @@ export function AuthModal() {
     };
   }, [isOpen]);
 
+  // Master Effect: Manage flow based on User and Profile state
   useEffect(() => {
-    if (!user) return;
-    setIsOpen(false);
-    try {
-      if (typeof window !== "undefined") {
-        window.sessionStorage.removeItem(AUTH_MODAL_FLAG);
-        window.sessionStorage.removeItem(AUTH_MODE_KEY);
+    if (!isOpen || !user || profileLoading) return;
+
+    // Check if profile is complete (Phone, Address, HeardFrom are mandatory)
+    // We strictly follow the definition of "Onboarding required"
+    const isProfileComplete =
+      !!profile?.telefono &&
+      !!profile?.direccion &&
+      !!profile?.comoNosConocio;
+
+    // Debug Log
+    console.log("AuthModal Effect:", JSON.stringify({
+      isOpen,
+      user: user?.uid,
+      profileLoaded: !!profile,
+      isProfileComplete,
+      mode,
+      phone: profile?.telefono
+    }, null, 2));
+
+    if (isProfileComplete) {
+      // If profile is complete, WE MUST CLOSE.
+      // Previously we waited for submit handler, but if that fails or lags, we get stuck.
+      // Force close if open.
+      closeModal();
+    } else {
+      // Profile incomplete -> Force onboarding
+      if (mode !== "onboarding") {
+        setMode("onboarding");
       }
-    } catch {
-      // ignore storage errors
     }
-  }, [user]);
+  }, [isOpen, user, profile, profileLoading, mode]);
 
   useEffect(() => {
     if (!isOpen) return;
     try {
       const storedMode = window.sessionStorage.getItem(AUTH_MODE_KEY);
-      setMode(storedMode === "signup" || storedMode === "login" ? storedMode : "login");
+      // If we are not forcing onboarding, respect stored mode
+      if (mode !== "onboarding") {
+        setMode(storedMode === "signup" || storedMode === "login" ? storedMode : "login");
+      }
     } catch {
-      setMode("login");
+      if (mode !== "onboarding") setMode("login");
     }
     setLocalError(null);
     clearError();
-  }, [isOpen, clearError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -102,10 +135,17 @@ export function AuthModal() {
     clearError();
   }, [isOpen, mode, clearError]);
 
+  const activeError = localError ?? error ?? null;
+  const emailAuthEnabled = !(
+    activeError &&
+    (activeError.includes("auth/operation-not-allowed") || activeError.includes("operation-not-allowed"))
+  );
+
   if (!isOpen || typeof window === "undefined") return null;
 
   const closeModal = () => {
     setIsOpen(false);
+    setMode("login"); // Reset to login for next time, unless overridden by open event
     setLocalError(null);
     clearError();
     setFormState({
@@ -131,10 +171,9 @@ export function AuthModal() {
       setLocalError(t("auth.error_required"));
       return;
     }
-    const ok = await loginWithEmailPassword(formState.email.trim(), formState.password);
-    if (ok) {
-      closeModal();
-    }
+    // Logic handled by Master Effect: 
+    // If login succeeds, `user` updates -> Effect checks profile -> Closes or Onboards
+    await loginWithEmailPassword(formState.email.trim(), formState.password);
   };
 
   const handleSignupSubmit = async (event: React.FormEvent) => {
@@ -152,40 +191,95 @@ export function AuthModal() {
       setLocalError(t("auth.error_password_match"));
       return;
     }
-    const ok = await signupWithEmailPassword(
-      formState.email.trim(),
-      formState.password,
-      formState.name.trim(),
-    );
-    if (ok) {
-      closeModal();
+
+    try {
+      const success = await signupWithEmailPassword(
+        formState.email.trim(),
+        formState.password,
+        formState.name.trim(),
+      );
+      if (!success) return;
+    } catch (err) {
+      console.error("Signup error:", err);
     }
+  };
+
+  const handleOnboardingSubmit = async (data: OnboardingFormData) => {
+    if (!user) return;
+    setOnboardingSubmitting(true);
+    try {
+      const db = getFirestoreDb();
+      if (!db) throw new Error("Firebase no disponible");
+
+      // 1. Crear perfil
+      await createUserProfile(db, user.uid, {
+        displayName: user.displayName ?? "",
+        email: user.email ?? "",
+        telefono: (data.telefono || "").trim(),
+        direccion: (data.direccion || "").trim(),
+        pagoPreferido: data.pagoPreferido || undefined,
+        comoNosConocio: data.comoNosConocio,
+        likes: (data.likes || "").trim() || undefined,
+        dislikes: (data.dislikes || "").trim() || undefined,
+      });
+
+      // 2. Refrescar estado global (opcional para cerrar el modal, pero bueno para la UI)
+      try {
+        await refreshProfile();
+      } catch (e) {
+        console.warn("Profile refresh warning:", e);
+      }
+
+      // 3. Cerrar Modal explícitamente y notificar
+      toast.success(t("profile.success_message"));
+
+      console.log("Onboarding success, forcing close.");
+
+      // Forzar cierre asegurando que el modo cambie para evitar reaperturas por efectos
+      setIsOpen(false);
+      setMode("login");
+      clearError();
+
+      // Limpiar flags de sesion
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem(AUTH_MODAL_FLAG);
+        window.sessionStorage.removeItem(AUTH_MODE_KEY);
+      }
+
+    } catch (err) {
+      toast.error(t("profile.error_message"));
+      console.error("Onboarding error:", err);
+    } finally {
+      setOnboardingSubmitting(false);
+    }
+  };
+
+  const handleOnboardingGuest = async () => {
+    await logout();
+    closeModal();
   };
 
   const handleGoogleLogin = async () => {
     setLocalError(null);
-    const ok = await loginWithGoogle();
-    if (ok) {
-      closeModal();
-    }
+    // Logic handled by Master Effect
+    await loginWithGoogle();
   };
 
-  const activeError = localError ?? error;
+  const showOnboarding = mode === "onboarding" && !!user;
 
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
-      onClick={closeModal}
+      onClick={showOnboarding ? undefined : closeModal}
     >
       <div
-        className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000] animate-modal-in"
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
+        className={`w-full rounded-3xl bg-white shadow-xl flex flex-col z-[10000] animate-modal-in ${showOnboarding ? "max-w-2xl max-h-[90vh]" : "max-w-xl"
+          }`}
+        onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
           <h2 className="font-display text-2xl text-[var(--color-foreground)]">
-            {t("auth.title")}
+            {showOnboarding ? t("profile.welcome_title") : t("auth.title")}
           </h2>
           <button
             type="button"
@@ -196,160 +290,190 @@ export function AuthModal() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 px-6 pt-5">
-          <button
-            type="button"
-            onClick={() => setMode("login")}
-            className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${
-              mode === "login"
-                ? "bg-[var(--gd-color-forest)] text-white shadow-soft"
-                : "border border-[var(--gd-color-forest)]/30 text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-leaf)]/10"
-            }`}
-          >
-            {t("auth.login_tab")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("signup")}
-            className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${
-              mode === "signup"
-                ? "bg-[var(--gd-color-forest)] text-white shadow-soft"
-                : "border border-[var(--gd-color-forest)]/30 text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-leaf)]/10"
-            }`}
-          >
-            {t("auth.signup_tab")}
-          </button>
-        </div>
-
-        <div className="px-6 py-5">
-          {mode === "login" ? (
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
-                  {t("auth.email_label")}
-                </label>
-                <input
-                  type="email"
-                  value={formState.email}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, email: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
-                  {t("auth.password_label")}
-                </label>
-                <input
-                  type="password"
-                  value={formState.password}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, password: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
-                  required
-                />
-              </div>
-              {activeError ? (
-                <p className="text-xs text-red-600">{activeError}</p>
-              ) : null}
+        {showOnboarding ? (
+          <>
+            <p className="px-6 pt-2 text-sm text-[var(--color-muted)]">
+              {t("profile.welcome_desc")}
+            </p>
+            <OnboardingForm
+              displayName={user?.displayName ?? formState.name}
+              initialFormData={profile ? {
+                telefono: profile.telefono,
+                direccion: profile.direccion,
+                pagoPreferido: profile.pagoPreferido,
+                comoNosConocio: profile.comoNosConocio,
+                likes: profile.likes,
+                dislikes: profile.dislikes,
+              } : undefined}
+              onSubmit={handleOnboardingSubmit}
+              onContinueAsGuest={handleOnboardingGuest}
+              submitting={onboardingSubmitting}
+              loading={profileLoading}
+              showNameField={true}
+            />
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 px-6 pt-5">
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)] disabled:opacity-60"
+                type="button"
+                onClick={() => setMode("login")}
+                className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === "login"
+                  ? "bg-[var(--gd-color-forest)] text-white shadow-soft"
+                  : "border border-[var(--gd-color-forest)]/30 text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-leaf)]/10"
+                  }`}
               >
-                {loading ? t("auth.loading") : t("auth.login_button")}
+                {t("auth.login_tab")}
               </button>
-            </form>
-          ) : (
-            <form onSubmit={handleSignupSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
-                  {t("auth.name_label")}
-                </label>
-                <input
-                  type="text"
-                  value={formState.name}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, name: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
-                  {t("auth.email_label")}
-                </label>
-                <input
-                  type="email"
-                  value={formState.email}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, email: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
-                  {t("auth.password_label")}
-                </label>
-                <input
-                  type="password"
-                  value={formState.password}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, password: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
-                  {t("auth.confirm_password_label")}
-                </label>
-                <input
-                  type="password"
-                  value={formState.confirmPassword}
-                  onChange={(event) =>
-                    setFormState((prev) => ({ ...prev, confirmPassword: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
-                  required
-                />
-              </div>
-              {activeError ? (
-                <p className="text-xs text-red-600">{activeError}</p>
-              ) : null}
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)] disabled:opacity-60"
+                type="button"
+                onClick={() => setMode("signup")}
+                className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${mode === "signup"
+                  ? "bg-[var(--gd-color-forest)] text-white shadow-soft"
+                  : "border border-[var(--gd-color-forest)]/30 text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-leaf)]/10"
+                  }`}
               >
-                {loading ? t("auth.loading") : t("auth.signup_button")}
+                {t("auth.signup_tab")}
               </button>
-            </form>
-          )}
-        </div>
+            </div>
 
-        <div className="px-6 pb-6">
-          <div className="flex items-center gap-3 text-xs text-[var(--color-muted)]">
-            <span className="h-px flex-1 bg-[var(--color-border)]" />
-            {t("auth.or")}
-            <span className="h-px flex-1 bg-[var(--color-border)]" />
-          </div>
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="mt-4 w-full rounded-full border border-[var(--color-border)] bg-white px-6 py-3 text-sm font-semibold text-[var(--color-foreground)] transition hover:bg-[var(--color-background-muted)] disabled:opacity-60"
-          >
-            {t("auth.google_button")}
-          </button>
-        </div>
+            <div className="px-6 py-5">
+              {emailAuthEnabled ? (
+                mode === "login" ? (
+                  <form onSubmit={handleLoginSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
+                        {t("auth.email_label")}
+                      </label>
+                      <input
+                        type="email"
+                        value={formState.email}
+                        onChange={(event) =>
+                          setFormState((prev) => ({ ...prev, email: event.target.value }))
+                        }
+                        className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
+                        {t("auth.password_label")}
+                      </label>
+                      <input
+                        type="password"
+                        value={formState.password}
+                        onChange={(event) =>
+                          setFormState((prev) => ({ ...prev, password: event.target.value }))
+                        }
+                        className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    {activeError ? (
+                      <p className="text-xs text-red-600">{activeError}</p>
+                    ) : null}
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)] disabled:opacity-60"
+                    >
+                      {authLoading ? t("auth.loading") : t("auth.login_button")}
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleSignupSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
+                        {t("auth.name_label")}
+                      </label>
+                      <input
+                        type="text"
+                        value={formState.name}
+                        onChange={(event) =>
+                          setFormState((prev) => ({ ...prev, name: event.target.value }))
+                        }
+                        className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
+                        {t("auth.email_label")}
+                      </label>
+                      <input
+                        type="email"
+                        value={formState.email}
+                        onChange={(event) =>
+                          setFormState((prev) => ({ ...prev, email: event.target.value }))
+                        }
+                        className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
+                        {t("auth.password_label")}
+                      </label>
+                      <input
+                        type="password"
+                        value={formState.password}
+                        onChange={(event) =>
+                          setFormState((prev) => ({ ...prev, password: event.target.value }))
+                        }
+                        className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
+                        {t("auth.confirm_password_label")}
+                      </label>
+                      <input
+                        type="password"
+                        value={formState.confirmPassword}
+                        onChange={(event) =>
+                          setFormState((prev) => ({ ...prev, confirmPassword: event.target.value }))
+                        }
+                        className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
+                        required
+                      />
+                    </div>
+                    {activeError ? (
+                      <p className="text-xs text-red-600">{activeError}</p>
+                    ) : null}
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)] disabled:opacity-60"
+                    >
+                      {authLoading ? t("auth.loading") : t("auth.signup_button")}
+                    </button>
+                  </form>
+                )
+              ) : (
+                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-background-muted)] p-4 text-sm text-[var(--color-muted)]">
+                  {t("auth.email_password_disabled")}
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 pb-6">
+              <div className="flex items-center gap-3 text-xs text-[var(--color-muted)]">
+                <span className="h-px flex-1 bg-[var(--color-border)]" />
+                {t("auth.or")}
+                <span className="h-px flex-1 bg-[var(--color-border)]" />
+              </div>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={authLoading}
+                className="mt-4 w-full rounded-full border border-[var(--color-border)] bg-white px-6 py-3 text-sm font-semibold text-[var(--color-foreground)] transition hover:bg-[var(--color-background-muted)] disabled:opacity-60"
+              >
+                {t("auth.google_button")}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>,
     document.body,
