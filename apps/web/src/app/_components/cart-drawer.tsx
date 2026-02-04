@@ -440,18 +440,18 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 >
                   {t("cart.continue_shopping")}
                 </button>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleWhatsAppClick}
-                  disabled={items.length === 0}
-                  className={`w-full rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 ease-in-out hover:bg-emerald-600 hover:shadow-xl flex items-center justify-center gap-2 ${items.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-                  aria-label={t("cart.finish_order")}
-                >
-                  <Check className="h-4 w-4" aria-hidden="true" />
-                  <span>{t("cart.finish_order")}</span>
-                </motion.button>
+                <Link href="/checkout" onClick={onClose} className="w-full">
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={items.length === 0}
+                    className={`w-full rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 ease-in-out hover:bg-emerald-600 hover:shadow-xl flex items-center justify-center gap-2 ${items.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                    <span>{t("cart.finish_order")}</span>
+                  </motion.button>
+                </Link>
               </div>
 
               <button
