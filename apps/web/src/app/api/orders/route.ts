@@ -102,6 +102,54 @@ export async function POST(request: Request) {
     };
 
     const db = getAdminFirestore();
+
+    // --- VALIDACIÓN DE STOCK (solo products) ---
+    const productItems = body.items.filter((item: any) => (item.type || "product") === "product");
+    if (productItems.length > 0) {
+      const productRefs = productItems
+        .map((item: any) => item.productId || item.slug || item.id)
+        .filter(Boolean)
+        .map((productId: string) => db.collection("catalog_products").doc(productId));
+
+      if (productRefs.length > 0) {
+        const productDocs = await db.getAll(...productRefs);
+        const insufficient: Array<{ id: string; name?: string; requested: number; available: number }> = [];
+
+        productDocs.forEach((docSnap) => {
+          if (!docSnap.exists) return;
+          const data = docSnap.data() as any;
+          const currentStock = data?.metadata?.stock ?? 0;
+
+          const requestedItem = productItems.find(
+            (item: any) => (item.productId || item.slug || item.id) === docSnap.id
+          );
+          if (!requestedItem) return;
+
+          const requestedQty = Number(requestedItem.quantity) || 0;
+          if (currentStock < requestedQty) {
+            insufficient.push({
+              id: docSnap.id,
+              name: data?.name?.es || data?.name || requestedItem.name,
+              requested: requestedQty,
+              available: currentStock,
+            });
+          }
+        });
+
+        if (insufficient.length > 0) {
+          return NextResponse.json(
+            {
+              error: "Stock insuficiente para completar el pedido",
+              message: "Algunos productos no tienen suficiente stock disponible",
+              items: insufficient,
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
+    // --- FIN VALIDACIÓN DE STOCK ---
+
     const docRef = await db.collection("orders").add(orderData);
 
     return NextResponse.json({
