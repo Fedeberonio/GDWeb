@@ -27,7 +27,7 @@ export declare function getProducts(): Promise<{
         amount: number;
         currency: string;
     };
-    status: "active" | "inactive" | "coming_soon" | "discontinued";
+    status: "active" | "inactive" | "coming_soon" | "discontinued" | "hidden";
     tags: string[];
     isFeatured: boolean;
     sku?: string;
@@ -131,7 +131,7 @@ export declare function listProductsForAdmin(): Promise<{
         amount: number;
         currency: string;
     };
-    status: "active" | "inactive" | "coming_soon" | "discontinued";
+    status: "active" | "inactive" | "coming_soon" | "discontinued" | "hidden";
     tags: string[];
     isFeatured: boolean;
     sku?: string;
@@ -233,21 +233,21 @@ export declare function listBoxRulesForAdmin(): Promise<{
         max: number;
     }>;
     baseContents: {
-        productSlug: string;
+        productSku: string;
         quantity: number;
     }[];
     minMargin?: number;
     variantContents?: {
         mix?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
         fruity?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
         veggie?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
     };
@@ -362,21 +362,21 @@ export declare function listBoxRulesPublic(): Promise<{
         max: number;
     }>;
     baseContents: {
-        productSlug: string;
+        productSku: string;
         quantity: number;
     }[];
     minMargin?: number;
     variantContents?: {
         mix?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
         fruity?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
         veggie?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
     };
@@ -406,7 +406,7 @@ export declare function updateProductById(id: string, payload: unknown, context?
         amount: number;
         currency: string;
     };
-    status: "active" | "inactive" | "coming_soon" | "discontinued";
+    status: "active" | "inactive" | "coming_soon" | "discontinued" | "hidden";
     tags: string[];
     isFeatured: boolean;
     sku?: string;
@@ -510,7 +510,7 @@ export declare function createProduct(payload: unknown, context?: CatalogChangeC
         amount: number;
         currency: string;
     };
-    status: "active" | "inactive" | "coming_soon" | "discontinued";
+    status: "active" | "inactive" | "coming_soon" | "discontinued" | "hidden";
     tags: string[];
     isFeatured: boolean;
     sku?: string;
@@ -616,21 +616,21 @@ export declare function updateBoxRuleById(id: string, payload: unknown, context?
         max: number;
     }>;
     baseContents: {
-        productSlug: string;
+        productSku: string;
         quantity: number;
     }[];
     minMargin?: number;
     variantContents?: {
         mix?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
         fruity?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
         veggie?: {
-            productSlug: string;
+            productSku: string;
             quantity: number;
         }[];
     };

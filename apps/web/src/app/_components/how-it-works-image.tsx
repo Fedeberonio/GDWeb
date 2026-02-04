@@ -2,19 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { motion } from "framer-motion";
 
 export function HowItWorksImage() {
-  const { locale } = useTranslation();
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
   // Determinar qué imagen usar según el idioma
-  const imageSrc = locale === "en" 
-    ? "/images/how it works/ComoFuncionaENG.png"
-    : "/images/how it works/ComoFuncionaSPA.png";
+  const imageSrc = t("how_it_works.image");
 
   // Animación de entrada cuando el componente se monta
   useEffect(() => {
@@ -65,19 +62,6 @@ export function HowItWorksImage() {
     },
   };
 
-  const buttonsVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        delay: 0.5,
-        ease: "easeOut" as const,
-      },
-    },
-  };
-
   return (
     <motion.div
       className="w-full max-w-6xl mx-auto mb-2 text-center"
@@ -90,8 +74,8 @@ export function HowItWorksImage() {
         className="flex flex-col items-center gap-2 mb-6 relative z-20"
         variants={titleVariants}
       >
-        <h3 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] to-[var(--gd-color-forest)] bg-clip-text text-transparent">
-          {locale === "en" ? "How does it work?" : "¿Cómo funciona?"}
+            <h3 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] to-[var(--gd-color-forest)] bg-clip-text text-transparent">
+          {t("how_it_works.title")}
         </h3>
         <div className="h-1 w-24 bg-gradient-to-r from-transparent via-[var(--gd-color-leaf)] to-transparent rounded-full" />
       </motion.div>
@@ -110,23 +94,23 @@ export function HowItWorksImage() {
         
         {/* Imagen principal - sin márgenes blancos */}
         <div className="relative w-full aspect-[16/8] md:aspect-[16/7] lg:aspect-[16/6] overflow-hidden">
-          <motion.div
-            className="relative w-full h-full"
-            whileHover={{ scale: 1.08 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <Image
-              src={imageSrc}
-              alt={locale === "en" ? "How it works" : "Cómo funciona"}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 95vw, 1400px"
-              className={`object-cover transition-opacity duration-700 ${
-                imageLoaded ? "opacity-100" : "opacity-0"
-              }`}
-              priority
-              onLoad={() => setImageLoaded(true)}
-            />
-          </motion.div>
+              <motion.div
+                className="relative w-full h-full"
+                whileHover={{ scale: 1.08 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <Image
+                  src={imageSrc}
+                  alt={t("how_it_works.image_alt")}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 95vw, 1400px"
+                  className={`object-cover transition-opacity duration-700 ${
+                    imageLoaded ? "opacity-100" : "opacity-0"
+                  }`}
+                  priority
+                  onLoad={() => setImageLoaded(true)}
+                />
+              </motion.div>
         </div>
 
         {/* Borde animado con efecto de brillo */}
@@ -145,28 +129,6 @@ export function HowItWorksImage() {
             ease: "easeInOut",
           }}
         />
-      </motion.div>
-
-      {/* Botones de Acción con animación */}
-      <motion.div
-        className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        variants={buttonsVariants}
-      >
-        <Link
-          href="/#cajas"
-          className="group relative inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-8 py-3.5 text-base font-bold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95 overflow-hidden"
-        >
-          {/* Efecto de brillo al hover */}
-          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-          <span>{locale === "en" ? "Build your box" : "Arma tu caja"}</span>
-          <span className="text-lg opacity-80 group-hover:translate-x-1 transition-transform">→</span>
-        </Link>
-        <Link
-          href="#catalogo"
-          className="inline-flex items-center justify-center rounded-full border-2 border-[var(--gd-color-leaf)] bg-white px-7 py-3.5 text-base font-bold text-[var(--gd-color-forest)] shadow-sm transition-all duration-300 hover:bg-[var(--gd-color-sprout)]/30 hover:scale-105 active:scale-95"
-        >
-          {locale === "en" ? "View products" : "Ver productos"}
-        </Link>
       </motion.div>
 
       {/* Efectos decorativos de fondo */}

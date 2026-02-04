@@ -8,7 +8,7 @@ set -e
 # Configuración
 TOKEN="BlHxzfmDnnCzS6vEXvEh5HbA"
 SCOPE="gds-projects-1bbb6204"
-PROJECT_DIR="/Users/aimac/Documents/GreenDolio-Pro copy 5/apps/web"
+PROJECT_DIR="/Users/aimac/Documents/GreenDolio-Pro copy 14/apps/web"
 
 # Colores
 GREEN='\033[0;32m'

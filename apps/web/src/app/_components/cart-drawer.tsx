@@ -2,14 +2,16 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/modules/cart/context";
-import Image from "next/image";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { useCatalog } from "@/modules/catalog/context";
 import { ProductImageFallback } from "./product-image-fallback";
+import { Check, Minus, Plus, ShoppingCart, ThumbsDown, ThumbsUp, Trash2, X } from "lucide-react";
+
+const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
 
 const resolveVariantKey = (variant?: string, mix?: string) => {
   if (variant === "fruity" || variant === "veggie" || variant === "mix") return variant;
@@ -32,6 +34,7 @@ type CartDrawerProps = {
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { t, tData } = useTranslation();
   const { productMap } = useCatalog();
+  const [checkoutDraft, setCheckoutDraft] = useState<{ deliveryDay?: string; metodoPago?: string } | null>(null);
   const resolvePreferenceLabel = useCallback(
     (value: string) => {
       const product = productMap.get(value);
@@ -57,6 +60,35 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     if (variantKey === "veggie") return t("cart.variant_veggie");
     return t("cart.variant_mix");
   };
+  const boxImageMap: Record<string, string> = {
+    "GD-CAJA-001": "/assets/images/boxes/GD-CAJA-001.png",
+    "GD-CAJA-002": "/assets/images/boxes/GD-CAJA-002.png",
+    "GD-CAJA-003": "/assets/images/boxes/GD-CAJA-003.png",
+  };
+  const resolveItemImage = (item: typeof items[number]) => {
+    if (item.image) return item.image;
+    if (item.type === "box") {
+      const boxId = item.configuration?.boxId;
+      if (boxId && boxImageMap[boxId]) return boxImageMap[boxId];
+    }
+    return undefined;
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isOpen) return;
+    try {
+      const rawDraft = window.sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+      if (!rawDraft) {
+        setCheckoutDraft(null);
+        return;
+      }
+      const draft = JSON.parse(rawDraft) as { deliveryDay?: string; metodoPago?: string };
+      setCheckoutDraft({ deliveryDay: draft?.deliveryDay, metodoPago: draft?.metodoPago });
+    } catch {
+      setCheckoutDraft(null);
+    }
+  }, [isOpen]);
 
   // Prevent scrolling when drawer is open
   useEffect(() => {
@@ -69,6 +101,27 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, onClose]);
+
+  const orderSummary = useMemo(() => {
+    const subtotal = total;
+    const deliveryDay = checkoutDraft?.deliveryDay?.trim() ?? "";
+    const chargedDays = new Set(["martes", "jueves", "sábado", "sabado", "tuesday", "thursday", "saturday"]);
+    const normalizedDay = deliveryDay.toLowerCase();
+    const hasDeliveryDay = Boolean(deliveryDay);
+    const deliveryFee = hasDeliveryDay && chargedDays.has(normalizedDay) ? 100 : 0;
+    const computedTotal = subtotal + (hasDeliveryDay ? deliveryFee : 0);
+    return { subtotal, hasDeliveryDay, deliveryFee, computedTotal };
+  }, [checkoutDraft?.deliveryDay, total]);
 
   const handleWhatsAppClick = () => {
     const greeting = t("cart.whatsapp_greeting") || "Hola! Quiero hacer este pedido:"; // Fallback if key missing
@@ -107,7 +160,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       })
       .join("\n");
     const totalText = `${totalLabel}: RD$${total.toLocaleString("es-DO")}`;
-    const whatsappUrl = `https://wa.me/18493757338?text=${encodeURIComponent(`${greeting}\n\n${message}\n\n${totalText}`)}`;
+    const whatsappUrl = `https://wa.me/18097537338?text=${encodeURIComponent(`${greeting}\n\n${message}\n\n${totalText}`)}`;
     window.open(whatsappUrl, "_blank");
     toast.success(t("cart.notification_sent"));
     clear();
@@ -140,7 +193,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
@@ -150,25 +203,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 z-[9999] h-full w-full max-w-md bg-white shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 z-[9999] h-full w-full md:w-96 bg-white shadow-2xl flex flex-col"
           >
             <div className="flex items-center justify-between border-b border-[var(--color-border)] p-6">
               <h2 className="font-display text-2xl text-[var(--color-foreground)]">{t("cart.title")}</h2>
               <button
                 onClick={onClose}
-                className="rounded-full p-2 hover:bg-[var(--color-background-muted)] transition-colors"
+                className="rounded-full p-2 hover:bg-[var(--color-background-muted)] transition-colors duration-300 ease-in-out"
                 aria-label="Cerrar carrito"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="h-6 w-6"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X className="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
 
@@ -191,7 +235,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     }}
                     className="text-6xl"
                   >
-                    🛒
+                    <ShoppingCart className="w-14 h-14 text-[var(--gd-color-forest)]" aria-hidden="true" />
                   </motion.div>
                   <p className="text-lg text-[var(--color-muted)]">{t("common.empty_cart")}</p>
                   <p className="text-sm text-[var(--color-muted)]">{t("common.empty_cart_msg")}</p>
@@ -204,6 +248,8 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         ? resolveVariantKey(item.configuration.variant, item.configuration.mix)
                         : "mix";
                       const variantLabel = item.configuration ? getVariantLabel(variantKey) : "";
+                      const unitPrice = item.configuration?.price?.final ?? item.price;
+                      const lineTotal = unitPrice * item.quantity;
                       const likes = (item.configuration?.likes || []).map(resolvePreferenceLabel).filter(Boolean);
                       const dislikes = (item.configuration?.dislikes || []).map(resolvePreferenceLabel).filter(Boolean);
                       const hasItemNotes = Boolean(item.notes);
@@ -229,16 +275,22 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <ProductImageFallback
                               slug={item.slug}
                               name={item.name}
-                              image={item.image}
+                              image={resolveItemImage(item)}
                               className="object-cover"
                               sizes="80px"
                             />
                           </motion.div>
                           <div className="flex-1 space-y-2">
-                            <div className="flex items-start justify-between">
+                          <div className="flex items-start justify-between">
                               <div>
                                 <h3 className="font-semibold text-[var(--color-foreground)]">{item.name}</h3>
-                                <p className="text-xs text-[var(--color-muted)]">{item.type === "box" ? t("cart.type_box") : t("cart.type_product")}</p>
+                                <p className="text-xs text-[var(--color-muted)]">
+                                  {item.type === "box" && item.configuration
+                                    ? `${t("cart.type_box")} • ${variantKey.toUpperCase()}`
+                                    : item.type === "box"
+                                      ? t("cart.type_box")
+                                      : t("cart.type_product")}
+                                </p>
                               </div>
                               <motion.button
                                 whileHover={{ scale: 1.1, rotate: 90 }}
@@ -247,16 +299,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                 className="text-[var(--color-muted)] hover:text-[var(--gd-color-apple)] transition-colors"
                                 aria-label={t("common.remove")}
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth={2}
-                                  stroke="currentColor"
-                                  className="h-5 w-5"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                <Trash2 className="h-5 w-5" aria-hidden="true" />
                               </motion.button>
                             </div>
                             <div className="flex items-center justify-between">
@@ -268,16 +311,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                   className="rounded-full border border-[var(--color-border)] w-8 h-8 flex items-center justify-center hover:bg-[var(--color-background-muted)] transition-colors"
                                   aria-label="Disminuir cantidad"
                                 >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={2}
-                                    stroke="currentColor"
-                                    className="h-4 w-4"
-                                  >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
-                                  </svg>
+                                  <Minus className="h-4 w-4" aria-hidden="true" />
                                 </motion.button>
                                 <motion.span
                                   key={item.quantity}
@@ -294,21 +328,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                   className="rounded-full border border-[var(--color-border)] w-8 h-8 flex items-center justify-center hover:bg-[var(--color-background-muted)] transition-colors"
                                   aria-label="Aumentar cantidad"
                                 >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={2}
-                                    stroke="currentColor"
-                                    className="h-4 w-4"
-                                  >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                  </svg>
+                                  <Plus className="h-4 w-4" aria-hidden="true" />
                                 </motion.button>
                               </div>
                               <div className="text-right">
+                                <p className="text-xs text-[var(--color-muted)]">
+                                  RD${unitPrice.toLocaleString("es-DO")} c/u
+                                </p>
                                 <p className="font-bold text-[var(--gd-color-forest)]">
-                                  RD${((item.configuration?.price?.final ?? item.price) * item.quantity).toLocaleString("es-DO")}
+                                  RD${lineTotal.toLocaleString("es-DO")}
                                 </p>
                                 {item.configuration?.price?.extras ? (
                                   <p className="text-[10px] text-orange-600">
@@ -331,9 +359,19 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <div className="rounded-xl bg-white/80 border border-[var(--color-border)] p-3 text-[11px] text-[var(--color-muted)] space-y-1">
                               <p className="font-semibold text-[var(--color-foreground)]">{t("cart.customization")}</p>
                                 <p>{t("cart.mix")}: {variantLabel}</p>
-                                {likes.length > 0 && <p>👍 {t("cart.likes")}: {likes.join(", ")}</p>}
-                                {dislikes.length > 0 && <p>👎 {t("cart.dislikes")}: {dislikes.join(", ")}</p>}
-                                <p>{t("cart.delivery_zone")}: {item.configuration.deliveryZone || "Por definir"} · {t("cart.delivery_day")}: {item.configuration.deliveryDay || "Día a convenir"}</p>
+                                {likes.length > 0 && (
+                                  <p className="inline-flex items-center gap-2">
+                                    <ThumbsUp className="w-4 h-4 text-green-600" />
+                                    {t("cart.likes")}: {likes.join(", ")}
+                                  </p>
+                                )}
+                                {dislikes.length > 0 && (
+                                  <p className="inline-flex items-center gap-2">
+                                    <ThumbsDown className="w-4 h-4 text-red-500" />
+                                    {t("cart.dislikes")}: {dislikes.join(", ")}
+                                  </p>
+                                )}
+                                <p>{t("cart.delivery_zone")}: {item.configuration.deliveryZone || t("checkout.delivery_to_define")} · {t("cart.delivery_day")}: {item.configuration.deliveryDay || t("checkout.day_to_agree")}</p>
                                 <p className="text-[var(--color-foreground)] font-semibold">
                                   {t("cart.total_box")}: RD${item.configuration.price?.final.toLocaleString("es-DO", { minimumFractionDigits: 2 }) ?? (item.configuration.price?.base ?? 0)}
                                 </p>
@@ -367,24 +405,54 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
 
             <div className="border-t border-[var(--color-border)] p-6 space-y-4">
-              <div className="flex items-center justify-between text-lg">
-                <span className="font-semibold text-[var(--color-foreground)]">{t("common.total")}:</span>
-                <span className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
-                  RD${total.toLocaleString("es-DO")}
-                </span>
+              <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-background-muted)]/50 p-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[var(--color-muted)]">{t("checkout.subtotal")}</span>
+                  <span className="font-semibold text-[var(--color-foreground)]">
+                    RD${orderSummary.subtotal.toLocaleString("es-DO")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[var(--color-muted)]">{t("checkout.delivery")}</span>
+                  {orderSummary.hasDeliveryDay ? (
+                    orderSummary.deliveryFee > 0 ? (
+                      <span className="font-semibold text-[var(--color-foreground)]">RD${orderSummary.deliveryFee.toLocaleString("es-DO")}</span>
+                    ) : (
+                      <span className="font-semibold text-green-700">{t("checkout.free")}</span>
+                    )
+                  ) : (
+                    <span className="font-semibold text-[var(--color-muted)]">{t("checkout.delivery_to_define")}</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-[var(--color-border)]">
+                  <span className="text-sm font-semibold text-[var(--color-foreground)]">{t("checkout.total")}</span>
+                  <span className="font-display text-2xl font-bold text-[var(--gd-color-forest)]">
+                    RD${orderSummary.computedTotal.toLocaleString("es-DO")}
+                  </span>
+                </div>
               </div>
 
-              <Link href="/checkout" onClick={onClose} className="w-full">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full rounded-2xl border border-[var(--color-border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition-all duration-300 ease-in-out hover:bg-[var(--color-background-muted)]"
+                >
+                  {t("cart.continue_shopping")}
+                </button>
                 <motion.button
+                  type="button"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={handleWhatsAppClick}
                   disabled={items.length === 0}
-                  className={`w-full rounded-2xl bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-4 text-base font-bold text-white shadow-xl transition-all duration-300 hover:from-[var(--gd-color-leaf)] hover:to-[var(--gd-color-avocado)] hover:shadow-2xl flex items-center justify-center gap-2 ${items.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`w-full rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 ease-in-out hover:bg-emerald-600 hover:shadow-xl flex items-center justify-center gap-2 ${items.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  aria-label={t("cart.finish_order")}
                 >
-                  <span>✅</span>
-                  <span>Confirmar Pedido</span>
+                  <Check className="h-4 w-4" aria-hidden="true" />
+                  <span>{t("cart.finish_order")}</span>
                 </motion.button>
-              </Link>
+              </div>
 
               <button
                 onClick={() => {

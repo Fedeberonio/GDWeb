@@ -34,5 +34,16 @@ export function useTranslation() {
         [locale]
     );
 
-    return { t, tData, locale };
+    const tDataWithLocale = useCallback(
+        (data: LocalizedString | Partial<LocalizedString> | string | null | undefined, localeOverride: "es" | "en") => {
+            if (!data) return "";
+            if (typeof data === "string") return data;
+            const val = data[localeOverride];
+            if (val) return val;
+            return data["es"] || data["en"] || "";
+        },
+        []
+    );
+
+    return { t, tData, tDataWithLocale, locale };
 }

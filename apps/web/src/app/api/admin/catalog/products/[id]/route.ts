@@ -1,28 +1,74 @@
 import { NextResponse } from "next/server";
 
-import { getClientEnv } from "@/lib/config/env";
+import { getAdminFirestore } from "@/lib/firebase/admin";
+import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-session";
+
+const PRODUCT_COLLECTION = "catalog_products";
+
+function stripUndefined(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(stripUndefined);
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, entry]) => entry !== undefined)
+        .map(([key, entry]) => [key, stripUndefined(entry)]),
+    );
+  }
+  return value;
+}
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const body = await request.json();
+  try {
+    await requireAdminSession(request);
+    const body = stripUndefined(await request.json());
+    const db = getAdminFirestore();
 
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const productId = decodeURIComponent(id);
+    const docRef = db.collection(PRODUCT_COLLECTION).doc(productId);
+
+    const payload =
+      body && typeof body === "object" && !Array.isArray(body)
+        ? (body as Record<string, unknown>)
+        : {};
+    await docRef.set(
+      {
+        ...payload,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true },
+    );
+
+    const updated = await docRef.get();
+    return NextResponse.json(
+      { data: { id: updated.id, ...(updated.data() ?? {}) } },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error("Admin Product Update Error:", error);
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
+}
 
-  const { NEXT_PUBLIC_API_BASE_URL } = getClientEnv();
-  const apiUrl = `${NEXT_PUBLIC_API_BASE_URL}/admin/catalog/products/${encodeURIComponent(id)}`;
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
-  const response = await fetch(apiUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: authHeader,
-    },
-    body: JSON.stringify(body),
-  });
+  try {
+    await requireAdminSession(request);
+    const db = getAdminFirestore();
 
-  const data = await response.json();
-  return NextResponse.json(data, { status: response.status });
+    const productId = decodeURIComponent(id);
+    await db.collection(PRODUCT_COLLECTION).doc(productId).delete();
+
+    return NextResponse.json({ data: { id: productId } }, { status: 200 });
+  } catch (error) {
+    console.error("Admin Product Delete Error:", error);
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
+  }
 }

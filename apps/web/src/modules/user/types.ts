@@ -12,6 +12,7 @@ export type UserProfile = {
 };
 
 export type CartItemFromFirestore = {
+  slug: string;
   tipo: "caja" | "producto";
   nombre: string;
   precio: number;

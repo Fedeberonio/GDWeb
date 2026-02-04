@@ -27,6 +27,7 @@
     "export:metadata": "ts-node-dev --transpile-only src/scripts/exportProductMetadata.ts",
     "export:catalog-backup": "ts-node-dev --transpile-only src/scripts/exportCatalogBackup.ts",
     "backup:catalog": "ts-node-dev --transpile-only src/scripts/firestoreBackupAndValidate.ts",
+    "import:supplies": "ts-node-dev --transpile-only src/scripts/importSupplies.ts",
     "test": "echo \"No tests configured\" && exit 0"
   },
   "keywords": [],

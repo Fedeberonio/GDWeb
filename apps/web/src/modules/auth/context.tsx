@@ -12,6 +12,8 @@ import {
 } from "firebase/auth";
 
 import { getFirebaseAuth, googleAuthProvider } from "@/lib/firebase";
+import { getFirestoreDb } from "@/lib/firebase/client";
+import { createUserProfile, getUserProfile } from "@/modules/user/firestore";
 import { UserProvider } from "@/modules/user/context";
 
 export type AuthContextValue = {
@@ -105,6 +107,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       if (displayName) {
         await updateFirebaseProfile(credential.user, { displayName });
+      }
+      const db = getFirestoreDb();
+      if (!db) throw new Error("Firebase no disponible");
+      const existingProfile = await getUserProfile(db, credential.user.uid);
+      if (!existingProfile) {
+        await createUserProfile(db, credential.user.uid, {
+          displayName: displayName ?? "",
+          email,
+        });
       }
       return true;
     } catch (err) {

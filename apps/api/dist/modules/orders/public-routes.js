@@ -4,16 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createPublicOrdersRouter = createPublicOrdersRouter;
-// @ts-nocheck
 const express_1 = require("express");
 const zod_1 = require("zod");
 const crypto_1 = __importDefault(require("crypto"));
 const repository_1 = require("./repository");
 function generateId(length = 12) {
-    if (typeof crypto_1.default.randomUUID === 'function') {
-        return crypto_1.default.randomUUID().replace(/-/g, '').substring(0, length);
-    }
-    return Math.random().toString(36).substring(2, 2 + length);
+    return crypto_1.default.randomUUID().replace(/-/g, "").slice(0, length);
 }
 const boxConfigurationSchema = zod_1.z.object({
     boxId: zod_1.z.string().min(1),
@@ -122,5 +118,4 @@ function createPublicOrdersRouter() {
     });
     return router;
 }
-// @ts-nocheck
 //# sourceMappingURL=public-routes.js.map

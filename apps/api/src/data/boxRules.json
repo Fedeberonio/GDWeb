@@ -28,190 +28,190 @@
     },
     "baseContents": [
       {
-        "productSlug": "gd-vege-080",
+        "productSku": "gd-vege-080",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-084",
+        "productSku": "gd-vege-084",
         "quantity": 2
       },
       {
-        "productSlug": "gd-vege-081",
+        "productSku": "gd-vege-081",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-092",
+        "productSku": "gd-vege-092",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-082",
+        "productSku": "gd-vege-082",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-083",
+        "productSku": "gd-vege-083",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-097",
+        "productSku": "gd-vege-097",
         "quantity": 2
       },
       {
-        "productSlug": "gd-vege-088",
+        "productSku": "gd-vege-088",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-096",
+        "productSku": "gd-frut-096",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-085",
+        "productSku": "gd-frut-085",
         "quantity": 2
       },
       {
-        "productSlug": "gd-frut-091",
+        "productSku": "gd-frut-091",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-094",
+        "productSku": "gd-frut-094",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-090",
+        "productSku": "gd-frut-090",
         "quantity": 3
       },
       {
-        "productSlug": "gd-hier-086",
+        "productSku": "gd-hier-086",
         "quantity": 1
       }
     ],
     "variantContents": {
       "mix": [
         {
-          "productSlug": "gd-vege-080",
+          "productSku": "gd-vege-080",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-084",
+          "productSku": "gd-vege-084",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-081",
+          "productSku": "gd-vege-081",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-092",
+          "productSku": "gd-vege-092",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-082",
+          "productSku": "gd-vege-082",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-083",
+          "productSku": "gd-vege-083",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-097",
+          "productSku": "gd-vege-097",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-088",
+          "productSku": "gd-vege-088",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-096",
+          "productSku": "gd-frut-096",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-085",
+          "productSku": "gd-frut-085",
           "quantity": 2
         },
         {
-          "productSlug": "gd-frut-091",
+          "productSku": "gd-frut-091",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-094",
+          "productSku": "gd-frut-094",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-090",
+          "productSku": "gd-frut-090",
           "quantity": 3
         },
         {
-          "productSlug": "gd-hier-086",
+          "productSku": "gd-hier-086",
           "quantity": 1
         }
       ],
       "fruity": [
         {
-          "productSlug": "gd-frut-095",
+          "productSku": "gd-frut-095",
           "quantity": 3
         },
         {
-          "productSlug": "gd-frut-091",
+          "productSku": "gd-frut-091",
           "quantity": 2
         },
         {
-          "productSlug": "gd-frut-087",
+          "productSku": "gd-frut-087",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-090",
+          "productSku": "gd-frut-090",
           "quantity": 2
         },
         {
-          "productSlug": "gd-frut-094",
+          "productSku": "gd-frut-094",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-085",
+          "productSku": "gd-frut-085",
           "quantity": 2
         }
       ],
       "veggie": [
         {
-          "productSlug": "gd-vege-080",
+          "productSku": "gd-vege-080",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-084",
+          "productSku": "gd-vege-084",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-097",
+          "productSku": "gd-vege-097",
           "quantity": 3
         },
         {
-          "productSlug": "gd-vege-081",
+          "productSku": "gd-vege-081",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-092",
+          "productSku": "gd-vege-092",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-082",
+          "productSku": "gd-vege-082",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-083",
+          "productSku": "gd-vege-083",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-098",
+          "productSku": "gd-vege-098",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-093",
+          "productSku": "gd-vege-093",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-089",
+          "productSku": "gd-vege-089",
           "quantity": 1
         },
         {
-          "productSlug": "gd-hier-086",
+          "productSku": "gd-hier-086",
           "quantity": 1
         }
       ]
@@ -246,238 +246,238 @@
     },
     "baseContents": [
       {
-        "productSlug": "gd-vege-061",
+        "productSku": "gd-vege-061",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-062",
+        "productSku": "gd-vege-062",
         "quantity": 3
       },
       {
-        "productSlug": "gd-vege-058",
+        "productSku": "gd-vege-058",
         "quantity": 4
       },
       {
-        "productSlug": "gd-vege-065",
+        "productSku": "gd-vege-065",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-045",
+        "productSku": "gd-vege-045",
         "quantity": 2
       },
       {
-        "productSlug": "gd-vege-064",
+        "productSku": "gd-vege-064",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-060",
+        "productSku": "gd-vege-060",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-063",
+        "productSku": "gd-vege-063",
         "quantity": 3
       },
       {
-        "productSlug": "gd-vege-047",
+        "productSku": "gd-vege-047",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-053",
+        "productSku": "gd-vege-053",
         "quantity": 2
       },
       {
-        "productSlug": "gd-vege-054",
+        "productSku": "gd-vege-054",
         "quantity": 3
       },
       {
-        "productSlug": "gd-vege-046",
+        "productSku": "gd-vege-046",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-087",
+        "productSku": "gd-frut-087",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-037",
+        "productSku": "gd-frut-037",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-067",
+        "productSku": "gd-vege-067",
         "quantity": 4
       },
       {
-        "productSlug": "gd-frut-030",
+        "productSku": "gd-frut-030",
         "quantity": 2
       },
       {
-        "productSlug": "gd-frut-028",
+        "productSku": "gd-frut-028",
         "quantity": 1
       }
     ],
     "variantContents": {
       "mix": [
         {
-          "productSlug": "gd-vege-061",
+          "productSku": "gd-vege-061",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-062",
+          "productSku": "gd-vege-062",
           "quantity": 3
         },
         {
-          "productSlug": "gd-vege-058",
+          "productSku": "gd-vege-058",
           "quantity": 4
         },
         {
-          "productSlug": "gd-vege-065",
+          "productSku": "gd-vege-065",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-045",
+          "productSku": "gd-vege-045",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-064",
+          "productSku": "gd-vege-064",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-060",
+          "productSku": "gd-vege-060",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-063",
+          "productSku": "gd-vege-063",
           "quantity": 3
         },
         {
-          "productSlug": "gd-vege-047",
+          "productSku": "gd-vege-047",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-053",
+          "productSku": "gd-vege-053",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-054",
+          "productSku": "gd-vege-054",
           "quantity": 3
         },
         {
-          "productSlug": "gd-vege-046",
+          "productSku": "gd-vege-046",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-087",
+          "productSku": "gd-frut-087",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-037",
+          "productSku": "gd-frut-037",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-067",
+          "productSku": "gd-vege-067",
           "quantity": 4
         },
         {
-          "productSlug": "gd-frut-030",
+          "productSku": "gd-frut-030",
           "quantity": 2
         },
         {
-          "productSlug": "gd-frut-028",
+          "productSku": "gd-frut-028",
           "quantity": 1
         }
       ],
       "fruity": [
         {
-          "productSlug": "gd-frut-027",
+          "productSku": "gd-frut-027",
           "quantity": 6
         },
         {
-          "productSlug": "gd-frut-087",
+          "productSku": "gd-frut-087",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-032",
+          "productSku": "gd-frut-032",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-067",
+          "productSku": "gd-vege-067",
           "quantity": 4
         },
         {
-          "productSlug": "gd-frut-030",
+          "productSku": "gd-frut-030",
           "quantity": 2
         },
         {
-          "productSlug": "gd-frut-028",
+          "productSku": "gd-frut-028",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-026",
+          "productSku": "gd-frut-026",
           "quantity": 4
         },
         {
-          "productSlug": "gd-frut-035",
+          "productSku": "gd-frut-035",
           "quantity": 3
         }
       ],
       "veggie": [
         {
-          "productSlug": "gd-vege-061",
+          "productSku": "gd-vege-061",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-062",
+          "productSku": "gd-vege-062",
           "quantity": 4
         },
         {
-          "productSlug": "gd-vege-058",
+          "productSku": "gd-vege-058",
           "quantity": 4
         },
         {
-          "productSlug": "gd-vege-065",
+          "productSku": "gd-vege-065",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-045",
+          "productSku": "gd-vege-045",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-064",
+          "productSku": "gd-vege-064",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-060",
+          "productSku": "gd-vege-060",
           "quantity": 1
         },
         {
-          "productSlug": "auyama",
+          "productSku": "auyama",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-063",
+          "productSku": "gd-vege-063",
           "quantity": 3
         },
         {
-          "productSlug": "gd-vege-053",
+          "productSku": "gd-vege-053",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-047",
+          "productSku": "gd-vege-047",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-056",
+          "productSku": "gd-vege-056",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-024",
+          "productSku": "gd-frut-024",
           "quantity": 1
         },
         {
-          "productSlug": "gd-hier-070",
+          "productSku": "gd-hier-070",
           "quantity": 1
         },
         {
-          "productSlug": "gd-hier-075",
+          "productSku": "gd-hier-075",
           "quantity": 1
         }
       ]
@@ -512,278 +512,278 @@
     },
     "baseContents": [
       {
-        "productSlug": "gd-vege-061",
+        "productSku": "gd-vege-061",
         "quantity": 2
       },
       {
-        "productSlug": "gd-vege-062",
+        "productSku": "gd-vege-062",
         "quantity": 4
       },
       {
-        "productSlug": "gd-vege-058",
+        "productSku": "gd-vege-058",
         "quantity": 6
       },
       {
-        "productSlug": "gd-vege-065",
+        "productSku": "gd-vege-065",
         "quantity": 2
       },
       {
-        "productSlug": "gd-vege-045",
+        "productSku": "gd-vege-045",
         "quantity": 3
       },
       {
-        "productSlug": "gd-vege-064",
+        "productSku": "gd-vege-064",
         "quantity": 2
       },
       {
-        "productSlug": "auyama",
+        "productSku": "auyama",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-060",
+        "productSku": "gd-vege-060",
         "quantity": 1
       },
       {
-        "productSlug": "gd-vege-063",
+        "productSku": "gd-vege-063",
         "quantity": 4
       },
       {
-        "productSlug": "gd-vege-047",
+        "productSku": "gd-vege-047",
         "quantity": 2
       },
       {
-        "productSlug": "gd-vege-053",
+        "productSku": "gd-vege-053",
         "quantity": 2
       },
       {
-        "productSlug": "gd-vege-056",
+        "productSku": "gd-vege-056",
         "quantity": 1
       },
       {
-        "productSlug": "gd-hier-075",
+        "productSku": "gd-hier-075",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-027",
+        "productSku": "gd-frut-027",
         "quantity": 6
       },
       {
-        "productSlug": "gd-vege-046",
+        "productSku": "gd-vege-046",
         "quantity": 3
       },
       {
-        "productSlug": "gd-frut-032",
+        "productSku": "gd-frut-032",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-028",
+        "productSku": "gd-frut-028",
         "quantity": 1
       },
       {
-        "productSlug": "gd-frut-025",
+        "productSku": "gd-frut-025",
         "quantity": 4
       },
       {
-        "productSlug": "gd-frut-042",
+        "productSku": "gd-frut-042",
         "quantity": 4
       },
       {
-        "productSlug": "gd-frut-030",
+        "productSku": "gd-frut-030",
         "quantity": 4
       },
       {
-        "productSlug": "gd-frut-026",
+        "productSku": "gd-frut-026",
         "quantity": 4
       },
       {
-        "productSlug": "gd-frut-035",
+        "productSku": "gd-frut-035",
         "quantity": 3
       }
     ],
     "variantContents": {
       "mix": [
         {
-          "productSlug": "gd-vege-061",
+          "productSku": "gd-vege-061",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-062",
+          "productSku": "gd-vege-062",
           "quantity": 4
         },
         {
-          "productSlug": "gd-vege-058",
+          "productSku": "gd-vege-058",
           "quantity": 6
         },
         {
-          "productSlug": "gd-vege-065",
+          "productSku": "gd-vege-065",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-045",
+          "productSku": "gd-vege-045",
           "quantity": 3
         },
         {
-          "productSlug": "gd-vege-064",
+          "productSku": "gd-vege-064",
           "quantity": 2
         },
         {
-          "productSlug": "auyama",
+          "productSku": "auyama",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-060",
+          "productSku": "gd-vege-060",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-063",
+          "productSku": "gd-vege-063",
           "quantity": 4
         },
         {
-          "productSlug": "gd-vege-047",
+          "productSku": "gd-vege-047",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-053",
+          "productSku": "gd-vege-053",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-056",
+          "productSku": "gd-vege-056",
           "quantity": 1
         },
         {
-          "productSlug": "gd-hier-075",
+          "productSku": "gd-hier-075",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-027",
+          "productSku": "gd-frut-027",
           "quantity": 6
         },
         {
-          "productSlug": "gd-vege-046",
+          "productSku": "gd-vege-046",
           "quantity": 3
         },
         {
-          "productSlug": "gd-frut-032",
+          "productSku": "gd-frut-032",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-028",
+          "productSku": "gd-frut-028",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-025",
+          "productSku": "gd-frut-025",
           "quantity": 4
         },
         {
-          "productSlug": "gd-frut-042",
+          "productSku": "gd-frut-042",
           "quantity": 4
         },
         {
-          "productSlug": "gd-frut-030",
+          "productSku": "gd-frut-030",
           "quantity": 4
         },
         {
-          "productSlug": "gd-frut-026",
+          "productSku": "gd-frut-026",
           "quantity": 4
         },
         {
-          "productSlug": "gd-frut-035",
+          "productSku": "gd-frut-035",
           "quantity": 3
         }
       ],
       "fruity": [
         {
-          "productSlug": "gd-frut-028",
+          "productSku": "gd-frut-028",
           "quantity": 2
         },
         {
-          "productSlug": "gd-frut-032",
+          "productSku": "gd-frut-032",
           "quantity": 2
         },
         {
-          "productSlug": "gd-frut-030",
+          "productSku": "gd-frut-030",
           "quantity": 4
         },
         {
-          "productSlug": "gd-frut-037",
+          "productSku": "gd-frut-037",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-036",
+          "productSku": "gd-frut-036",
           "quantity": 1
         },
         {
-          "productSlug": "gd-frut-026",
+          "productSku": "gd-frut-026",
           "quantity": 6
         },
         {
-          "productSlug": "gd-frut-027",
+          "productSku": "gd-frut-027",
           "quantity": 6
         },
         {
-          "productSlug": "zapote",
+          "productSku": "zapote",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-067",
+          "productSku": "gd-vege-067",
           "quantity": 10
         }
       ],
       "veggie": [
         {
-          "productSlug": "gd-vege-061",
+          "productSku": "gd-vege-061",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-062",
+          "productSku": "gd-vege-062",
           "quantity": 5
         },
         {
-          "productSlug": "gd-vege-058",
+          "productSku": "gd-vege-058",
           "quantity": 7
         },
         {
-          "productSlug": "gd-vege-065",
+          "productSku": "gd-vege-065",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-045",
+          "productSku": "gd-vege-045",
           "quantity": 4
         },
         {
-          "productSlug": "gd-vege-064",
+          "productSku": "gd-vege-064",
           "quantity": 2
         },
         {
-          "productSlug": "auyama",
+          "productSku": "auyama",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-060",
+          "productSku": "gd-vege-060",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-063",
+          "productSku": "gd-vege-063",
           "quantity": 4
         },
         {
-          "productSlug": "gd-vege-053",
+          "productSku": "gd-vege-053",
           "quantity": 3
         },
         {
-          "productSlug": "gd-vege-047",
+          "productSku": "gd-vege-047",
           "quantity": 2
         },
         {
-          "productSlug": "gd-vege-056",
+          "productSku": "gd-vege-056",
           "quantity": 1
         },
         {
-          "productSlug": "gd-vege-049",
+          "productSku": "gd-vege-049",
           "quantity": 2
         },
         {
-          "productSlug": "gd-hier-075",
+          "productSku": "gd-hier-075",
           "quantity": 2
         }
       ]

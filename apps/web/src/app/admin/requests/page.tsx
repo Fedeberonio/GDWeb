@@ -14,9 +14,9 @@ function formatDate(value?: string) {
   return Number.isNaN(date.getTime())
     ? "Fecha inválida"
     : new Intl.DateTimeFormat("es-DO", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }).format(date);
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
 }
 
 function RequestsContent() {
@@ -76,7 +76,7 @@ function RequestsContent() {
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900">Solicitudes de cajas personalizadas</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">Solicitudes Personalizadas</h2>
             <p className="text-sm text-slate-600">
               Revisa las solicitudes del builder, ajusta su estado y mantén al equipo informado.
             </p>
@@ -170,14 +170,14 @@ function RequestsContent() {
               <details className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-600">
                 <summary className="cursor-pointer font-semibold text-slate-900">Ver selección</summary>
                 <ul className="mt-3 space-y-1">
-                  {Object.entries(request.selection)
+                  {Object.entries(request.selection ?? {})
                     .filter(([, quantity]) => quantity > 0)
                     .map(([slug, quantity]) => (
                       <li key={slug}>
                         {slug} · x{quantity}
                       </li>
                     ))}
-                  {!Object.values(request.selection).some((quantity) => quantity > 0) && (
+                  {!Object.values(request.selection ?? {}).some((quantity) => quantity > 0) && (
                     <li className="text-xs text-slate-500">Sin productos registrados</li>
                   )}
                 </ul>

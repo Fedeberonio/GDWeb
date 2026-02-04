@@ -71,9 +71,11 @@ export async function syncCartToFirestore(
 ): Promise<void> {
   try {
     const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
+    // Use setDoc with merge: true to avoid "No document to update" race condition
+    // This effectively creates the document if it doesn't exist, or updates it if it does.
+    await setDoc(userRef, {
       carrito: cart,
-    });
+    }, { merge: true });
   } catch (error) {
     console.error("Error al sincronizar carrito con Firestore:", error);
     // No lanzar error para no bloquear la UX

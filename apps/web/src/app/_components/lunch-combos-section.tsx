@@ -2,15 +2,18 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { Apple, Check, Citrus, Info, Leaf, Package, Salad, ShoppingCart } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useCart } from "@/modules/cart/context";
 import toast from "react-hot-toast";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { ProductCard } from "./product-card";
 
 import type { LocalizedString } from "@/modules/catalog/types";
 
 type Combo = {
   id: number;
+  sku: string;
   name: LocalizedString | string;
   salad: LocalizedString | string;
   juice: LocalizedString | string;
@@ -37,7 +40,8 @@ type Combo = {
 const COMBOS: Combo[] = [
   {
     id: 1,
-    name: { es: "DETOX VERDE", en: "GREEN DETOX" },
+    sku: "GD-COMB-001",
+    name: { es: "Detox Verde", en: "Green Detox" },
     salad: { es: "Verde Detox con Arroz Integral y Berenjenas", en: "Green Detox with Brown Rice & Eggplant" },
     juice: { es: "Pepinada", en: "Cucumber Lemonade" },
     dessert: { es: "Melón en cubos", en: "Diced Melon" },
@@ -56,7 +60,7 @@ const COMBOS: Combo[] = [
     sugars: 18,
     vitaminA: "Alto",
     vitaminC: "Alto",
-    image: "/images/combos/01_VERDE_DETOX_ARROZ_BERENJENAS.png",
+    image: "/assets/images/combos/GD-COMB-001.png",
     ingredients: [
       { es: "Lechuga repollada (50g)", en: "Iceberg lettuce (50g)" },
       { es: "Arroz integral cocido (80g)", en: "Cooked brown rice (80g)" },
@@ -75,7 +79,8 @@ const COMBOS: Combo[] = [
   },
   {
     id: 2,
-    name: { es: "MEDITERRÁNEO FRESH", en: "MEDITERRANEAN FRESH" },
+    sku: "GD-COMB-002",
+    name: { es: "Mediterráneo Fresh", en: "Mediterranean Fresh" },
     salad: { es: "Griega con Trigo Burgol y Maíz", en: "Greek Salad with Bulgur & Corn" },
     juice: { es: "Rosa Maravillosa", en: "Wonderful Rose" },
     dessert: { es: "Naranja en gajos", en: "Orange Segments" },
@@ -94,7 +99,7 @@ const COMBOS: Combo[] = [
     sugars: 22,
     vitaminA: "Alto",
     vitaminC: "Muy Alto",
-    image: "/images/combos/02_GRIEGA_BULGUR_MAIZ_v1.png",
+    image: "/assets/images/combos/GD-COMB-002.png",
     ingredients: [
       { es: "Queso feta (60g)", en: "Feta cheese (60g)" },
       { es: "Tomates bugalú (80g)", en: "Bugalu tomatoes (80g)" },
@@ -114,7 +119,8 @@ const COMBOS: Combo[] = [
   },
   {
     id: 3,
-    name: { es: "PODER TROPICAL", en: "TROPICAL POWER" },
+    sku: "GD-COMB-003",
+    name: { es: "Poder Tropical", en: "Tropical Power" },
     salad: { es: "Tropical con Quinoa y Pitahaya", en: "Tropical Salad with Quinoa & Dragon Fruit" },
     juice: { es: "Tropicalote", en: "Tropical Punch" },
     dessert: { es: "Mango en cubos", en: "Diced Mango" },
@@ -133,7 +139,7 @@ const COMBOS: Combo[] = [
     sugars: 28,
     vitaminA: "Muy Alto",
     vitaminC: "Muy Alto",
-    image: "/images/combos/03_TROPICAL_QUINOA_PITAHAYA.png",
+    image: "/assets/images/combos/GD-COMB-003.png",
     ingredients: [
       { es: "Quinoa cocida (80g)", en: "Cooked quinoa (80g)" },
       { es: "Mango (80g)", en: "Mango (80g)" },
@@ -152,7 +158,8 @@ const COMBOS: Combo[] = [
   },
   {
     id: 4,
-    name: { es: "IMPULSO ENERGÉTICO", en: "ENERGY BOOST" },
+    sku: "GD-COMB-004",
+    name: { es: "Impulso Energético", en: "Energy Boost" },
     salad: { es: "Verde Detox Simplificada", en: "Simplified Green Detox" },
     juice: { es: "Zanahoria Manzana Limón", en: "Carrot Apple Lemon" },
     dessert: { es: "Piña en cubos", en: "Diced Pineapple" },
@@ -171,7 +178,7 @@ const COMBOS: Combo[] = [
     sugars: 24,
     vitaminA: "Muy Alto",
     vitaminC: "Alto",
-    image: "/images/combos/04_VERDE_DETOX_SIMPLIFICADA_v2.png",
+    image: "/assets/images/combos/GD-COMB-004.png",
     ingredients: [
       { es: "Lechuga repollada (60g)", en: "Iceberg lettuce (60g)" },
       { es: "Arroz integral (80g)", en: "Brown rice (80g)" },
@@ -186,7 +193,8 @@ const COMBOS: Combo[] = [
   },
   {
     id: 5,
-    name: { es: "GRIEGA DOLIO", en: "GREEK DOLIO" },
+    sku: "GD-COMB-005",
+    name: { es: "Griega Dolio", en: "Greek Dolio" },
     salad: { es: "Griega Simplificada", en: "Simplified Greek" },
     juice: { es: "Sandía y Manzana", en: "Watermelon & Apple" },
     dessert: { es: "Banana", en: "Banana" },
@@ -205,7 +213,7 @@ const COMBOS: Combo[] = [
     sugars: 26,
     vitaminA: "Alto",
     vitaminC: "Alto",
-    image: "/images/combos/05_GRIEGA_SIMPLIFICADA.png",
+    image: "/assets/images/combos/GD-COMB-005.png",
     ingredients: [
       { es: "Tomates bugalú (100g)", en: "Bugalu tomatoes (100g)" },
       { es: "Pepino (60g)", en: "Cucumber (60g)" },
@@ -220,7 +228,8 @@ const COMBOS: Combo[] = [
   },
   {
     id: 6,
-    name: { es: "JARDÍN ASADO", en: "ROASTED GARDEN" },
+    sku: "GD-COMB-006",
+    name: { es: "Jardín Asado", en: "Roasted Garden" },
     salad: { es: "Endivia con Tomate Asado y Mozzarella", en: "Endive with Roasted Tomato & Mozzarella" },
     juice: { es: "Melón y Pepino", en: "Melon & Cucumber" },
     dessert: { es: "Naranja en gajos", en: "Orange Segments" },
@@ -239,7 +248,7 @@ const COMBOS: Combo[] = [
     sugars: 20,
     vitaminA: "Alto",
     vitaminC: "Muy Alto",
-    image: "/images/combos/Ensalada_Jardin_asado.png",
+    image: "/assets/images/combos/GD-COMB-006.png",
     ingredients: [
       { es: "Lechuga endivia (40g)", en: "Endive lettuce (40g)" },
       { es: "Lechuga repollada (40g)", en: "Iceberg lettuce (40g)" },
@@ -258,7 +267,8 @@ const COMBOS: Combo[] = [
   },
   {
     id: 7,
-    name: { es: "LA AUYAMA QUE LLAMA", en: "ROASTED PUMPKIN" },
+    sku: "GD-COMB-007",
+    name: { es: "La Auyama que Llama", en: "Roasted Pumpkin" },
     salad: { es: "Lechuga Rizada con Auyama Salteada", en: "Curly Lettuce with Sautéed Pumpkin" },
     juice: { es: "China Chinola", en: "Orange Passion Fruit" },
     dessert: { es: "Mango en cubos", en: "Diced Mango" },
@@ -277,7 +287,7 @@ const COMBOS: Combo[] = [
     sugars: 22,
     vitaminA: "Muy Alto",
     vitaminC: "Alto",
-    image: "/images/combos/Ensaladaa_Auyama_que_llama.png",
+    image: "/assets/images/combos/GD-COMB-007.png",
     ingredients: [
       { es: "Lechuga rizada (60g)", en: "Curly lettuce (60g)" },
       { es: "Auyama salteada (100g)", en: "Sautéed pumpkin (100g)" },
@@ -302,6 +312,7 @@ export function LunchCombosSection() {
   const [comboDetailsModal, setComboDetailsModal] = useState<Combo | null>(null);
   const [comboNotes, setComboNotes] = useState<Record<number, string>>({});
   const [comboExcludedIngredients, setComboExcludedIngredients] = useState<Record<number, number[]>>({});
+  const [comboQuantities, setComboQuantities] = useState<Record<number, number>>({});
   const [visibleCombos, setVisibleCombos] = useState<Set<number>>(new Set());
   const comboRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -352,18 +363,31 @@ export function LunchCombosSection() {
     });
   };
 
+  const getQuantity = (comboId: number) => Math.max(1, comboQuantities[comboId] ?? 1);
+  const updateQuantity = (comboId: number, delta: number) => {
+    setComboQuantities((prev) => {
+      const current = prev[comboId] ?? 1;
+      const next = Math.max(1, current + delta);
+      return { ...prev, [comboId]: next };
+    });
+  };
+  const resetQuantity = (comboId: number) => {
+    setComboQuantities((prev) => ({ ...prev, [comboId]: 1 }));
+  };
+
   const handleAddCombo = (
     combo: Combo,
-    options?: { notes?: string; excludedIngredients?: string[] }
+    options?: { notes?: string; excludedIngredients?: string[]; quantity?: number }
   ) => {
     const notes = options?.notes?.trim();
     const excludedIngredients = options?.excludedIngredients?.filter(Boolean);
+    const quantity = options?.quantity ?? 1;
     addItem({
       type: "product",
-      slug: `combo-${combo.id}`,
+      slug: combo.sku,
       name: tData(combo.name),
       price: combo.price,
-      quantity: 1,
+      quantity,
       slotValue: 1,
       weightKg: 0,
       image: combo.image,
@@ -371,8 +395,7 @@ export function LunchCombosSection() {
       excludedIngredients: excludedIngredients?.length ? excludedIngredients : undefined,
     });
 
-    toast.success(`${tData(combo.name)} ${t("common.added").toLowerCase()} 🛒`, {
-      icon: "✅",
+    toast.success(`${tData(combo.name)} ${t("common.added").toLowerCase()}`, {
       duration: 3000,
       style: {
         background: "var(--gd-color-forest)",
@@ -393,166 +416,78 @@ export function LunchCombosSection() {
       {/* Header compacto */}
       <div className="text-center space-y-3 mb-6">
         <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)]/30 to-[var(--gd-color-citrus)]/20 px-4 py-1.5 border-2 border-[var(--gd-color-leaf)]/30">
-          <span className="text-sm">🥗</span>
+          <Salad className="w-4 h-4 text-green-600" />
           <span className="text-xs font-bold uppercase tracking-[0.3em] text-[var(--gd-color-forest)]">
             {t("combos.header_badge")}
           </span>
         </div>
-        <h2 className="font-display text-2xl md:text-3xl lg:text-4xl bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] to-[var(--gd-color-forest)] bg-clip-text text-transparent font-bold">
+        <h2 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-green-800">
           {t("combos.title")}
         </h2>
         <p className="font-display max-w-2xl mx-auto text-base md:text-lg text-[var(--gd-color-forest)] leading-relaxed font-medium">
           {t("combos.header_desc")}
-          <strong className="text-[var(--gd-color-leaf)] font-bold"> {t("combos.perfect_for")}</strong>
         </p>
       </div>
 
       {/* Grid de Combos - Mismo diseño que las cajas */}
-      <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-8">
         {COMBOS.map((combo, index) => {
           const isVisible = visibleCombos.has(index);
+          const quantity = getQuantity(combo.id);
+          const badges = [
+            { label: "UNIT", tone: "unit" as const },
+            combo.glutenFree ? { label: "SIN GLUTEN", tone: "glutenFree" as const } : null,
+          ].filter(Boolean) as Array<{ label: string; tone: "unit" | "glutenFree" }>;
+          const imageSrc = combo.image || "/assets/images/combos/placeholder.png";
           return (
-            <article
+            <div
               key={combo.id}
               ref={(el) => {
                 comboRefs.current[index] = el as HTMLDivElement | null;
               }}
-              className={`group relative flex flex-col overflow-hidden rounded-[32px] border-2 border-[var(--gd-color-leaf)]/50 bg-white shadow-2xl transition-all duration-500 hover:-translate-y-4 hover:shadow-[0_30px_60px_rgba(45,80,22,0.25)] hover:border-[var(--gd-color-leaf)] hover:scale-[1.02] ${isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-8"
-                }`}
+              className={`${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} transition-all duration-700`}
               style={{
                 transitionDelay: isVisible ? `${index * 100}ms` : "0ms",
-                transitionDuration: "700ms",
                 transitionTimingFunction: "ease-out",
               }}
             >
-              {/* HEADER VISIBLE (Imagen + Titulo) */}
-              <div className="relative z-20 bg-white">
-                {/* Imagen del combo */}
-                <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-[var(--gd-color-sprout)]/20 to-white">
-                  {combo.image ? (
-                    <>
-                      <Image
-                        src={combo.image}
-                        alt={tData(combo.salad)}
-                        fill
-                        sizes="(max-width:768px) 100vw, 400px"
-                        className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.05]"
-                        priority={combo.id <= 3}
-                      />
-                    </>
-                  ) : (
-                    <div className="relative h-full w-full bg-gradient-to-br from-[var(--gd-color-sprout)]/50 via-[var(--gd-color-leaf)]/30 to-[var(--gd-color-citrus)]/20 flex items-center justify-center">
-                      <div className="text-center space-y-3 relative z-10">
-                        <div className="text-7xl mb-2 group-hover:scale-110 transition-transform duration-300">🥗</div>
-                        <div className="space-y-1">
-                          <p className="text-sm font-bold text-[var(--gd-color-forest)] uppercase tracking-wider">
-                            {tData(combo.name)}
-                          </p>
-                          <p className="text-xs text-[var(--gd-color-forest)]/70 font-medium">
-                            {t("combos.coming_soon")}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {/* Badges superiores */}
-                  <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-2">
-                    {combo.glutenFree && (
-                      <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-[var(--gd-color-forest)]/95 to-[var(--gd-color-leaf)]/95 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                        <span>🌾</span>
-                        <span>{t("combos.gluten_free")}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Título y Subtítulo */}
-                <div className="px-5 pt-4 pb-2 text-center bg-white relative z-20">
-                  <h3 className="font-display text-xl md:text-2xl font-bold text-[var(--color-foreground)] mb-1">
-                    {tData(combo.name)}
-                  </h3>
-                  <p className="font-display text-sm text-[var(--color-muted)] leading-relaxed line-clamp-2 font-medium">
-                    {tData(combo.salad)}
-                  </p>
-                  {/* Flecha indicadora */}
-                  <div className="mt-1 flex justify-center opacity-100 transition-opacity duration-300 group-hover:opacity-0 h-4 items-center">
-                    <span className="text-[var(--gd-color-leaf)] text-xs animate-bounce">▼</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECCIÓN COLAPSABLE (Hidden content revealed on hover) */}
-              <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:grid-rows-[1fr] bg-white">
-                <div className="overflow-hidden">
-                  <div className="px-5 pb-5 pt-0 space-y-4">
-
-                    {/* Detalles de componentes (Jugo/Postre) */}
-                    <div className="text-center space-y-2 opacity-0 translate-y-4 transition-all duration-500 delay-100 group-hover:opacity-100 group-hover:translate-y-0">
-                      <div className="flex justify-center gap-2 text-[0.65em] text-[var(--color-muted)] border-t border-[var(--gd-color-leaf)]/10 pt-2 mx-2">
-                        <div className="flex flex-col items-center flex-1">
-                          <span className="font-bold text-[var(--gd-color-forest)]">{t("combos.juice").toUpperCase()}</span>
-                          <span className="truncate w-full text-center" title={tData(combo.juice)}>{tData(combo.juice)}</span>
-                        </div>
-                        <div className="w-[1px] bg-[var(--gd-color-leaf)]/20 h-8 self-center"></div>
-                        <div className="flex flex-col items-center flex-1">
-                          <span className="font-bold text-[var(--gd-color-forest)]">{t("combos.dessert").toUpperCase()}</span>
-                          <span className="truncate w-full text-center" title={tData(combo.dessert)}>{tData(combo.dessert)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Precio - Diseño simplificado para el card colapsado */}
-                    <div className="text-center opacity-0 translate-y-4 transition-all duration-500 delay-150 group-hover:opacity-100 group-hover:translate-y-0 pt-1">
-                      <p className="text-xs uppercase tracking-[0.3em] text-[var(--gd-color-forest)] font-bold mb-1">
-                        {t("common.price")}
-                      </p>
-                      <p className="font-display text-2xl font-black text-emerald-950">
-                        RD${combo.price.toLocaleString("es-DO", { minimumFractionDigits: 0 })}
-                      </p>
-                      <div className="flex items-center justify-center gap-1.5 mt-1">
-                        <span className="text-[0.6rem] text-[var(--color-muted)] line-through">
-                          RD${(combo.price * 1.1).toLocaleString("es-DO")}
-                        </span>
-                        <span className="text-[0.6rem] font-semibold text-[var(--gd-color-citrus)]">
-                          -10%
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Botones de acción */}
-                    <div className="space-y-1.5 opacity-0 translate-y-4 transition-all duration-500 delay-200 group-hover:opacity-100 group-hover:translate-y-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const excludedIngredients = (comboExcludedIngredients[combo.id] ?? [])
-                            .map((index) => combo.ingredients[index])
-                            .filter(Boolean)
-                            .map(getIngredientLabel);
-                          handleAddCombo(combo, {
-                            notes: comboNotes[combo.id],
-                            excludedIngredients,
-                          });
-                        }}
-                        className="flex items-center justify-center gap-2 w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-4 py-2 text-xs font-bold text-white shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                      >
-                        <span>🛒</span>
-                        <span>{t("common.add_to_cart")}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setComboDetailsModal(combo)}
-                        className="flex items-center justify-center w-full text-xs font-semibold text-[var(--gd-color-forest)] hover:underline decoration-[var(--gd-color-leaf)] underline-offset-4 decoration-2"
-                      >
-                        {t("combos.view_details")} →
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </article>
+              <ProductCard
+                title={tData(combo.name)}
+                description={tData(combo.salad)}
+                imageContainerClassName="bg-white"
+                imageClassName="cursor-zoom-in"
+                image={{ src: imageSrc, alt: tData(combo.salad), fit: "contain", priority: combo.id <= 3 }}
+                badges={badges}
+                priceLabel={`RD$${combo.price.toLocaleString("es-DO", { minimumFractionDigits: 0 })}`}
+                disableFlip
+                quantity={quantity}
+                onDecrease={() => updateQuantity(combo.id, -1)}
+                onIncrease={() => updateQuantity(combo.id, 1)}
+                onAdd={() => {
+                  const excludedIngredients = (comboExcludedIngredients[combo.id] ?? [])
+                    .map((index) => combo.ingredients[index])
+                    .filter(Boolean)
+                    .map(getIngredientLabel);
+                  handleAddCombo(combo, {
+                    notes: comboNotes[combo.id],
+                    excludedIngredients,
+                    quantity,
+                  });
+                  resetQuantity(combo.id);
+                }}
+                addLabel={t("common.add_to_cart")}
+                imageAction={
+                  <button
+                    type="button"
+                    onClick={() => setComboDetailsModal(combo)}
+                    aria-label={t("common.view_details")}
+                    className="rounded-full border border-[var(--gd-color-orange)] bg-white/90 p-2 text-[var(--gd-color-orange)] transition duration-200 hover:bg-[var(--gd-color-orange)] hover:text-white"
+                  >
+                    <Info className="h-4 w-4" />
+                  </button>
+                }
+              />
+            </div>
           );
         })}
       </div>
@@ -603,17 +538,17 @@ export function LunchCombosSection() {
               {/* Componentes del combo */}
               <div className="grid md:grid-cols-3 gap-4 rounded-xl bg-gradient-to-br from-[var(--gd-color-sprout)]/30 to-white p-4 border-2 border-[var(--gd-color-leaf)]/30">
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <span className="text-4xl">🥬</span>
+                  <Salad className="w-10 h-10 text-green-600" />
                   <p className="text-xs font-semibold text-[var(--gd-color-forest)] uppercase">{t("combos.salad")}</p>
                   <p className="text-sm text-[var(--color-foreground)] font-medium">{tData(comboDetailsModal.salad)}</p>
                 </div>
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <span className="text-4xl">🥤</span>
+                  <Citrus className="w-10 h-10 text-orange-500" />
                   <p className="text-xs font-semibold text-[var(--gd-color-forest)] uppercase">{t("combos.juice")}</p>
                   <p className="text-sm text-[var(--color-foreground)] font-medium">{tData(comboDetailsModal.juice)}</p>
                 </div>
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <span className="text-4xl">🍓</span>
+                  <Apple className="w-10 h-10 text-red-500" />
                   <p className="text-xs font-semibold text-[var(--gd-color-forest)] uppercase">{t("combos.dessert")}</p>
                   <p className="text-sm text-[var(--color-foreground)] font-medium">{tData(comboDetailsModal.dessert)}</p>
                 </div>
@@ -632,7 +567,10 @@ export function LunchCombosSection() {
               {/* Información nutricional completa */}
               <div className="rounded-xl bg-gradient-to-br from-[var(--gd-color-sprout)]/40 to-white p-6 border-2 border-[var(--gd-color-leaf)]/30 space-y-4">
                 <h3 className="text-lg font-bold text-[var(--gd-color-forest)] uppercase text-center mb-4">
-                  📊 {t("combos.nutrition")}
+                  <span className="inline-flex items-center gap-2">
+                    <Package className="w-4 h-4 text-green-600" />
+                    {t("combos.nutrition")}
+                  </span>
                 </h3>
 
                 {/* Estadísticas principales */}
@@ -676,14 +614,14 @@ export function LunchCombosSection() {
                   <p className="text-sm font-bold text-[var(--gd-color-forest)] mb-3 text-center">{t("category.vitamins")}</p>
                   <div className="flex items-center justify-center gap-6">
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">🥕</span>
+                      <Leaf className="w-6 h-6 text-green-600" />
                       <div>
                         <p className="text-xs text-[var(--color-muted)]">Vitamina A</p>
                         <p className="text-sm font-bold text-[var(--gd-color-forest)]">{comboDetailsModal.vitaminA}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">🍋</span>
+                      <Citrus className="w-6 h-6 text-orange-500" />
                       <div>
                         <p className="text-xs text-[var(--color-muted)]">Vitamina C</p>
                         <p className="text-sm font-bold text-[var(--gd-color-forest)]">{comboDetailsModal.vitaminC}</p>
@@ -704,7 +642,7 @@ export function LunchCombosSection() {
                   </div>
                   {comboDetailsModal.glutenFree && (
                     <div className="flex items-center gap-2 rounded-lg bg-[var(--gd-color-sprout)]/30 p-2 border border-[var(--gd-color-leaf)]/20">
-                      <span className="text-xl">🌾</span>
+                      <Leaf className="w-5 h-5 text-green-600" />
                       <p className="text-sm font-semibold text-[var(--gd-color-forest)]">{t("combos.gluten_free")}</p>
                     </div>
                   )}
@@ -714,7 +652,7 @@ export function LunchCombosSection() {
               {/* Ingredientes de la ensalada */}
               <div className="rounded-xl bg-white/80 p-6 border-2 border-[var(--gd-color-leaf)]/30">
                 <h3 className="text-lg font-bold text-[var(--gd-color-forest)] uppercase mb-4 text-center flex items-center justify-center gap-2">
-                  <span>🥗</span>
+                  <Salad className="w-4 h-4 text-green-600" />
                   <span>{t("combos.ingredients")}</span>
                 </h3>
                 <p className="text-xs text-[var(--color-muted)] text-center mb-4">
@@ -786,7 +724,10 @@ export function LunchCombosSection() {
                   }}
                   className="w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-6 py-4 text-base font-bold text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                 >
-                  🛒 {t("common.add_to_cart")}
+                  <span className="inline-flex items-center gap-2">
+                    <ShoppingCart className="w-4 h-4 text-white" />
+                    {t("common.add_to_cart")}
+                  </span>
                 </button>
               </div>
             </div>

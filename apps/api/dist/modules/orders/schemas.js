@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.orderSchema = exports.paymentDetailsSchema = exports.deliveryWindowSchema = exports.orderTotalsSchema = exports.orderItemSchema = exports.orderStatusSchema = void 0;
-// @ts-nocheck
 const zod_1 = require("zod");
 const schemas_1 = require("../users/schemas");
 const schemas_2 = require("../catalog/schemas");
@@ -55,5 +54,4 @@ exports.orderSchema = zod_1.z.object({
     updatedAt: zod_1.z.union([zod_1.z.string(), zod_1.z.date()]).optional(),
     whatsappMessageId: zod_1.z.string().optional(),
 });
-// @ts-nocheck
 //# sourceMappingURL=schemas.js.map

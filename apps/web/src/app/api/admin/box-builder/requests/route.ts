@@ -1,25 +1,31 @@
 import { NextResponse } from "next/server";
 
-import { getClientEnv } from "@/lib/config/env";
+import { getAdminFirestore } from "@/lib/firebase/admin";
+import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-session";
+
+const REQUESTS_COLLECTION = "box_builder_requests";
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await requireAdminSession(request);
+    const db = getAdminFirestore();
+
+    const url = new URL(request.url);
+    const limitParam = Number(url.searchParams.get("limit") ?? "100");
+    const safeLimit = Number.isFinite(limitParam) ? limitParam : 100;
+
+    const snapshot = await db
+      .collection(REQUESTS_COLLECTION)
+      .orderBy("createdAt", "desc")
+      .limit(safeLimit)
+      .get();
+
+    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return NextResponse.json({ data }, { status: 200 });
+  } catch (error) {
+    console.error("Admin Box Builder Requests Error:", error);
+    const message = error instanceof Error ? error.message : "Internal Server Error";
+    const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
-
-  const { NEXT_PUBLIC_API_BASE_URL } = getClientEnv();
-  const url = new URL(request.url);
-  const search = url.searchParams.toString();
-  const query = search ? `?${search}` : "";
-
-  const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/admin/box-builder/requests${query}`, {
-    headers: {
-      authorization: authHeader,
-    },
-    cache: "no-store",
-  });
-
-  const data = await response.json();
-  return NextResponse.json(data, { status: response.status });
 }

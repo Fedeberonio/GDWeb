@@ -1,62 +1,78 @@
 "use client";
 
-import Image from "next/image";
-import { Container } from "./container";
+import { ChevronRight, Leaf } from "lucide-react";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
 export function HeroSectionClient() {
-  const { t } = useTranslation();
-  return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[var(--gd-color-sprout)]/30 via-white to-[var(--gd-color-sky)]/20">
-      {/* Imagen de fondo con productos deliciosos - VISIBLE PERO NO DOMINANTE */}
-      <div className="absolute inset-0 opacity-[0.35]">
-        <Image
-          src="/images/hero/hero-rainbow-abundance.jpg"
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover object-center scale-105"
-          priority
-          aria-hidden="true"
-        />
-      </div>
-      <div className="absolute inset-0 bg-black/30" />
-      
-      {/* Overlay balanceado para legibilidad y visibilidad de imagen */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/15 to-white/85" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[var(--gd-color-sprout)]/35 via-white/50 to-white/90" />
-      
-      {/* Elementos decorativos orgánicos - Más visibles */}
-      <div className="absolute top-0 right-0 h-[500px] w-[500px] rounded-full bg-[var(--gd-color-leaf)]/15 blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-[var(--gd-color-sky)]/15 blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-[var(--gd-color-avocado)]/10 blur-3xl" />
-      
-      {/* Patrón decorativo sutil */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `radial-gradient(circle at 2px 2px, var(--gd-color-forest) 1px, transparent 0)`,
-        backgroundSize: '40px 40px'
-      }} />
-      
-      <Container className="relative z-10 py-12 md:py-16 lg:py-20">
-        <div className="text-center space-y-6 md:space-y-8 mb-8">
+  useTranslation();
 
-          <div className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gd-color-leaf)]/50 bg-white/98 backdrop-blur-md px-5 py-2.5 md:px-6 md:py-3 text-xs md:text-sm font-bold uppercase tracking-[0.3em] text-[var(--gd-color-forest)] shadow-xl">
-            <span className="text-lg md:text-xl">🌱</span> 
-            <span>{t("hero.badge")}</span>
+  const handleScrollToBoxes = () => {
+    const target = document.getElementById("cajas");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    window.location.hash = "cajas";
+  };
+
+  return (
+    <section
+      className="relative overflow-hidden bg-black min-h-[550px] md:min-h-[650px] bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: "url('/assets/images/hero/hero-lifestyle-kitchen.jpg')",
+      }}
+      aria-label="Caja de vegetales frescos GreenDolio en cocina con vista al mar Caribe"
+    >
+      <div
+        className="absolute inset-0 hidden md:block"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.45) 30%, rgba(0, 0, 0, 0.25) 50%, transparent 70%)",
+        }}
+      />
+      <div
+        className="absolute inset-0 md:hidden"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 40%, rgba(0, 0, 0, 0.5) 100%)",
+        }}
+      />
+
+      <div className="relative z-10 flex min-h-[550px] md:min-h-[650px] items-center justify-start px-6 md:px-12 lg:px-16 max-w-7xl mx-auto">
+        <div className="w-full max-w-xl md:max-w-2xl text-center md:text-left">
+          <div className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-sm px-5 py-2.5 rounded-full shadow-lg mb-6 md:mb-8">
+            <Leaf className="w-5 h-5 text-green-600" />
+            <span className="text-green-700 font-inter font-semibold text-sm md:text-base">
+              Primera empresa 100% sustentable en Juan Dolio
+            </span>
           </div>
-          
-          {/* Título con jerarquía visual */}
-          <h1 className="font-display leading-[1.1] text-[var(--gd-color-forest)] px-6 py-4 md:px-8 md:py-6 mx-auto max-w-5xl rounded-3xl bg-white/50 backdrop-blur-md shadow-2xl border-2 border-[var(--gd-color-leaf)]/20">
-            <span className="block text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black">
-              {t("hero.title_primary")}
-            </span>
-            <span className="mt-2 block text-2xl md:text-3xl lg:text-4xl font-semibold text-[var(--gd-color-forest)]/90">
-              {t("hero.title_secondary")}
-            </span>
+          <h1
+            className="text-white font-fredoka font-bold leading-none tracking-tight mb-6 md:mb-8"
+            style={{
+              fontSize: "clamp(2.5rem, 8vw, 5rem)",
+              textShadow:
+                "0 2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.2)",
+            }}
+          >
+            Ordena tu Cajita Fresca
           </h1>
-          
+          <p
+            className="text-white/95 text-lg md:text-2xl lg:text-3xl font-inter font-medium max-w-xl mb-8 md:mb-10 mx-auto md:mx-0"
+            style={{ textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
+          >
+            Cajitas frescas, jugos naturales y productos caseros del día.
+          </p>
+          <button
+            type="button"
+            onClick={handleScrollToBoxes}
+            className="group inline-flex w-full max-w-sm md:w-auto items-center justify-center gap-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-inter font-bold text-lg px-10 py-4 md:px-12 md:py-5 rounded-xl shadow-2xl hover:shadow-yellow-500/50 transform hover:scale-105 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300/70"
+            aria-label="Ver cajas disponibles"
+          >
+            <span>Ver Cajas Disponibles</span>
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+          </button>
         </div>
-      </Container>
+      </div>
     </section>
   );
 }

@@ -73,7 +73,7 @@ export type VariantType = "mix" | "fruity" | "veggie";
  * Calcula la composición de una variante basándose en el contenido base
  */
 export function calculateVariantComposition(
-  baseContents: Array<{ productSlug: string; quantity: number; name: string }>
+  baseContents: Array<{ productSku: string; quantity: number; name: string }>
 ): VariantComposition {
   const counts: VariantComposition = {
     aromatic: 0,
@@ -85,7 +85,7 @@ export function calculateVariantComposition(
   };
 
   baseContents.forEach((item) => {
-    const category = getVisualCategory(item.productSlug, item.name);
+    const category = getVisualCategory(item.productSku, item.name);
     const quantity = item.quantity;
 
     // Para todas las variantes, contar todas las categorías del contenido base
@@ -121,22 +121,22 @@ export function getVariantInfo(
   variant: VariantType,
   locale: Locale = "es",
   variantData?: BoxVariant | null,
-): { tagline: string; description: string; icon: string } {
+): { tagline: string; description: string; icon: VariantType } {
   const info = {
     mix: {
       tagline: translations[locale]["variants.mix_tagline"],
       description: translations[locale]["variants.mix_description"],
-      icon: "🍎",
+      icon: "mix" as const,
     },
     fruity: {
       tagline: translations[locale]["variants.fruity_tagline"],
       description: translations[locale]["variants.fruity_description"],
-      icon: "🍊",
+      icon: "fruity" as const,
     },
     veggie: {
       tagline: translations[locale]["variants.veggie_tagline"],
       description: translations[locale]["variants.veggie_description"],
-      icon: "🥬",
+      icon: "veggie" as const,
     },
   };
 

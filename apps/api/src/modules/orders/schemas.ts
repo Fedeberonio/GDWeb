@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { z } from "zod";
 import { addressSchema } from "../users/schemas";
 import { localizedStringSchema, priceSchema } from "../catalog/schemas";
@@ -62,4 +61,3 @@ export const orderSchema = z.object({
 export type Order = z.infer<typeof orderSchema>;
 export type OrderItem = z.infer<typeof orderItemSchema>;
 export type OrderStatus = z.infer<typeof orderStatusSchema>;
-// @ts-nocheck

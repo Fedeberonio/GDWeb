@@ -86,7 +86,7 @@ async function importBoxContents(db: FirebaseFirestore.Firestore, csvPath: strin
 
     acc[key].products.push({
       productName: item.Producto,
-      productSlug: generateSlug(item.Producto),
+      productSku: generateSlug(item.Producto),
       quantity: item.Cantidad,
       unitCost: item.Costo_Unitario,
       unitWeightLb: item.Peso_Unit_Lb,
@@ -142,10 +142,10 @@ async function verifyProducts(db: FirebaseFirestore.Firestore, csvPath: string) 
   const uniqueProducts = new Set(contents.map((c) => generateSlug(c.Producto)));
   const missingProducts: string[] = [];
 
-  for (const productSlug of uniqueProducts) {
-    const doc = await productsRef.doc(productSlug).get();
+  for (const productSku of uniqueProducts) {
+    const doc = await productsRef.doc(productSku).get();
     if (!doc.exists) {
-      missingProducts.push(productSlug);
+      missingProducts.push(productSku);
     }
   }
 

@@ -12,8 +12,8 @@ export function WhatsAppFloatButton() {
   }, []);
 
   // Número de WhatsApp (formato internacional sin + ni espacios)
-  const whatsappNumber = "18493757338"; // +1 (849) 375-7338
-  const whatsappMessage = encodeURIComponent("¡Hola! Me interesa conocer más sobre Green Dolio 🥬");
+  const whatsappNumber = "18097537338"; // +1 (809) 753-7338
+  const whatsappMessage = encodeURIComponent("¡Hola! Me interesa conocer más sobre Green Dolio");
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
   if (!isVisible) return null;

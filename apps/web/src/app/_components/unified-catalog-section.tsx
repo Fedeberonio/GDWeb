@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { ShoppingCart } from "lucide-react";
 import type { Product, ProductCategory } from "@/modules/catalog/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
@@ -31,15 +32,15 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
 
   const getCategoryImage = (categoryId: string) => {
     const images: Record<string, string> = {
-      frutas: "/images/categories/Frutas.png",
-      vegetales: "/images/categories/Vegetales.png",
-      "productos-caseros": "/images/categories/productos_caseros.png",
-      "productos-de-granja": "/images/categories/Productos_de_granja.png",
-      "jugos-naturales": "/images/categories/Jugos.png",
-      "hierbas-y-especias": "/images/categories/hierbas_y_especias.png",
-      otros: "/images/categories/Otros.png",
+      frutas: "/assets/images/categories/frutas.png",
+      vegetales: "/assets/images/categories/vegetales.png",
+      "productos-caseros": "/assets/images/categories/productos-caseros.png",
+      "productos-de-granja": "/assets/images/categories/productos-de-granja.png",
+      "jugos-naturales": "/assets/images/categories/jugos.png",
+      "hierbas-y-especias": "/assets/images/categories/hierbas-y-especias.png",
+      otros: "/assets/images/categories/otros.png",
     };
-    return images[categoryId] || "/images/hero/hero-rainbow-abundance.jpg";
+    return images[categoryId] || "/assets/images/hero/hero-lifestyle-kitchen.jpg";
   };
 
   return (
@@ -48,17 +49,17 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
         {/* Header */}
         <header className="text-center space-y-4 mb-10">
           <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)]/20 to-[var(--gd-color-sprout)]/30 px-4 py-2 border-2 border-[var(--gd-color-leaf)]/30">
-            <span className="text-sm">🛒</span>
+            <ShoppingCart className="w-4 h-4 text-[var(--gd-color-forest)]" />
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--gd-color-forest)]">
               {t("catalog.our_categories")}
             </span>
           </div>
 
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl bg-gradient-to-r from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)] to-[var(--gd-color-forest)] bg-clip-text text-transparent font-bold">
+          <h2 className="font-fredoka font-semibold text-4xl md:text-5xl text-green-800">
             {t("catalog.organized_by_type")}
           </h2>
 
-          <p className="font-display text-base md:text-lg text-[var(--color-muted)] max-w-2xl mx-auto leading-relaxed font-medium">
+          <p className="font-inter text-base md:text-lg text-[var(--color-muted)] max-w-2xl mx-auto leading-relaxed font-medium">
             {t("catalog.explore_categories")}
           </p>
         </header>
@@ -99,11 +100,11 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
                 <div className="relative p-8 space-y-2 z-10">
                   {/* Title */}
                   <div>
-                    <h3 className="font-display text-3xl md:text-4xl font-bold text-white mb-1 drop-shadow-md">
+                    <h3 className="font-caveat text-2xl md:text-3xl lg:text-4xl leading-tight text-white mb-1 drop-shadow-md">
                       {tData(category.name)}
                     </h3>
                     {category.description && (
-                      <p className="font-display text-sm md:text-base text-white/90 leading-relaxed drop-shadow font-medium line-clamp-2">
+                      <p className="font-inter text-sm md:text-base text-white/90 leading-relaxed drop-shadow font-medium line-clamp-2">
                         {tData(category.description)}
                       </p>
                     )}
@@ -111,7 +112,7 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
 
                   {/* Count */}
                   <div className="flex items-center justify-between pt-3 border-t border-white/30">
-                    <span className="text-xs font-bold uppercase tracking-wider text-white drop-shadow-md">
+                    <span className="text-xs font-inter font-bold uppercase tracking-wider text-white drop-shadow-md">
                       {count} {t("catalog.products_count")}
                     </span>
                     <span className="text-white group-hover:translate-x-1 transition-transform drop-shadow-md text-lg">
