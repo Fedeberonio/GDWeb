@@ -207,7 +207,7 @@ export const supplySchema = z.object({
   unitPrice: z.number().nonnegative().optional(),
   isReturnable: z.boolean(),
   stock: z.number().int().nonnegative().optional(),
-  minStockAlert: z.number().int().nonnegative().optional(),
+  minStock: z.number().int().nonnegative().optional(),
   meta: z
     .object({
       material: optionalNonEmptyStringSchema,
