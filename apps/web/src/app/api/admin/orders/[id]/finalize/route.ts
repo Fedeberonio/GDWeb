@@ -5,6 +5,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-session";
 import type { OrderItem, OrderTotals } from "@/modules/orders/types";
 import type { Product } from "@/modules/catalog/types";
+import { createProductStockLogAdmin } from "@/modules/inventory/services/stockLogServiceAdmin";
 
 // Helper to calculate totals on the server side to ensure data integrity
 function calculateTotals(items: OrderItem[]): OrderTotals {
@@ -26,7 +27,7 @@ export async function POST(
 ) {
     try {
         // 1. Security Check
-        await requireAdminSession(request);
+        const user = await requireAdminSession(request);
 
         const orderId = params.id;
         const body = await request.json();
@@ -50,6 +51,13 @@ export async function POST(
         const db = getAdminFirestore();
         const orderRef = db.collection("orders").doc(orderId);
 
+        // Preparar items y refs fuera de la transacción (se usan también para logs)
+        const productItems = items.filter((item) => item.type === "product");
+        const productRefs = productItems.map((item) =>
+            db.collection("catalog_products").doc(item.id)
+        );
+        let productDocs: any[] = [];
+
         // 2. Transaction
         await db.runTransaction(async (transaction) => {
             // 2a. Read current order to ensure it exists
@@ -60,13 +68,8 @@ export async function POST(
 
             // 2b. Prepare reads for product stock
             // Filter for items that are actual products tracked in catalog_products
-            const productItems = items.filter((item) => item.type === "product");
-            const productRefs = productItems.map((item) =>
-                db.collection("catalog_products").doc(item.id)
-            );
-
             if (productRefs.length > 0) {
-                const productDocs = await transaction.getAll(...productRefs);
+                productDocs = await transaction.getAll(...productRefs);
 
                 // 2c. Check Stock Availability
                 productDocs.forEach((doc) => {
@@ -150,6 +153,31 @@ export async function POST(
 
             transaction.update(orderRef, updateData);
         });
+
+        // Crear logs de stock (fuera de transacción)
+        try {
+            for (const item of productItems) {
+                const productDoc = productDocs.find((doc) => doc.id === item.id);
+                if (!productDoc?.exists) continue;
+
+                const productData = productDoc.data() as Product;
+                const previousStock = productData.metadata?.stock ?? 0;
+                const newStock = previousStock - item.quantity;
+
+                await createProductStockLogAdmin({
+                    productId: item.id,
+                    delta: -item.quantity,
+                    previousStock,
+                    newStock,
+                    reason: "order_finalized",
+                    orderId: orderId,
+                    actorEmail: user.email || null,
+                });
+            }
+        } catch (logError) {
+            console.warn("Failed to create stock logs:", logError);
+            // No bloqueamos si falla el log
+        }
 
         // 3. Return updated order (fetched fresh or just success)
         return NextResponse.json({ success: true, message: "Orden finalizada y stock descontado" });
