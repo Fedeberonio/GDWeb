@@ -59,14 +59,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  useEffect(() => {
-    if (!loading) return;
-    const timer = window.setTimeout(() => {
-      setLoading(false);
-    }, 3000);
-    return () => window.clearTimeout(timer);
-  }, [loading]);
-
   const loginWithGoogle = async () => {
     try {
       setError(null);
