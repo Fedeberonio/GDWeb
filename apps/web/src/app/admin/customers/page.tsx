@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { AdminGuard } from "@/modules/admin/components/admin-guard";
 import { adminFetch } from "@/modules/admin/api/client";
-import { Eye, Mail, Phone, MapPin, X } from "lucide-react";
+import { Eye, Mail, Phone, MapPin, X, Trash2 } from "lucide-react";
 
 type CustomerStatus = "active" | "inactive";
 
@@ -53,6 +54,32 @@ function CustomersContent() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [status, setStatus] = useState<StatusState>("idle");
   const [error, setError] = useState<string | null>(null);
+
+  const handleDeleteCustomer = useCallback(
+    async (customerId: string) => {
+      const confirmed = window.confirm(
+        "¿Estás seguro de que quieres eliminar este cliente y todos sus datos de acceso?",
+      );
+      if (!confirmed) return;
+
+      try {
+        const response = await adminFetch(`/api/admin/customers/${customerId}`, {
+          method: "DELETE",
+        });
+        const json = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(json?.error ?? "No se pudo eliminar el cliente");
+        }
+        setCustomers((prev) => prev.filter((customer) => customer.id !== customerId));
+        setSelectedCustomer((prev) => (prev?.id === customerId ? null : prev));
+        toast.success("Cliente eliminado correctamente");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "No se pudo eliminar el cliente";
+        toast.error(message);
+      }
+    },
+    [],
+  );
 
   const loadCustomers = useCallback(async () => {
     try {
@@ -167,17 +194,30 @@ function CustomersContent() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedCustomer(customer);
-                        }}
-                        className="inline-flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/30 bg-white/80 px-3 py-1.5 text-xs font-semibold text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-leaf)]/10"
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        Ver
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCustomer(customer);
+                          }}
+                          className="inline-flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/30 bg-white/80 px-3 py-1.5 text-xs font-semibold text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-leaf)]/10"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          Ver
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleDeleteCustomer(customer.id);
+                          }}
+                          className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Eliminar
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

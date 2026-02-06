@@ -22,6 +22,7 @@ import toast from "react-hot-toast";
 
 import { AdminUserBadge } from "@/modules/admin/components/admin-user-badge";
 import { AdminBreadcrumbs } from "@/modules/admin/components/breadcrumbs";
+import { AdminGuard } from "@/modules/admin/components/admin-guard";
 
 const SIDEBAR_LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -54,11 +55,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [isPrintView]);
 
   if (isPrintView) {
-    return <div className="min-h-screen bg-white">{children}</div>;
+    return (
+      <AdminGuard>
+        <div className="min-h-screen bg-white">{children}</div>
+      </AdminGuard>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--gd-color-beige)] flex">
+    <AdminGuard>
+      <div className="min-h-screen bg-[var(--gd-color-beige)] flex">
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex flex-col w-64 bg-white/60 backdrop-blur-xl border-r border-white/40 shadow-lg">
         {/* Logo */}
@@ -219,6 +225,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </main>
       </div>
-    </div>
+      </div>
+    </AdminGuard>
   );
 }

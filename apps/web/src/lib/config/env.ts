@@ -52,8 +52,9 @@ export function getAdminAllowedEmails(): string[] {
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
-  if (list.length === 0) {
-    return [DEFAULT_ADMIN_EMAIL];
-  }
-  return list;
+  const normalizedDefault = DEFAULT_ADMIN_EMAIL.toLowerCase();
+  const filtered = (list.length > 0 ? list : [DEFAULT_ADMIN_EMAIL]).filter(
+    (email) => email.toLowerCase() === normalizedDefault,
+  );
+  return filtered.length > 0 ? filtered : [DEFAULT_ADMIN_EMAIL];
 }

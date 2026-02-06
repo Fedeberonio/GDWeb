@@ -116,6 +116,7 @@ export function CheckoutClient() {
     if (!profile) return;
     setForm((prev) => ({
       ...prev,
+      contactName: prev.contactName || profile.displayName || "",
       contactPhone: prev.contactPhone || profile.telefono || "",
       direccion: prev.direccion || profile.direccion || "",
       metodoPago: prev.metodoPago || profile.pagoPreferido || "",
@@ -1106,6 +1107,5 @@ function buildNotesFromProfile(profile: { likes?: string; dislikes?: string }): 
   }
   return notes.join("\n");
 }
-
 
 

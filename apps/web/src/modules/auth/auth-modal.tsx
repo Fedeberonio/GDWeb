@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
+import { FirebaseError } from "firebase/app";
 
 import { useAuth } from "@/modules/auth/context";
 import { useUser } from "@/modules/user/context";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { getFirestoreDb } from "@/lib/firebase/client";
-import { createUserProfile } from "@/modules/user/firestore";
+import { createUserProfile, updateUserProfile } from "@/modules/user/firestore";
 import { OnboardingForm, type OnboardingFormData } from "@/modules/user/onboarding-form";
+import { getAdminAllowedEmails } from "@/lib/config/env";
 
 const AUTH_MODAL_FLAG = "gd-show-auth-modal";
 const AUTH_MODAL_EVENT = "gd-auth-modal-open";
@@ -82,6 +84,16 @@ export function AuthModal() {
   // Master Effect: Manage flow based on User and Profile state
   useEffect(() => {
     if (!isOpen || !user || profileLoading) return;
+
+    const isAdminUser = Boolean(
+      user?.email &&
+        getAdminAllowedEmails().some((email) => email.toLowerCase() === user.email?.toLowerCase()),
+    );
+
+    if (isAdminUser) {
+      closeModal();
+      return;
+    }
 
     // Check if profile is complete (Phone, Address, HeardFrom are mandatory)
     // We strictly follow the definition of "Onboarding required"
@@ -211,9 +223,9 @@ export function AuthModal() {
       const db = getFirestoreDb();
       if (!db) throw new Error("Firebase no disponible");
 
-      // 1. Crear perfil
-      await createUserProfile(db, user.uid, {
-        displayName: user.displayName ?? "",
+      const resolvedDisplayName = (user.displayName || profile?.displayName || formState.name || "").trim();
+      const commonUpdates = {
+        displayName: resolvedDisplayName || undefined,
         email: user.email ?? "",
         telefono: (data.telefono || "").trim(),
         direccion: (data.direccion || "").trim(),
@@ -221,7 +233,33 @@ export function AuthModal() {
         comoNosConocio: data.comoNosConocio,
         likes: (data.likes || "").trim() || undefined,
         dislikes: (data.dislikes || "").trim() || undefined,
-      });
+      };
+
+      // 1. Guardar perfil (evitar sobrescribir si ya existe)
+      if (profile) {
+        await updateUserProfile(db, user.uid, commonUpdates);
+      } else {
+        try {
+          await updateUserProfile(db, user.uid, commonUpdates);
+        } catch (error) {
+          const isNotFound =
+            error instanceof FirebaseError &&
+            (error.code === "not-found" || error.code === "not-found-document");
+          if (!isNotFound) {
+            throw error;
+          }
+          await createUserProfile(db, user.uid, {
+            displayName: resolvedDisplayName || "",
+            email: user.email ?? "",
+            telefono: (data.telefono || "").trim(),
+            direccion: (data.direccion || "").trim(),
+            pagoPreferido: data.pagoPreferido || undefined,
+            comoNosConocio: data.comoNosConocio,
+            likes: (data.likes || "").trim() || undefined,
+            dislikes: (data.dislikes || "").trim() || undefined,
+          });
+        }
+      }
 
       // 2. Refrescar estado global (opcional para cerrar el modal, pero bueno para la UI)
       try {

@@ -7,6 +7,7 @@ import { useUser } from "./context";
 import { useAuth } from "@/modules/auth/context";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { OnboardingForm, type OnboardingFormData } from "./onboarding-form";
+import { getAdminAllowedEmails } from "@/lib/config/env";
 
 const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
 
@@ -23,6 +24,11 @@ export function ProfileFormModal() {
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   const [initialFormData, setInitialFormData] = useState<Partial<OnboardingFormData> | undefined>();
+
+  const isAdminUser = Boolean(
+    user?.email &&
+      getAdminAllowedEmails().some((email) => email.toLowerCase() === user.email?.toLowerCase()),
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -44,7 +50,7 @@ export function ProfileFormModal() {
     }
   }, [user?.uid]);
 
-  const shouldShow = Boolean(user && isNewUser && !profileLoading);
+  const shouldShow = Boolean(user && !isAdminUser && isNewUser && !profileLoading);
 
   useEffect(() => {
     if (!shouldShow) return;
@@ -120,7 +126,6 @@ export function ProfileFormModal() {
     document.body,
   );
 }
-
 
 
 
