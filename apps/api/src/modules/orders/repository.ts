@@ -5,22 +5,40 @@ import type { Order, OrderStatus } from "./schemas";
 
 const COLLECTION = "orders";
 
-// Fallback in-memory storage for demo/dev without credentials
-// Using global to persist across hot reloads in dev if possible, though node process might restart
-const globalMockOrders = (global as any).__mockOrders || [];
-(global as any).__mockOrders = globalMockOrders;
+/** In-memory fallback for demo/dev when Firebase is unavailable. Stored on globalThis to survive hot reloads. */
+interface GlobalWithMockOrders {
+  __mockOrders?: Order[];
+}
+
+const globalForMock = globalThis as GlobalWithMockOrders;
+const globalMockOrders: Order[] = globalForMock.__mockOrders ?? [];
+globalForMock.__mockOrders = globalMockOrders;
+
+function normalizeDate(value: unknown): string | undefined {
+  if (value instanceof Timestamp) return value.toDate().toISOString();
+  return typeof value === "string" ? value : undefined;
+}
 
 function docToOrder(doc: DocumentSnapshot): Order {
-  const data = doc.data() ?? {};
-  const normalizeDate = (value: unknown) =>
-    value instanceof Timestamp ? value.toDate().toISOString() : (value as string | undefined);
+  const data = (doc.data() ?? {}) as Record<string, unknown>;
+  const createdAt = normalizeDate(data.createdAt) ?? new Date().toISOString();
+  const updatedAt = normalizeDate(data.updatedAt);
 
   return {
     id: doc.id,
-    ...data,
-    createdAt: normalizeDate(data.createdAt) ?? new Date().toISOString(),
-    updatedAt: normalizeDate(data.updatedAt),
-  } as Order;
+    userId: typeof data.userId === "string" ? data.userId : undefined,
+    guestEmail: typeof data.guestEmail === "string" ? data.guestEmail : undefined,
+    items: Array.isArray(data.items) ? (data.items as Order["items"]) : [],
+    totals: (data.totals as Order["totals"]) ?? { subtotal: { amount: 0, currency: "DOP" }, total: { amount: 0, currency: "DOP" } },
+    status: (typeof data.status === "string" ? data.status : "pending") as Order["status"],
+    delivery: (data.delivery as Order["delivery"]) ?? {
+      address: { id: "", label: "", contactName: "", phone: "", city: "", zone: "", isDefault: false },
+    },
+    payment: (data.payment as Order["payment"]) ?? { method: "cash", status: "pending" },
+    createdAt,
+    updatedAt,
+    whatsappMessageId: typeof data.whatsappMessageId === "string" ? data.whatsappMessageId : undefined,
+  };
 }
 
 export async function listOrders(limit = 100): Promise<Order[]> {
@@ -31,8 +49,8 @@ export async function listOrders(limit = 100): Promise<Order[]> {
       .limit(limit)
       .get();
     return snapshot.docs.map(docToOrder);
-  } catch (error) {
-    console.warn("⚠️ Firebase unavailable, listing from in-memory mock store.", error instanceof Error ? error.message : "");
+  } catch (_error) {
+    console.warn("⚠️ Firebase unavailable, listing from in-memory mock store.", _error instanceof Error ? _error.message : "");
     return [...globalMockOrders].sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     ).slice(0, limit);
@@ -44,7 +62,7 @@ export async function getOrderById(id: string): Promise<Order | null> {
     const doc = await getDb().collection(COLLECTION).doc(id).get();
     if (!doc.exists) return null;
     return docToOrder(doc);
-  } catch (error) {
+  } catch (_error) {
     console.warn("⚠️ Firebase unavailable, reading from in-memory mock store.");
     return globalMockOrders.find((o: Order) => o.id === id) || null;
   }
@@ -64,7 +82,7 @@ export async function createOrder(order: Omit<Order, "createdAt" | "updatedAt"> 
       throw new Error("Failed to create order");
     }
     return docToOrder(saved);
-  } catch (error) {
+  } catch (_error) {
     console.warn("⚠️ Firebase unavailable, saving to in-memory mock store.");
 
     // Simulate what Firebase would do
@@ -101,12 +119,12 @@ export async function updateOrderStatus(id: string, status: OrderStatus): Promis
     const updated = await ref.get();
     if (!updated.exists) return null;
     return docToOrder(updated);
-  } catch (error) {
+  } catch (_error) {
     console.warn("⚠️ Firebase unavailable, updating in-memory mock store.");
     const index = globalMockOrders.findIndex((o: Order) => o.id === id);
     if (index === -1) return null;
 
-    const updatedOrder = {
+    const updatedOrder: Order = {
       ...globalMockOrders[index],
       status,
       updatedAt: new Date().toISOString(),

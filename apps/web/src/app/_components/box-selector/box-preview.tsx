@@ -2,45 +2,54 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Apple, Check, Citrus, Clock, Leaf, Package, Recycle, Salad } from "lucide-react";
 import { useCart } from "@/modules/cart/context";
-import type { Box } from "@/modules/catalog/types";
+import type { Box, BoxRule } from "@/modules/catalog/types";
 import { calculateVariantComposition, getVariantInfo, getVisualCategory, type VariantType } from "./helpers";
 import { useState } from "react";
-import productMetadata from "@/data/productMetadata.json";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { useCatalog } from "@/modules/catalog/context";
 
 type BoxPreviewProps = {
   box: Box;
   variant: VariantType;
-  baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
+  baseContents: Array<{ productSku: string; quantity: number; name: string }>;
+  boxRule?: BoxRule;
   onBack: () => void;
   onChangeVariant: () => void;
 };
 
-export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant }: BoxPreviewProps) {
+export function BoxPreview({ box, variant, baseContents, boxRule, onBack, onChangeVariant }: BoxPreviewProps) {
   const { addItem } = useCart();
   const { locale, t, tData } = useTranslation();
+  const { productMap } = useCatalog();
   const [isAdded, setIsAdded] = useState(false);
 
-  const info = getVariantInfo(variant, locale);
+  const variantData = box.variants.find((item) => item.id === variant || item.slug === variant);
+  const info = getVariantInfo(variant, locale, variantData);
   const composition = calculateVariantComposition(baseContents);
+  const variantIcons: Record<VariantType, React.ReactNode> = {
+    mix: <Apple className="w-5 h-5 text-red-500" />,
+    fruity: <Citrus className="w-5 h-5 text-orange-500" />,
+    veggie: <Salad className="w-5 h-5 text-green-600" />,
+  };
 
   // Agrupar productos por categoría visual
   const contentsByCategory = baseContents.reduce((acc, item) => {
-    const meta = productMetadata.find((p) => p.slug === item.productSlug);
-    const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+    const product = productMap.get(item.productSku);
+    const category = getVisualCategory(item.productSku, item.name, product?.categoryId);
     if (!acc[category]) acc[category] = [];
     acc[category].push(item);
     return acc;
   }, {} as Record<string, typeof baseContents>);
 
-  const categoryLabels: Record<string, { icon: string; label: string }> = {
-    aromatic: { icon: "🌶️", label: t("variants.categories.aromatic") },
-    leafy: { icon: "🥬", label: t("variants.categories.leafy") },
-    fruit_large: { icon: "🍎", label: t("variants.categories.fruit") },
-    fruit_small: { icon: "🍎", label: t("variants.categories.fruit") },
-    root: { icon: "🥔", label: t("variants.categories.root") },
-    citrus: { icon: "🍊", label: t("variants.categories.citrus") },
+  const categoryLabels: Record<string, { icon: React.ReactNode; label: string }> = {
+    aromatic: { icon: <Leaf className="w-4 h-4 text-green-600" />, label: t("variants.categories.aromatic") },
+    leafy: { icon: <Salad className="w-4 h-4 text-green-600" />, label: t("variants.categories.leafy") },
+    fruit_large: { icon: <Apple className="w-4 h-4 text-red-500" />, label: t("variants.categories.fruit") },
+    fruit_small: { icon: <Apple className="w-4 h-4 text-red-500" />, label: t("variants.categories.fruit") },
+    root: { icon: <Leaf className="w-4 h-4 text-green-600" />, label: t("variants.categories.root") },
+    citrus: { icon: <Citrus className="w-4 h-4 text-orange-500" />, label: t("variants.categories.citrus") },
   };
 
   const handleAddToCart = () => {
@@ -52,18 +61,32 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
       price: box.price.amount,
       slotValue: 0,
       weightKg: 0,
+      image: boxImage,
+      configuration: {
+        boxId: box.id,
+        variant,
+        mix: variant === "fruity" ? "frutas" : variant === "veggie" ? "vegetales" : "mix",
+        selectedProducts: {},
+        likes: [],
+        dislikes: [],
+        price: {
+          base: box.price.amount,
+          extras: 0,
+          final: box.price.amount,
+          isACarta: false,
+        },
+      },
     });
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  const boxImage =
-    box.heroImage ||
-    (box.id === "box-1" || box.slug.includes("caribbean")
-      ? "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png"
-      : box.id === "box-2" || box.slug.includes("island")
-        ? "/images/boxes/box-2-island-weekssential-veggie-product.jpg"
-        : "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg");
+  const boxImageMap: Record<string, string> = {
+    "GD-CAJA-001": "/assets/images/boxes/GD-CAJA-001.png",
+    "GD-CAJA-002": "/assets/images/boxes/GD-CAJA-002.png",
+    "GD-CAJA-003": "/assets/images/boxes/GD-CAJA-003.png",
+  };
+  const boxImage = boxImageMap[box.id] || box.heroImage || "/assets/images/boxes/placeholder.png";
 
   // Calcular balance visual (simplificado)
   const getBalancePercentage = (current: number, min: number, max: number): number => {
@@ -72,11 +95,7 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
     return Math.min(100, Math.max(0, (position / range) * 100));
   };
 
-  const rule = box.id === "box-1" || box.slug.includes("caribbean")
-    ? { categoryBudget: { aromatic: { min: 1, max: 2 }, leafy: { min: 1, max: 3 }, fruit_large: { min: 1, max: 2 }, root: { min: 2, max: 4 }, citrus: { min: 2, max: 4 } } }
-    : box.id === "box-2" || box.slug.includes("island")
-      ? { categoryBudget: { aromatic: { min: 1, max: 3 }, leafy: { min: 2, max: 4 }, fruit_large: { min: 2, max: 3 }, root: { min: 3, max: 6 }, citrus: { min: 3, max: 5 } } }
-      : { categoryBudget: { aromatic: { min: 2, max: 4 }, leafy: { min: 3, max: 6 }, fruit_large: { min: 2, max: 4 }, root: { min: 4, max: 8 }, citrus: { min: 4, max: 6 } } };
+  const categoryBudget = boxRule?.categoryBudget ?? {};
 
   return (
     <section className="box-preview space-y-8">
@@ -110,10 +129,21 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
           <div className="box-info space-y-6">
             <div>
               <h3 className="font-display text-3xl font-bold text-[var(--gd-color-forest)] mb-2">
-                {info.icon} {tData(box.name)} ({variant.toUpperCase()})
+                <span className="inline-flex items-center gap-2">
+                  {variantIcons[info.icon]}
+                  {tData(box.name)} ({variant.toUpperCase()})
+                </span>
               </h3>
               <p className="text-sm text-[var(--color-muted)] mb-1">
-                ⏱️ {box.durationDays} {t("boxes.duration_days")} • ♻️ {t("box_preview.returnable")}
+                <span className="inline-flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-gray-600" />
+                  {box.durationDays} {t("boxes.duration_days")}
+                </span>
+                <span className="mx-2 text-gray-300">•</span>
+                <span className="inline-flex items-center gap-2">
+                  <Recycle className="w-4 h-4 text-green-600" />
+                  {t("box_preview.returnable")}
+                </span>
               </p>
               <p className="text-base font-semibold text-[var(--gd-color-leaf)] italic">
                 {info.tagline}
@@ -122,10 +152,16 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
 
             <div className="stats space-y-2">
               <p className="text-sm text-[var(--color-foreground)]">
-                ✓ {composition.total} {t("box_preview.fresh_products")}
+                <span className="inline-flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-600" />
+                  {composition.total} {t("box_preview.fresh_products")}
+                </span>
               </p>
               <p className="text-sm text-[var(--color-foreground)]">
-                📊 {t("box_preview.balance")} {variant === "mix" ? t("box_preview.balance_perfect") : variant === "fruity" ? t("box_preview.balance_tropical") : t("box_preview.balance_green")}
+                <span className="inline-flex items-center gap-2">
+                  <Package className="w-4 h-4 text-green-600" />
+                  {t("box_preview.balance")} {variant === "mix" ? t("box_preview.balance_perfect") : variant === "fruity" ? t("box_preview.balance_tropical") : t("box_preview.balance_green")}
+                </span>
               </p>
             </div>
 
@@ -135,13 +171,13 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
                 {t("box_preview.category_balance")}
               </h4>
               {[
-                { key: "aromatic", label: `🌶️ ${t("variants.categories.aromatic")}`, current: composition.aromatic },
-                { key: "leafy", label: `🥬 ${t("variants.categories.leafy")}`, current: composition.leafy },
-                { key: "fruit", label: `🍎 ${t("variants.categories.fruit")}`, current: composition.fruit },
-                { key: "root", label: `🥔 ${t("variants.categories.root")}`, current: composition.root },
-                { key: "citrus", label: `🍊 ${t("variants.categories.citrus")}`, current: composition.citrus },
-              ].map(({ key, label, current }) => {
-                const budget = rule.categoryBudget[key as keyof typeof rule.categoryBudget];
+                { key: "aromatic", label: t("variants.categories.aromatic"), current: composition.aromatic, icon: <Leaf className="w-4 h-4 text-green-600" /> },
+                { key: "leafy", label: t("variants.categories.leafy"), current: composition.leafy, icon: <Salad className="w-4 h-4 text-green-600" /> },
+                { key: "fruit", label: t("variants.categories.fruit"), current: composition.fruit, icon: <Apple className="w-4 h-4 text-red-500" /> },
+                { key: "root", label: t("variants.categories.root"), current: composition.root, icon: <Leaf className="w-4 h-4 text-green-600" /> },
+                { key: "citrus", label: t("variants.categories.citrus"), current: composition.citrus, icon: <Citrus className="w-4 h-4 text-orange-500" /> },
+              ].map(({ key, label, current, icon }) => {
+                const budget = categoryBudget[key as keyof typeof categoryBudget];
                 if (!budget) return null;
                 const percentage = getBalancePercentage(current, budget.min, budget.max);
                 const color = percentage >= 50 ? "bg-[var(--gd-color-leaf)]" : percentage >= 25 ? "bg-yellow-500" : "bg-red-400";
@@ -149,7 +185,10 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
                 return (
                   <div key={key} className="bar space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-[var(--color-foreground)]">{label}</span>
+                      <span className="text-[var(--color-foreground)] inline-flex items-center gap-1.5">
+                        {icon}
+                        {label}
+                      </span>
                       <span className="font-semibold text-[var(--gd-color-forest)]">
                         {current}/{budget.max}
                       </span>
@@ -172,7 +211,7 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
               </h4>
               <div className="space-y-2">
                 {Object.entries(contentsByCategory).map(([category, items]) => {
-                  const label = categoryLabels[category] || { icon: "📦", label: t("variants.categories.others") };
+                  const label = categoryLabels[category] || { icon: <Package className="w-4 h-4 text-green-600" />, label: t("variants.categories.others") };
                   return (
                     <div key={category} className="category flex items-center gap-2 text-sm text-[var(--color-foreground)]">
                       <span>{label.icon}</span>
@@ -215,12 +254,12 @@ export function BoxPreview({ box, variant, baseContents, onBack, onChangeVariant
               >
                 {isAdded ? (
                   <>
-                    <span className="text-xl">✓</span>
+                    <Check className="w-5 h-5" aria-hidden="true" />
                     <span>{t("box_preview.added_to_cart")}</span>
                   </>
                 ) : (
                   <>
-                    <span className="text-xl">✅</span>
+                    <Check className="w-5 h-5" aria-hidden="true" />
                     <span>{t("box_preview.add_to_cart")}</span>
                   </>
                 )}

@@ -1,406 +1,249 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import type { Box } from "@/modules/catalog/types";
-import { useScrollFadeStagger } from "./use-scroll-fade";
-import { BoxVariantsDisplay } from "./box-variants-display";
-import { QuickAddModal } from "./quick-add-modal";
-import { BoxCustomizeModal } from "./box-customize-modal";
-import { getBoxRule } from "@/modules/box-builder/utils";
-import type { Product } from "@/modules/catalog/types";
-import type { VariantType } from "./box-selector/helpers";
+import { useMemo, useState } from "react";
+import toast from "react-hot-toast";
+import { useCart } from "@/modules/cart/context";
+import type { Box, BoxRule, Product } from "@/modules/catalog/types";
+import { Check, Star } from "lucide-react";
+
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { ProductCard } from "./product-card";
+import { BoxVariantsDisplay } from "./box-variants-display";
+import { BoxPreferencesModal } from "./box-preferences-modal";
+import type { VariantType } from "./box-selector/helpers";
+
+// Helper function para obtener imágenes de cajas (product y topdown)
+function getBoxImages(boxId: string): { product: string; topdown: string } {
+  const boxImageMap: Record<string, { product: string; topdown: string }> = {
+    "GD-CAJA-001": {
+      product: "/assets/images/boxes/GD-CAJA-001.png",
+      topdown: "/assets/images/boxes/GD-CAJA-001-topdown.png",
+    },
+    "GD-CAJA-002": {
+      product: "/assets/images/boxes/GD-CAJA-002.png",
+      topdown: "/assets/images/boxes/GD-CAJA-002-topdown.png",
+    },
+    "GD-CAJA-003": {
+      product: "/assets/images/boxes/GD-CAJA-003.png",
+      topdown: "/assets/images/boxes/GD-CAJA-003-topdown.png",
+    },
+  };
+
+  return boxImageMap[boxId] || {
+    product: "/assets/images/boxes/placeholder.png",
+    topdown: "/assets/images/boxes/placeholder.png",
+  };
+}
+
+// Helper function para mapear URLs remotas a imágenes locales (fallback)
+function getLocalBoxImage(heroImage: string | undefined, boxId: string, _slug: string): string {
+  if (heroImage && heroImage.startsWith("/assets/")) {
+    return heroImage;
+  }
+  const boxImages = getBoxImages(boxId);
+  return boxImages.product;
+}
 
 type BoxesGridProps = {
   boxes: Box[];
   prebuiltBoxes: Array<{
     box: Box;
+    rule?: BoxRule;
     baseContents: Array<{
-      productSlug: string;
+      productSku: string;
       quantity: number;
       name: string;
     }>;
   }>;
   products: Product[];
+  boxRules: BoxRule[];
 };
 
-const BOX_SKU_MAP: Record<string, string> = {
-  "box-1": "GD-CAJA-001",
-  "box-2": "GD-CAJA-002",
-  "box-3": "GD-CAJA-003",
-  "box-1-caribbean-fresh-pack-3-dias": "GD-CAJA-001",
-  "box-2-island-weekssential-1-semana": "GD-CAJA-002",
-  "box-3-allgreenxclusive-2-semanas": "GD-CAJA-003",
-  "caribbean-fresh-pack": "GD-CAJA-001",
-  "island-weekssential": "GD-CAJA-002",
-  "allgreenxclusive": "GD-CAJA-003",
-};
-
-// Datos hardcodeados para evitar dependencia del archivo JSON externo
-const BOX_DETAILS_BY_SKU: Record<string, { dimensions?: string; weight?: string }> = {
-  "GD-CAJA-001": {
-    dimensions: "8\" x 8\" x 8\"",
-    weight: "7.7 lb (3.5 kg)",
-  },
-  "GD-CAJA-002": {
-    dimensions: "10\" x 10\" x 10\"",
-    weight: "13.2 lb (6 kg)",
-  },
-  "GD-CAJA-003": {
-    dimensions: "12\" x 12\" x 12\"",
-    weight: "26.4 lb (12 kg)",
-  },
-};
-
-export function BoxesGrid({ boxes, prebuiltBoxes, products }: BoxesGridProps) {
+export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGridProps) {
   const { t, tData } = useTranslation();
-  const [quickAddBox, setQuickAddBox] = useState<Box | null>(null);
-  const [customizeBox, setCustomizeBox] = useState<Box | null>(null);
+  const { addItem } = useCart();
+  const [editingBox, setEditingBox] = useState<{ box: Box; quantity: number } | null>(null);
+
+  // Restore missing state
+  const [addedBoxId, setAddedBoxId] = useState<string | null>(null);
+  const [boxQuantities, setBoxQuantities] = useState<Record<string, number>>({});
   const [selectedVariants, setSelectedVariants] = useState<Record<string, VariantType>>({});
-  const { getItemProps } = useScrollFadeStagger<HTMLDivElement>(boxes.length, {
-    threshold: 0.1,
-    rootMargin: "50px",
-    delay: 100,
-  });
+
+  const rulesById = useMemo(() => new Map(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
+  const productMap = useMemo(() => {
+    const map = new Map<string, Product>();
+    products.forEach((product) => {
+      if (product.slug) map.set(product.slug, product);
+      if (product.sku) map.set(product.sku, product);
+      map.set(product.id, product);
+      if (product.slug) map.set(product.slug.toLowerCase(), product);
+      if (product.sku) map.set(product.sku.toLowerCase(), product);
+      map.set(product.id.toLowerCase(), product);
+    });
+    return map;
+  }, [products]);
+
+  const getQuantity = (boxId: string) => Math.max(1, boxQuantities[boxId] ?? 1);
+  const updateQuantity = (boxId: string, delta: number) => {
+    setBoxQuantities((prev) => {
+      const current = prev[boxId] ?? 1;
+      const next = Math.max(1, current + delta);
+      return { ...prev, [boxId]: next };
+    });
+  };
+  const resetQuantity = (boxId: string) => {
+    setBoxQuantities((prev) => ({ ...prev, [boxId]: 1 }));
+  };
+
+  const handleConfirmBox = ({
+    variant,
+    likes,
+    dislikes,
+  }: {
+    variant: VariantType;
+    likes: string[];
+    dislikes: string[];
+  }) => {
+    if (!editingBox) return;
+
+    const { box, quantity } = editingBox;
+    const imageSrc = getLocalBoxImage(box.heroImage, box.id, box.slug);
+
+    addItem({
+      slug: box.slug,
+      type: "box",
+      name: tData(box.name),
+      quantity,
+      price: box.price.amount,
+      slotValue: 0,
+      weightKg: 0,
+      image: imageSrc,
+      configuration: {
+        boxId: box.id,
+        variant: variant,
+        mix: variant === "fruity" ? "frutas" : variant === "veggie" ? "vegetales" : "mix",
+        selectedProducts: {},
+        likes,
+        dislikes,
+        price: {
+          base: box.price.amount,
+          extras: 0,
+          final: box.price.amount,
+          isACarta: false,
+        },
+      },
+    });
+
+    setAddedBoxId(box.id);
+    toast.success(`${tData(box.name)} ${t("common.added").toLowerCase()}`);
+    resetQuantity(box.id);
+    setEditingBox(null);
+    setTimeout(() => setAddedBoxId(null), 1000);
+  };
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-3 pt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto pt-6">
         {boxes.map((box, index) => {
-          const productImages: Record<string, string> = {
-            "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-            "box-2": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-            "box-3": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-            "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-            "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-            "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-            "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-            "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-            "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          };
+          const imageSrc = getLocalBoxImage(box.heroImage, box.id, box.slug);
+          const fallbackTopdown = getBoxImages(box.id).topdown;
+          const secondaryImage =
+            (box as Box & { secondaryImage?: string; hoverImage?: string }).secondaryImage ||
+            (box as Box & { hoverImage?: string }).hoverImage ||
+            fallbackTopdown;
+          const quantity = getQuantity(box.id);
+          const isAdded = addedBoxId === box.id;
+          const ruleKey = box.ruleId || box.id || box.slug;
+          const rule = ruleKey ? rulesById.get(ruleKey) : undefined;
+          const baseContents =
+            rule?.baseContents?.map((content) => ({
+              ...content,
+              name: tData(productMap.get(content.productSku)?.name) || content.productSku,
+            })) ?? [];
+          const unitLabel = box.durationDays
+            ? `${box.durationDays} ${t("boxes.duration_days").toUpperCase()}`
+            : t("boxes.flexible").toUpperCase();
 
-          const hoverImages: Record<string, string> = {
-            "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-topdown.png",
-            "box-2": "/images/boxes/box-2-island-weekssential-veggie-topdown.png",
-            "box-3": "/images/boxes/box-3-allgreenxclusive-veggie-topdown.png",
-            "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-topdown.png",
-            "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-topdown.png",
-            "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-veggie-topdown.png",
-            "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-topdown.png",
-            "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-topdown.png",
-            "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-veggie-topdown.png",
-          };
-
-          const boxImage =
-            productImages[box.id] ||
-            productImages[box.slug] ||
-            box.heroImage ||
-            "/images/boxes/placeholder.jpg";
-          const boxHoverImage = hoverImages[box.id] || hoverImages[box.slug] || null;
-          const hasHoverImage = boxHoverImage !== null;
-
-          const boxSizeConfig: Record<string, { scale: string; padding: string }> = {
-            "box-1": { scale: "1.0", padding: "p-2" },
-            "box-2": { scale: "1.1", padding: "p-2" },
-            "box-3": { scale: "1.15", padding: "p-2" },
-          };
-
-          const boxNumber = box.id.replace("box-", "") || String(index + 1);
-          const config =
-            boxSizeConfig[box.id] ||
-            boxSizeConfig[`box-${boxNumber}`] ||
-            { scale: "0.85", padding: "p-6" };
-
-          const itemProps = getItemProps(index);
-          const sku = BOX_SKU_MAP[box.slug] || BOX_SKU_MAP[box.id];
-          const boxDetails = sku ? BOX_DETAILS_BY_SKU[sku] : undefined;
-
-          // Definir badges especiales según la caja
-          const specialBadge = index === 1 ? t("boxes.badge_popular") : index === 2 ? t("boxes.badge_best_value") : null;
-          const isPopular = index === 1;
+          const badges = [
+            index === 1
+              ? {
+                  label: (
+                    <>
+                      <Star className="w-3 h-3 fill-current" />
+                      <span>{t("boxes.badge_popular")}</span>
+                    </>
+                  ),
+                  tone: "popular" as const,
+                }
+              : null,
+            index === 2
+              ? {
+                  label: (
+                    <>
+                      <Check className="w-3 h-3" />
+                      <span>{t("boxes.badge_best_value")}</span>
+                    </>
+                  ),
+                  tone: "bestValue" as const,
+                }
+              : null,
+            box.isFeatured ? { label: t("category.featured"), tone: "forest" as const } : null,
+          ].filter(Boolean) as Array<{ label: React.ReactNode; tone: "forest" | "leaf" | "neutral" | "popular" | "bestValue" }>;
 
           return (
-            <article
+            <ProductCard
               key={box.id}
-              {...itemProps}
-              className={`group relative flex flex-col overflow-hidden rounded-[32px] border-2 bg-white shadow-xl transition-all duration-500 hover:shadow-2xl hover:border-[var(--gd-color-leaf)] hover:-translate-y-2 ${isPopular
-                ? "border-[var(--gd-color-leaf)] ring-4 ring-[var(--gd-color-leaf)]/20"
-                : "border-[var(--gd-color-leaf)]/30"
-                } ${itemProps.className}`}
-              style={itemProps.style}
-            >
-              {/* Badge especial superior */}
-              {specialBadge && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-                  <div className={`rounded-full px-4 py-1.5 text-[0.6rem] font-black uppercase tracking-widest shadow-lg border border-white/20 backdrop-blur-md ${isPopular
-                    ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
-                    : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
-                    }`}>
-                    ⭐ {specialBadge}
-                  </div>
+              title={tData(box.name)}
+              description={box.description ? tData(box.description) : undefined}
+              detailsNode={
+                <div className="pt-2">
+                  <BoxVariantsDisplay
+                    baseContents={baseContents}
+                    boxRule={rule}
+                    productMap={productMap}
+                    boxVariants={box.variants}
+                    compact
+                    initialVariant={selectedVariants[box.id]}
+                    onVariantSelect={(variant) =>
+                      setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }))
+                    }
+                  />
                 </div>
-              )}
-
-              {/* HEADER VISIBLE (Imagen + Titulo simple) */}
-              <div className="relative z-20 bg-white">
-                {/* Imagen - Altura fija */}
-                <div className="relative h-64 w-full overflow-hidden bg-gradient-to-b from-[var(--gd-color-sprout)]/20 to-white">
-                  <div
-                    className={`absolute inset-0 transition-all duration-500 group-hover:scale-105 ${hasHoverImage ? "group-hover:opacity-0" : ""
-                      } ${config.padding}`}
-                    style={{ transform: hasHoverImage ? undefined : `scale(${config.scale})` }}
-                  >
-                    <Image
-                      src={boxImage}
-                      alt={tData(box.name)}
-                      fill
-                      sizes="(max-width:768px) 100vw, 400px"
-                      className="object-contain object-center"
-                    />
-                  </div>
-                  {hasHoverImage && (
-                    <div
-                      className={`absolute inset-0 opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105 ${config.padding}`}
-                    >
-                      <Image
-                        src={boxHoverImage}
-                        alt={`${tData(box.name)} - Vista cenital`}
-                        fill
-                        sizes="(max-width:768px) 100vw, 400px"
-                        className="object-contain object-center"
-                      />
-                    </div>
-                  )}
-
-                  {/* Badges Flotantes */}
-                  <div className="absolute bottom-3 right-3 flex flex-col items-end gap-1.5 opacity-90 transition-opacity group-hover:opacity-100">
-                    <div className="flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-2.5 py-1 text-[0.6rem] font-bold text-[var(--gd-color-forest)] shadow-sm border border-[var(--gd-color-leaf)]/20">
-                      <span>{box.durationDays ? `${box.durationDays} ${t("boxes.duration_days").toLowerCase().includes("supply") ? "days" : "días"}` : t("boxes.flexible")}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Título Principal */}
-                <div className="px-5 pt-4 pb-2 text-center bg-white relative z-20">
-                  <h3 className="font-display text-2xl md:text-3xl font-bold text-[var(--color-foreground)] leading-tight">
-                    {tData(box.name)}
-                  </h3>
-                  {/* Flecha indicadora - visible solo cuando colapsado (no hover) */}
-                  <div className="mt-1 flex justify-center opacity-100 transition-opacity duration-300 group-hover:opacity-0 h-4 items-center">
-                    <span className="text-[var(--gd-color-leaf)] text-xs animate-bounce">▼</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECCIÓN COLAPSABLE (Hidden content revealed on hover) */}
-              <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:grid-rows-[1fr] bg-white">
-                <div className="overflow-hidden">
-                  <div className="px-5 pb-5 pt-0 space-y-4">
-
-                    {/* Descripción + Detalles */}
-                    <div className="text-center space-y-3 opacity-0 translate-y-4 transition-all duration-500 delay-100 group-hover:opacity-100 group-hover:translate-y-0">
-                      {(box.description?.es || box.description?.en) && (
-                        <p className="text-sm md:text-base text-[var(--color-muted)] leading-relaxed line-clamp-2 px-2">
-                          {tData(box.description)}
-                        </p>
-                      )}
-
-                      {(boxDetails?.dimensions || boxDetails?.weight) && (
-                        <div className="flex justify-center gap-4 text-xs md:text-sm text-[var(--color-muted)] border-t border-[var(--gd-color-leaf)]/10 pt-2 mx-4">
-                          {boxDetails.dimensions && (
-                            <div className="flex flex-col items-center">
-                              <span className="font-bold text-[var(--gd-color-forest)] text-sm">{t("boxes.size")}</span>
-                              <span className="text-xs md:text-sm">{boxDetails.dimensions}</span>
-                            </div>
-                          )}
-                          {boxDetails.weight && (
-                            <div className="flex flex-col items-center">
-                              <span className="font-bold text-[var(--gd-color-forest)] text-sm">{t("boxes.weight")}</span>
-                              <span className="text-xs md:text-sm">{boxDetails.weight}</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Variantes */}
-                    {(() => {
-                      const boxData = prebuiltBoxes.find((pb) => pb.box.id === box.id);
-                      const baseContents = boxData?.baseContents ?? [];
-                      if (baseContents.length === 0) return null;
-
-                      return (
-                        <div className="opacity-0 translate-y-4 transition-all duration-500 delay-150 group-hover:opacity-100 group-hover:translate-y-0">
-                          <BoxVariantsDisplay
-                            baseContents={baseContents}
-                            boxId={box.id}
-                            compact={true}
-                            initialVariant={selectedVariants[box.id]}
-                            onVariantSelect={(variant) =>
-                              setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }))
-                            }
-                          />
-                        </div>
-                      );
-                    })()}
-
-                    {/* Precio y Botones */}
-                    <div className="space-y-3 opacity-0 translate-y-4 transition-all duration-500 delay-200 group-hover:opacity-100 group-hover:translate-y-0 pt-1">
-                      {/* Precio */}
-                      <div className="text-center">
-                        <p className="font-display text-3xl md:text-4xl font-black text-emerald-950">
-                          RD${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}
-                        </p>
-                        {box.durationDays && box.durationDays > 0 && (
-                          <p className="text-sm md:text-base text-[var(--color-muted)] mt-1">
-                            ≈ RD${Math.round(box.price.amount / box.durationDays)} {t("boxes.per_day")}
-                          </p>
-                        )}
-                        {/* Disclaimer de peso y cantidad */}
-                        <div className="pt-1 mt-1">
-                          <p className="text-xs text-[var(--color-muted)] italic leading-tight">
-                            {t("boxes.disclaimer")}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Botones */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          // Lógica de compra...
-                          const boxData = prebuiltBoxes.find((pb) => pb.box.id === box.id);
-                          if (boxData?.baseContents && boxData.baseContents.length > 0) {
-                            setQuickAddBox(box);
-                          } else {
-                            window.location.href = `/armar?box=${box.id}`;
-                          }
-                        }}
-                        className="group/btn flex items-center justify-center gap-2 w-full rounded-full bg-[var(--gd-color-forest)] px-4 py-2.5 text-sm font-bold text-white shadow-lg transition-transform hover:shadow-xl hover:scale-[1.02]"
-                      >
-                        <span>🛒</span> {t("common.add_to_cart")}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          // Lógica personalizar...
-                          const boxData = prebuiltBoxes.find((pb) => pb.box.id === box.id);
-                          if (boxData?.baseContents && boxData.baseContents.length > 0) {
-                            setCustomizeBox(box);
-                          } else {
-                            window.location.href = `/armar?box=${box.id}`;
-                          }
-                        }}
-                        className="flex items-center justify-center w-full text-xs font-semibold text-[var(--gd-color-forest)] hover:underline decoration-[var(--gd-color-leaf)] underline-offset-4 decoration-2"
-                      >
-                        {t("boxes.customize_content")} →
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </article>
+              }
+              image={{ src: imageSrc, alt: tData(box.name), fit: "cover", priority: index < 3 }}
+              secondaryImage={{ src: secondaryImage, alt: `${tData(box.name)} topdown`, fit: "cover" }}
+              badges={badges}
+              priceLabel={`RD$${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}`}
+              unitLabel={unitLabel}
+              quantity={quantity}
+              onDecrease={() => updateQuantity(box.id, -1)}
+              onIncrease={() => updateQuantity(box.id, 1)}
+              onAdd={() => setEditingBox({ box, quantity })}
+              addLabel={t("common.add_to_cart")}
+              disableFlip
+              isAdded={isAdded}
+              footerNote={t("boxes.disclaimer")}
+            />
           );
         })}
       </div>
 
-      {/* Modal de compra rápida */}
-      {quickAddBox && (() => {
-        const boxData = prebuiltBoxes.find((pb) => pb.box.id === quickAddBox.id);
-        const baseContents = boxData?.baseContents ?? [];
-
-        // Obtener la imagen de la caja (misma que en la tarjeta)
-        const productImages: Record<string, string> = {
-          "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "box-2": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "box-3": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-        };
-
-        const boxImage =
-          productImages[quickAddBox.id] ||
-          productImages[quickAddBox.slug] ||
-          quickAddBox.heroImage ||
-          "/images/boxes/placeholder.jpg";
-
-        // Obtener dimensiones y peso
-        const sku = BOX_SKU_MAP[quickAddBox.slug] || BOX_SKU_MAP[quickAddBox.id];
-        const boxDetails = sku ? BOX_DETAILS_BY_SKU[sku] : undefined;
-
-        return (
-          <QuickAddModal
-            box={quickAddBox}
-            baseContents={baseContents}
-            boxImage={boxImage}
-            dimensions={boxDetails?.dimensions}
-            weight={boxDetails?.weight}
-            onClose={() => setQuickAddBox(null)}
-            onCustomize={() => {
-              setQuickAddBox(null);
-              setCustomizeBox(quickAddBox);
-            }}
-          />
-        );
-      })()}
-
-      {/* Modal de personalización */}
-      {customizeBox && (() => {
-        const boxData = prebuiltBoxes.find((pb) => pb.box.id === customizeBox.id);
-        const baseContents = boxData?.baseContents ?? [];
-        const rule = getBoxRule(customizeBox.id);
-
-        // Obtener la imagen de la caja (misma que en la tarjeta)
-        const productImages: Record<string, string> = {
-          "box-1": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "box-2": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "box-3": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          "box-1-caribbean-fresh-pack-3-dias": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "box-2-island-weekssential-1-semana": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "box-3-allgreenxclusive-2-semanas": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-          "caribbean-fresh-pack": "/images/boxes/box-1-caribbean-fresh-pack-veggie-product.png",
-          "island-weekssential": "/images/boxes/box-2-island-weekssential-veggie-product.jpg",
-          "allgreenxclusive": "/images/boxes/box-3-allgreenxclusive-2-semanas.jpg",
-        };
-
-        const boxImage =
-          productImages[customizeBox.id] ||
-          productImages[customizeBox.slug] ||
-          customizeBox.heroImage ||
-          "/images/boxes/placeholder.jpg";
-
-        // Obtener dimensiones y peso
-        const sku = BOX_SKU_MAP[customizeBox.slug] || BOX_SKU_MAP[customizeBox.id];
-        const boxDetails = sku ? BOX_DETAILS_BY_SKU[sku] : undefined;
-
-        return (
-          <BoxCustomizeModal
-            box={customizeBox}
-            baseContents={baseContents}
-            boxImage={boxImage}
-            dimensions={boxDetails?.dimensions}
-            weight={boxDetails?.weight}
-            availableProducts={products}
-            slotBudget={rule?.slotBudget}
-            initialVariant={selectedVariants[customizeBox.id]}
-            onClose={() => setCustomizeBox(null)}
-            onAddToCart={() => {
-              setCustomizeBox(null);
-            }}
-          />
-        );
-      })()}
+      {editingBox && (
+        <BoxPreferencesModal
+          isOpen={true}
+          onClose={() => setEditingBox(null)}
+          box={editingBox.box}
+          // Resolve rule for the editing box
+          boxRule={
+            (editingBox.box.ruleId || editingBox.box.id)
+              ? rulesById.get(editingBox.box.ruleId || editingBox.box.id)
+              : undefined
+          }
+          productMap={productMap}
+          initialVariant={selectedVariants[editingBox.box.id] || "mix"}
+          onConfirm={handleConfirmBox}
+        />
+      )}
     </div>
   );
 }

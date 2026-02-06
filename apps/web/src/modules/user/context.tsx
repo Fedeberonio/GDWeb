@@ -16,9 +16,8 @@ import {
   createUserProfile,
   updateUserProfile,
   syncCartToFirestore,
-  type UserProfile as UserProfileType,
 } from "./firestore";
-import type { CartItemFromFirestore } from "./types";
+import type { UserProfile as UserProfileType, CartItemFromFirestore } from "./types";
 
 type UserContextValue = {
   profile: UserProfileType | null;
@@ -30,6 +29,9 @@ type UserContextValue = {
 };
 
 const UserContext = createContext<UserContextValue | null>(null);
+
+const stripUndefined = <T extends Record<string, unknown>>(value: T): Partial<T> =>
+  Object.fromEntries(Object.entries(value).filter(([, field]) => field !== undefined)) as Partial<T>;
 
 type UserProviderProps = PropsWithChildren<{
   user: User | null;
@@ -78,20 +80,24 @@ export function UserProvider({ children, user }: UserProviderProps) {
 
     try {
       const db = getFirestoreDb();
+      const cleanedUpdates = stripUndefined(updates);
+      if (Object.keys(cleanedUpdates).length === 0) {
+        return;
+      }
       if (isNewUser && !profile) {
         // Crear nuevo perfil
         const newProfile: Omit<UserProfileType, "fechaCreacion"> = {
           displayName: user.displayName || "",
           email: user.email || "",
-          ...updates,
+          ...cleanedUpdates,
         };
         await createUserProfile(db, user.uid, newProfile);
         setProfile(newProfile as UserProfileType);
         setIsNewUser(false);
       } else {
         // Actualizar perfil existente
-        await updateUserProfile(db, user.uid, updates);
-        setProfile((prev) => (prev ? { ...prev, ...updates } : null));
+        await updateUserProfile(db, user.uid, cleanedUpdates);
+        setProfile((prev) => (prev ? { ...prev, ...cleanedUpdates } : null));
       }
     } catch (error) {
       console.error("Error al actualizar perfil:", error);

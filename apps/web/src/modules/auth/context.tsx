@@ -1,16 +1,29 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from "react";
-import { onAuthStateChanged, signInWithPopup, signOut, type User } from "firebase/auth";
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile as updateFirebaseProfile,
+  type User,
+} from "firebase/auth";
 
 import { getFirebaseAuth, googleAuthProvider } from "@/lib/firebase";
+import { getFirestoreDb } from "@/lib/firebase/client";
+import { createUserProfile, getUserProfile } from "@/modules/user/firestore";
 import { UserProvider } from "@/modules/user/context";
 
 export type AuthContextValue = {
   user: User | null;
   loading: boolean;
   error: string | null;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => Promise<boolean>;
+  loginWithEmailPassword: (email: string, password: string) => Promise<boolean>;
+  signupWithEmailPassword: (email: string, password: string, displayName?: string) => Promise<boolean>;
+  clearError: () => void;
   logout: () => Promise<void>;
 };
 
@@ -46,23 +59,61 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  useEffect(() => {
-    if (!loading) return;
-    const timer = window.setTimeout(() => {
-      setLoading(false);
-    }, 3000);
-    return () => window.clearTimeout(timer);
-  }, [loading]);
-
   const loginWithGoogle = async () => {
     try {
       setError(null);
       setLoading(true);
       const auth = getFirebaseAuth();
       await signInWithPopup(auth, googleAuthProvider);
+      return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Error al iniciar sesión";
       setError(message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithEmailPassword = async (email: string, password: string) => {
+    try {
+      setError(null);
+      setLoading(true);
+      const auth = getFirebaseAuth();
+      await signInWithEmailAndPassword(auth, email, password);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Error al iniciar sesión";
+      setError(message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signupWithEmailPassword = async (email: string, password: string, displayName?: string) => {
+    try {
+      setError(null);
+      setLoading(true);
+      const auth = getFirebaseAuth();
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      if (displayName) {
+        await updateFirebaseProfile(credential.user, { displayName });
+      }
+      const db = getFirestoreDb();
+      if (!db) throw new Error("Firebase no disponible");
+      const existingProfile = await getUserProfile(db, credential.user.uid);
+      if (!existingProfile) {
+        await createUserProfile(db, credential.user.uid, {
+          displayName: displayName ?? "",
+          email,
+        });
+      }
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Error al registrar la cuenta";
+      setError(message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -79,8 +130,21 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   };
 
+  const clearError = () => {
+    setError(null);
+  };
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, loading, error, loginWithGoogle, logout }),
+    () => ({
+      user,
+      loading,
+      error,
+      loginWithGoogle,
+      loginWithEmailPassword,
+      signupWithEmailPassword,
+      clearError,
+      logout,
+    }),
     [user, loading, error],
   );
 

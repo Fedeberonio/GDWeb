@@ -13,6 +13,7 @@ out
 .env.test.local
 .env.production.local
 *.pem
+data/backups/
 
 # Editor
 .vscode
@@ -20,3 +21,22 @@ out
 
 # Vercel
 .vercel
+.env*.local
+
+# Build artifacts
+*.log
+*.tsbuildinfo
+.cache
+
+# OS files
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace

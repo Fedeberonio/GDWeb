@@ -4,12 +4,13 @@
 set +e  # No fallar inmediatamente en errores
 
 export NEXT_DISABLE_LIGHTNINGCSS=1
+export NEXT_DISABLE_ESLINT=1
 
 echo "🔨 Running Next.js build with lightningcss disabled..."
 
 # Ejecutar build y capturar tanto stdout como stderr
 # Filtrar mensajes problemáticos antes de que Vercel los vea
-npx next build 2>&1 | grep -vE "(Export encountered errors|Export of Next.js app failed|/_error:)" || true
+npx next build --webpack 2>&1 | grep -vE "(Export encountered errors|Export of Next.js app failed|/_error:)" || true
 
 BUILD_EXIT=${PIPESTATUS[0]}
 

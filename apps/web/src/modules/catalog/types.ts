@@ -1,5 +1,9 @@
 export type LocaleCode = "es" | "en";
 
+/**
+ * Localized display strings. Matches API/Firestore shape: { es, en }.
+ * Used for product/box/combo names and descriptions (no name_es/name_en legacy).
+ */
 export type LocalizedString = {
   es: string;
   en: string;
@@ -19,24 +23,51 @@ export type ProductCategory = {
   status: "active" | "inactive";
 };
 
+/**
+ * Product from catalog API. `name` (and optional `description`, `unit`) use LocalizedString
+ * { es, en } — aligned with API catalog schema and gd-locale for SSR/CSR.
+ */
 export type Product = {
   id: string;
   slug: string;
   sku?: string;
   name: LocalizedString;
-  description?: Partial<LocalizedString>;
-  unit?: Partial<LocalizedString>;
-  categoryId: string;
-  price: Price;
-  salePrice?: Price;
-  status: "active" | "inactive" | "coming_soon" | "discontinued";
+  description?: LocalizedString;
+  unit?: string | LocalizedString;
+  attributes?: {
+    marketingTier?: string;
+    duration?: string;
+    unitSize?: string;
+  };
+  isActive: boolean;
+  categoryId?: string;
+  price: number;
+  salePrice?: number;
+  status?: "active" | "inactive" | "coming_soon" | "discontinued" | "hidden";
   image?: string;
-  tags: string[];
-  isFeatured: boolean;
+  tags?: string[];
+  isFeatured?: boolean;
+  metadata?: {
+    slotValue?: number;
+    wholesaleCost?: number;
+    stock?: number;
+    minStock?: number;
+    billOfMaterials?: Array<{
+      supplyId: string;
+      name: string;
+      quantity: number;
+    }>;
+  };
   nutrition?: {
     vegan?: boolean;
     glutenFree?: boolean;
     organic?: boolean;
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fats?: number;
+    fiber?: number;
+    sugars?: number;
   };
   logistics?: {
     weightKg?: number;
@@ -69,7 +100,79 @@ export type Box = {
   description?: Partial<LocalizedString>;
   price: Price;
   durationDays?: number;
+  ruleId?: string;
+  dimensionsLabel?: string;
+  weightLabel?: string;
   heroImage?: string;
   isFeatured: boolean;
   variants: BoxVariant[];
+  metadata?: {
+    billOfMaterials?: Array<{
+      supplyId: string;
+      name: string;
+      quantity: number;
+    }>;
+  };
+};
+
+export type BoxRule = {
+  id: string;
+  displayName: string;
+  slotBudget: number;
+  targetWeightKg: number;
+  minMargin?: number;
+  categoryBudget: Record<string, { min: number; max: number }>;
+  baseContents: Array<{ productSku: string; quantity: number }>;
+  variantContents?: Partial<Record<"mix" | "fruity" | "veggie", Array<{ productSku: string; quantity: number }>>>;
+};
+
+export type Combo = {
+  id: string;
+  name: LocalizedString;
+  salad: LocalizedString;
+  juice: LocalizedString;
+  dessert: LocalizedString;
+  price: number;
+  cost?: number;
+  margin?: number;
+  calories: number;
+  protein: number;
+  glutenFree: boolean;
+  benefit: LocalizedString;
+  benefitDetail: LocalizedString;
+  recommendedFor: LocalizedString;
+  carbs: number;
+  fats: number;
+  fiber: number;
+  sugars: number;
+  vitaminA?: string;
+  vitaminC?: string;
+  image?: string;
+  ingredients: LocalizedString[];
+  status: "active" | "inactive" | "coming_soon";
+  isFeatured: boolean;
+};
+
+export type LunchCombo = {
+  id: string;
+  name: LocalizedString;
+  price: number;
+  nutrition: {
+    calories: number;
+    protein: number;
+    isGlutenFree: boolean;
+  };
+  benefits: LocalizedString;
+  image?: string;
+};
+
+export type BoxDefinition = {
+  id: string;
+  variants: Array<{
+    name: string;
+    items: Array<{
+      product: string;
+      quantity: number;
+    }>;
+  }>;
 };

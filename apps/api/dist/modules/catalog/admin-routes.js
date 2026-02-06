@@ -79,6 +79,55 @@ function createAdminCatalogRouter() {
             next(error);
         }
     });
+    router.get("/box-rules", async (_req, res, next) => {
+        try {
+            const rules = await (0, service_1.listBoxRulesForAdmin)();
+            res.json({ data: rules });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+    router.put("/box-rules/:id", async (req, res, next) => {
+        try {
+            const adminUser = req.adminUser;
+            const ruleId = decodeURIComponent(req.params.id);
+            const updated = await (0, service_1.updateBoxRuleById)(ruleId, req.body, {
+                actorEmail: adminUser?.email ?? null,
+                actorUid: adminUser?.uid ?? null,
+            });
+            res.json({ data: updated });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+    router.get("/combos", async (_req, res, next) => {
+        try {
+            const combos = await (0, service_1.listCombosForAdmin)();
+            res.json({ data: combos });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
+    router.put("/combos/:id", async (req, res, next) => {
+        try {
+            const adminUser = req.adminUser;
+            const updated = await (0, service_1.updateComboById)(req.params.id, req.body, {
+                actorEmail: adminUser?.email ?? null,
+                actorUid: adminUser?.uid ?? null,
+            });
+            if (!updated) {
+                res.status(404).json({ error: "Combo not found" });
+                return;
+            }
+            res.json({ data: updated });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
     router.get("/history", async (req, res, next) => {
         try {
             const limitParam = req.query.limit;

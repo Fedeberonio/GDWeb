@@ -57,6 +57,12 @@ export type Order = {
   status: OrderStatus;
   delivery: OrderDelivery;
   payment: PaymentDetails;
+  paymentStatus?: "unpaid" | "paid" | "refunded";
+  paymentMethod?: "transfer_popular" | "transfer_qik" | "cash" | "card" | "other";
   createdAt: string;
   updatedAt?: string;
+  metadata?: {
+    language?: "es" | "en";
+    [key: string]: any;
+  };
 };

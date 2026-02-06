@@ -9,7 +9,7 @@ export type BoxRule = {
     minMargin: number;
     categoryBudget: Record<string, CategoryBudget>;
     baseContents: Array<{
-        productSlug: string;
+        productSku: string;
         quantity: number;
     }>;
 };

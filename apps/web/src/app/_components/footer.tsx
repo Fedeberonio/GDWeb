@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Leaf, Recycle, Truck } from "lucide-react";
 import { Container } from "./container";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
@@ -17,7 +18,7 @@ export function Footer() {
             <Link href="/" className="inline-block mb-6">
               <div className="relative h-32 w-32 bg-white/5 rounded-xl p-2 backdrop-blur-sm">
                 <Image
-                  src="/images/logo/logo-vertical.png"
+                  src="/assets/images/logo/logo-vertical.png"
                   alt="Green Dolio"
                   fill
                   sizes="(max-width: 768px) 128px, 128px"
@@ -46,8 +47,8 @@ export function Footer() {
             <p className="font-bold text-sm uppercase tracking-wider mb-4">{t("footer.contact")}</p>
             <ul className="space-y-2 text-sm text-white/80">
               <li>
-                <a href="tel:+18493757338" className="hover:text-white transition">
-                  +1 (849) 375-7338
+                <a href="tel:+18097537338" className="hover:text-white transition">
+                  +1 (809) 753-7338
                 </a>
               </li>
               <li>
@@ -80,9 +81,18 @@ export function Footer() {
             © {new Date().getFullYear()} Green Dolio. {t("footer.rights")}
           </p>
           <div className="flex gap-4 text-sm text-white/60">
-            <span>🌱 {t("footer.plastic_free")}</span>
-            <span>♻️ {t("footer.returnable")}</span>
-            <span>🚚 {t("footer.delivery_days")}</span>
+            <span className="inline-flex items-center gap-2">
+              <Leaf className="w-4 h-4" />
+              {t("footer.plastic_free")}
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Recycle className="w-4 h-4" />
+              {t("footer.returnable")}
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Truck className="w-4 h-4" />
+              {t("footer.delivery_days")}
+            </span>
           </div>
         </div>
       </Container>

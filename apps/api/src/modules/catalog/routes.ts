@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { getBoxes, getCategories, getProducts } from "./service";
+import { getBoxes, getCategories, getCombos, getProducts, listBoxRulesPublic } from "./service";
 
 export function createCatalogRouter() {
   const router = Router();
@@ -27,6 +27,24 @@ export function createCatalogRouter() {
     try {
       const boxes = await getBoxes();
       res.json({ data: boxes });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get("/box-rules", async (_req, res, next) => {
+    try {
+      const rules = await listBoxRulesPublic();
+      res.json({ data: rules });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get("/combos", async (_req, res, next) => {
+    try {
+      const combos = await getCombos();
+      res.json({ data: combos });
     } catch (error) {
       next(error);
     }

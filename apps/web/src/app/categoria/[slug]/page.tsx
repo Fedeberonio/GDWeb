@@ -1,7 +1,8 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { fetchProducts, fetchProductCategories } from "@/modules/catalog/api";
 import { CategoryProductGrid } from "./_components/category-product-grid";
 import { PrimaryNav } from "@/app/_components/primary-nav";
+import type { Product, ProductCategory } from "@/modules/catalog/types";
 
 
 export const dynamic = "force-dynamic";
@@ -13,10 +14,20 @@ interface PageProps {
 export default async function CategoryPage({ params }: PageProps) {
   const { slug } = await params;
 
-  const [products, categories] = await Promise.all([
-    fetchProducts(),
-    fetchProductCategories(),
+  const headerList = await headers();
+  const host = headerList.get("host");
+  const protocol = headerList.get("x-forwarded-proto") ?? "http";
+  const baseUrl = host ? `${protocol}://${host}` : "http://localhost:3000";
+  const [productsRes, categoriesRes] = await Promise.all([
+    fetch(`${baseUrl}/api/catalog/products`, { cache: "no-store" }),
+    fetch(`${baseUrl}/api/catalog/categories`, { cache: "no-store" }),
   ]);
+  const [productsJson, categoriesJson] = await Promise.all([
+    productsRes.json(),
+    categoriesRes.json(),
+  ]);
+  const products = (productsJson?.data ?? []) as Product[];
+  const categories = (categoriesJson?.data ?? []) as ProductCategory[];
 
   // Find category by slug
   const category = categories.find((cat) => cat.slug === slug);
@@ -40,15 +51,4 @@ export default async function CategoryPage({ params }: PageProps) {
       </main>
     </div>
   );
-}
-
-// Generate static params for all categories
-export async function generateStaticParams() {
-  const categories = await fetchProductCategories();
-
-  return categories
-    .filter((cat) => cat.id !== "cajas")
-    .map((category) => ({
-      slug: category.slug,
-    }));
 }

@@ -15,12 +15,15 @@ const YES_VALUES = new Set(["si", "sí", "yes", "true", "1"]);
 type RawRow = {
   SKU?: string;
   Nombre_Producto?: string;
+  Nombre_Producto_EN?: string;
   Categoria?: string;
   Subcategoria?: string;
   Precio_DOP?: number;
   Precio_Compra?: number;
   Unidad_Venta?: string;
+  Unidad_Venta_EN?: string;
   Descripcion_Corta?: string;
+  Descripcion_Corta_EN?: string;
   URL_Imagen?: string;
   Tags?: string;
   Destacado_Web?: string;
@@ -172,7 +175,10 @@ function buildCatalog(rows: RawRow[]): CatalogBuild {
     const boxPayload = {
       id: sku,
       slug: slugify(name),
-      name: { es: name, en: name },
+      name: { 
+        es: name, 
+        en: row.Nombre_Producto_EN?.toString().trim() || name 
+      },
       price: {
         amount: toNumber(row.Precio_DOP) ?? 0,
         currency: "DOP",
@@ -180,7 +186,12 @@ function buildCatalog(rows: RawRow[]): CatalogBuild {
       durationDays: parseDurationDays(name),
       isFeatured: toBoolean(row.Destacado_Web),
       variants: BOX_VARIANTS,
-      ...(row.Descripcion_Corta ? { description: { es: row.Descripcion_Corta, en: row.Descripcion_Corta } } : {}),
+      ...(row.Descripcion_Corta ? { 
+        description: { 
+          es: row.Descripcion_Corta, 
+          en: row.Descripcion_Corta_EN || row.Descripcion_Corta 
+        } 
+      } : {}),
       ...(row.URL_Imagen ? { heroImage: row.URL_Imagen } : {}),
     } satisfies Partial<Box> & { id: string; slug: string };
 
@@ -218,7 +229,10 @@ function buildCatalog(rows: RawRow[]): CatalogBuild {
       id: sku,
       slug: slugify(name),
       sku,
-      name: { es: name, en: name },
+      name: { 
+        es: name, 
+        en: row.Nombre_Producto_EN?.toString().trim() || name 
+      },
       categoryId,
       price: {
         amount: toNumber(row.Precio_DOP) ?? 0,
@@ -227,8 +241,18 @@ function buildCatalog(rows: RawRow[]): CatalogBuild {
       status: toBoolean(row.Activo) ? "active" : "inactive",
       tags,
       isFeatured: toBoolean(row.Destacado_Web),
-      ...(row.Descripcion_Corta ? { description: { es: row.Descripcion_Corta, en: row.Descripcion_Corta } } : {}),
-      ...(row.Unidad_Venta ? { unit: { es: row.Unidad_Venta, en: row.Unidad_Venta } } : {}),
+      ...(row.Descripcion_Corta ? { 
+        description: { 
+          es: row.Descripcion_Corta, 
+          en: row.Descripcion_Corta_EN || row.Descripcion_Corta 
+        } 
+      } : {}),
+      ...(row.Unidad_Venta ? { 
+        unit: { 
+          es: row.Unidad_Venta, 
+          en: row.Unidad_Venta_EN?.toString().trim() || row.Unidad_Venta 
+        } 
+      } : {}),
       ...(row.URL_Imagen ? { image: row.URL_Imagen } : {}),
       ...(nutrition ? { nutrition } : {}),
       ...(logistics ? { logistics } : {}),

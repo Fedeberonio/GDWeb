@@ -21,7 +21,7 @@ export type BoxBuilderRequest = {
   likes: string[];
   dislikes: string[];
   notes?: string;
-  selection: Record<string, number>;
+  selection?: Record<string, number>;
   metrics: BuilderRequestMetrics;
   status: BoxBuilderRequestStatus;
   createdAt?: string;

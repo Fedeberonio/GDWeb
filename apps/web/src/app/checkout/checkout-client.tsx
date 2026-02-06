@@ -1,16 +1,71 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 import { useCart } from "@/modules/cart/context";
+import { useCatalog } from "@/modules/catalog/context";
 import { useAuth } from "@/modules/auth/context";
 import { useUser } from "@/modules/user/context";
-import { getFirestoreDb } from "@/lib/firebase/client";
-import { saveOrderToFirestore } from "@/modules/orders/firestore";
-import { cartItemsToFirestore } from "@/modules/cart/firestore-sync";
 import type { CartItem } from "@/modules/cart/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import productMetadata from "@/data/productMetadata.json";
+
+type TranslateFn = ReturnType<typeof useTranslation>["t"];
+type TDataFn = ReturnType<typeof useTranslation>["tData"];
+
+const productNameMap = new Map(productMetadata.map((item: { slug: string; name: string }) => [item.slug, item.name]));
+
+/** Resolve product/preference label: catalog (SKU/slug → name_es|name_en) first, then productMetadata, then raw value. */
+function makeResolvePreferenceLabel(productMap: Map<string, { name: { es?: string; en?: string } }>, tData: TDataFn) {
+  return (value: string): string => {
+    const product = productMap.get(value);
+    if (product?.name) return tData(product.name);
+    return productNameMap.get(value) ?? value;
+  };
+}
+
+const resolveVariantKey = (variant?: string, mix?: string) => {
+  if (variant === "fruity" || variant === "veggie" || variant === "mix") return variant;
+  if (mix === "frutas") return "fruity";
+  if (mix === "vegetales") return "veggie";
+  return "mix";
+};
+
+const getCatalogHrefForVariant = (variantKey: string) => {
+  if (variantKey === "fruity") return "/categoria/frutas";
+  if (variantKey === "veggie") return "/categoria/vegetales";
+  return "/#catalogo";
+};
+
+const getVariantLabel = (variantKey: string, t: TranslateFn) => {
+  if (variantKey === "fruity") return t("cart.variant_fruity");
+  if (variantKey === "veggie") return t("cart.variant_veggie");
+  return t("cart.variant_mix");
+};
+
+const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
+const AUTH_MODE_KEY = "gd-auth-mode";
+
+type AuthChoice = "undecided" | "guest";
+type PaymentPreference = "Cash" | "Transferencia" | "PayPal";
+
+const mapPaymentMethod = (value: string) => {
+  if (value === "Cash") return "cash";
+  if (value === "Transferencia") return "transfer";
+  if (value === "Tarjeta") return "card";
+  if (value === "PayPal") return "online";
+  return undefined;
+};
+
+const normalizePaymentPreference = (value: string): PaymentPreference | undefined => {
+  if (value === "Cash" || value === "Transferencia" || value === "PayPal") {
+    return value;
+  }
+  return undefined;
+};
 
 type FormState = {
   contactName: string;
@@ -24,9 +79,14 @@ type FormState = {
 
 export function CheckoutClient() {
   const { items, clear, metrics } = useCart();
+  const { productMap } = useCatalog();
   const { user } = useAuth();
-  const { profile } = useUser();
-  const { t } = useTranslation();
+  const { profile, updateProfile, syncCart } = useUser();
+  const { t, tData } = useTranslation();
+  const resolvePreferenceLabel = useMemo(
+    () => makeResolvePreferenceLabel(productMap, tData),
+    [productMap, tData],
+  );
   const [form, setForm] = useState<FormState>({
     contactName: "",
     contactPhone: "",
@@ -38,21 +98,79 @@ export function CheckoutClient() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [showSummary, setShowSummary] = useState(false); // Nuevo estado para mostrar resumen
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [authChoice, setAuthChoice] = useState<AuthChoice>("undecided");
+  const [showAuthGate, setShowAuthGate] = useState(false);
 
   // Pre-llenar formulario con datos del perfil
   useEffect(() => {
-    if (user && profile) {
-      setForm((prev) => ({
-        ...prev,
-        contactName: user.displayName || prev.contactName,
-        contactPhone: profile.telefono || prev.contactPhone,
-        contactEmail: user.email || prev.contactEmail,
-        direccion: profile.direccion || prev.direccion,
-        metodoPago: profile.pagoPreferido || prev.metodoPago,
-        notes: buildNotesFromProfile(profile),
-      }));
+    if (!user) return;
+    setForm((prev) => ({
+      ...prev,
+      contactName: prev.contactName || user.displayName || "",
+      contactEmail: prev.contactEmail || user.email || "",
+    }));
+  }, [user]);
+
+  useEffect(() => {
+    if (!profile) return;
+    setForm((prev) => ({
+      ...prev,
+      contactName: prev.contactName || profile.displayName || "",
+      contactPhone: prev.contactPhone || profile.telefono || "",
+      direccion: prev.direccion || profile.direccion || "",
+      metodoPago: prev.metodoPago || profile.pagoPreferido || "",
+      notes: prev.notes || buildNotesFromProfile(profile),
+    }));
+  }, [profile]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const rawDraft = window.sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+      if (rawDraft) {
+        const draft = JSON.parse(rawDraft) as Partial<FormState>;
+        setForm((prev) => ({ ...prev, ...draft }));
+      }
+    } catch {
+      // ignore draft errors
+    } finally {
+      setDraftLoaded(true);
     }
-  }, [user, profile]);
+  }, []);
+
+  useEffect(() => {
+    if (!showAuthGate) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showAuthGate]);
+
+  useEffect(() => {
+    if (!draftLoaded) return;
+    if (user) return;
+    if (authChoice !== "undecided") return;
+    if (!items.length) return;
+    setShowAuthGate(true);
+  }, [authChoice, draftLoaded, items.length, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    setShowAuthGate(false);
+    if (authChoice !== "undecided") {
+      setAuthChoice("undecided");
+    }
+  }, [user, authChoice]);
+
+  useEffect(() => {
+    if (!draftLoaded || typeof window === "undefined") return;
+    try {
+      window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
+    } catch {
+      // ignore storage errors
+    }
+  }, [form, draftLoaded]);
 
   const subtotal = useMemo(
     () =>
@@ -62,6 +180,18 @@ export function CheckoutClient() {
       }, 0),
     [items],
   );
+  const boxItems = useMemo(
+    () => items.filter((item) => item.type === "box" && item.configuration),
+    [items]
+  );
+  const hasPreferences = boxItems.some(
+    (item) => (item.configuration?.likes?.length ?? 0) > 0 || (item.configuration?.dislikes?.length ?? 0) > 0
+  );
+  const catalogVariant =
+    boxItems.length === 1
+      ? resolveVariantKey(boxItems[0].configuration?.variant, boxItems[0].configuration?.mix)
+      : "mix";
+  const catalogHref = getCatalogHrefForVariant(catalogVariant);
 
   // Calcular valores del pedido
   const orderCalculations = useMemo(() => {
@@ -74,9 +204,6 @@ export function CheckoutClient() {
     const totalFinalDOP = subtotalConEnvio + cargoPaypal;
     const tasaCambio = 55;
     const totalFinalUSD = requierePaypal ? (totalFinalDOP / tasaCambio) : 0;
-    const paypalLink = requierePaypal && totalFinalUSD > 0 
-      ? `https://www.paypal.com/paypalme/greendolioexpress/${totalFinalUSD.toFixed(2)}USD`
-      : "";
 
     return {
       cargoEnvio,
@@ -86,9 +213,72 @@ export function CheckoutClient() {
       cargoPaypal,
       totalFinalDOP,
       totalFinalUSD,
-      paypalLink,
     };
   }, [subtotal, form.deliveryDay, form.metodoPago, profile?.pagoPreferido]);
+
+  const persistDraft = () => {
+    try {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
+      }
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const persistProfileFromCheckout = async () => {
+    if (!user) return;
+    const displayName = form.contactName.trim();
+    const updates = {
+      telefono: form.contactPhone.trim(),
+      direccion: form.direccion.trim(),
+      pagoPreferido: normalizePaymentPreference(form.metodoPago),
+      ...(displayName ? { displayName } : {}),
+    };
+    try {
+      await updateProfile(updates);
+    } catch (error) {
+      console.error("Error al guardar datos del cliente en Firebase:", error);
+      toast.error("No pudimos guardar tus datos en tu cuenta. Intenta nuevamente.", {
+        duration: 5000,
+      });
+    }
+  };
+
+  const ensureCheckoutAccess = () => {
+    if (user || authChoice === "guest") {
+      return true;
+    }
+    persistDraft();
+    setShowAuthGate(true);
+    return false;
+  };
+
+  const handleAuthLogin = () => {
+    persistDraft();
+    setShowAuthGate(false);
+    try {
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("gd-show-auth-modal", "true");
+        window.sessionStorage.setItem(AUTH_MODE_KEY, "signup");
+      }
+    } catch {
+      // ignore storage errors
+    }
+    setAuthChoice("undecided");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("gd-auth-modal-open"));
+    }
+  };
+
+  const handleAuthGuest = () => {
+    setAuthChoice("guest");
+    setShowAuthGate(false);
+  };
+
+  const handleAuthClose = () => {
+    setShowAuthGate(false);
+  };
 
   // Paso 1: Validar formulario y mostrar resumen
   const handleConfirm = (event: React.FormEvent) => {
@@ -102,20 +292,19 @@ export function CheckoutClient() {
       return;
     }
     if (!form.direccion.trim()) {
-      toast.error("La dirección es requerida");
+      toast.error(t("checkout.address_required"));
       return;
     }
     if (!form.deliveryDay.trim()) {
-      toast.error("El día de entrega es requerido");
+      toast.error(t("checkout.delivery_day_required"));
       return;
     }
     if (!form.metodoPago.trim()) {
-      toast.error("El método de pago es requerido");
+      toast.error(t("checkout.payment_required"));
       return;
     }
 
-    if (!user) {
-      toast.error("Debes iniciar sesión para completar el pedido.");
+    if (!ensureCheckoutAccess()) {
       return;
     }
 
@@ -131,50 +320,127 @@ export function CheckoutClient() {
     setShowSummary(true);
   };
 
-  // Paso 2: Enviar pedido por WhatsApp
+  // Paso 2: Enviar pedido por WhatsApp (SOLO si se guarda en BD)
   const handleSendOrder = async () => {
-    if (!user) {
-      toast.error("Debes iniciar sesión para completar el pedido.");
+    if (!ensureCheckoutAccess()) {
       return;
     }
 
     setSubmitting(true);
     try {
+      await persistProfileFromCheckout();
+
       const {
         cargoEnvio,
         metodoPago,
-        subtotalConEnvio,
         requierePaypal,
         cargoPaypal,
         totalFinalDOP,
         totalFinalUSD,
-        paypalLink,
       } = orderCalculations;
 
-      // Crear detalle del pedido para WhatsApp
-      console.log("Construyendo detalle del pedido con", items.length, "items");
+      const deliveryZone = boxItems.find((item) => item.configuration?.deliveryZone)?.configuration?.deliveryZone;
+      const checkoutItems = items.map((item) => {
+        const unitPrice = item.configuration?.price?.final ?? item.price;
+        const metadata: Record<string, unknown> = {};
+        if (item.notes) metadata.notes = item.notes;
+        if (item.excludedIngredients?.length) {
+          metadata.excludedIngredients = item.excludedIngredients;
+        }
+        return {
+          type: item.type,
+          slug: item.slug,
+          name: item.name,
+          quantity: item.quantity,
+          price: unitPrice,
+          image: item.image,
+          configuration: item.type === "box" ? item.configuration : undefined,
+          metadata: Object.keys(metadata).length ? metadata : undefined,
+        };
+      });
+
+      const checkoutPayload = {
+        contactName: form.contactName,
+        contactPhone: form.contactPhone,
+        contactEmail: form.contactEmail?.trim() || undefined,
+        address: form.direccion?.trim() || undefined,
+        deliveryZone,
+        deliveryDay: form.deliveryDay || undefined,
+        notes: form.notes?.trim() || undefined,
+        paymentMethod: mapPaymentMethod(metodoPago),
+        items: checkoutItems,
+      };
+
+      // 1. Guardar primero en el Backend
+      let orderId = "PENDIENTE";
+      try {
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (user) {
+          const token = await user.getIdToken();
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch("/api/orders", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(checkoutPayload),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Backend responded with ${response.status}`);
+        }
+
+        const responseData = await response.json();
+        // Intentar obtener ID del formato de respuesta { data: { id: ... } } o { id: ... }
+        orderId = responseData.data?.id || responseData.id || "N/A";
+
+      } catch (apiError: any) {
+        console.error("Error al registrar pedido en API:", apiError);
+        toast.error(`No pudimos procesar tu pedido: ${apiError?.message || "Error de conexión"}. Por favor intenta de nuevo.`);
+        setSubmitting(false);
+        return; // DETENER SI FALLA LA API
+      }
+
+      // 2. Construir mensaje de WhatsApp con el ID real
       const detallePedido = items
         .map((item) => {
           const unitPrice = item.configuration?.price?.final ?? item.price;
           let linea = `• ${item.name} (x${item.quantity}) - DOP ${(unitPrice * item.quantity).toFixed(2)}`;
 
           if (item.type === "box" && item.configuration) {
-            const variant = item.configuration.variant || item.configuration.mix || "mix";
-            linea += `\n  - Variedad: ${variant}`;
+            const variantKey = resolveVariantKey(item.configuration.variant, item.configuration.mix);
+            const variantLabel = getVariantLabel(variantKey, t);
+            linea += `\n  - ${t("cart.mix")}: ${variantLabel}`;
 
             if (item.configuration.likes?.length > 0 || item.configuration.dislikes?.length > 0) {
-              linea += `\n  - Gustos: 👍 ${item.configuration.likes?.join(", ") || "ninguno"}`;
-              linea += `\n  - Disgustos: 👎 ${item.configuration.dislikes?.join(", ") || "ninguno"}`;
+              const likes = (item.configuration.likes || []).map(resolvePreferenceLabel).filter(Boolean);
+              const dislikes = (item.configuration.dislikes || []).map(resolvePreferenceLabel).filter(Boolean);
+              if (likes.length > 0) {
+                linea += `\n  - ${t("cart.likes")}: 👍 ${likes.join(", ")}`;
+              }
+              if (dislikes.length > 0) {
+                linea += `\n  - ${t("cart.dislikes")}: 👎 ${dislikes.join(", ")}`;
+              }
+            }
+          }
+
+          if (item.notes || (item.excludedIngredients?.length ?? 0) > 0) {
+            if (item.excludedIngredients?.length) {
+              linea += `\n  - ${t("cart.excluded_ingredients")}: ${item.excludedIngredients.join(", ")}`;
+            }
+            if (item.notes) {
+              linea += `\n  - ${t("cart.notes")}: ${item.notes}`;
             }
           }
 
           return linea;
         })
         .join("\n");
-      
-      console.log("Detalle del pedido:", detallePedido);
 
-      // Crear desglose de totales
       let desgloseTotal = `Subtotal: DOP ${subtotal.toFixed(2)}`;
       if (cargoEnvio > 0) {
         desgloseTotal += `\nEnvío: DOP ${cargoEnvio.toFixed(2)}`;
@@ -184,14 +450,12 @@ export function CheckoutClient() {
         desgloseTotal += `\nCargo ${metodoTexto} (10%): DOP ${cargoPaypal.toFixed(2)}`;
       }
       desgloseTotal += `\n*Total a Pagar: DOP ${totalFinalDOP.toFixed(2)}*`;
-      
-      // Agregar conversión a USD si es PayPal o Tarjeta
+
       if (requierePaypal && totalFinalUSD > 0) {
         desgloseTotal += `\n*Total en USD: $${totalFinalUSD.toFixed(2)}* (Tasa: 1 USD = 55 DOP)`;
       }
 
-      // Crear mensaje para WhatsApp (SIEMPRE se envía primero)
-      let mensajeWhatsApp = `¡Hola Green Dolio! 👋 Quisiera confirmar mi pedido:
+      let mensajeWhatsApp = `¡Hola Green Dolio! 👋 Nuevo Pedido #${orderId}:
 
 *👤 DATOS DEL CLIENTE:*
 - Nombre: ${form.contactName}
@@ -209,148 +473,65 @@ ${desgloseTotal}
 *💳 MÉTODO DE PAGO:*
 ${metodoPago}`;
 
-      // Solo indicar el método de pago, sin links ni instrucciones adicionales
-      // Green Dolio enviará los detalles del pago por WhatsApp después
-      
       mensajeWhatsApp += `\n\n*📝 OBSERVACIONES:*\n${form.notes || "Sin observaciones."}`;
-      
-      // Nota final sobre detalles del pago
       mensajeWhatsApp += `\n\n*💬 Recibirás los detalles del pago por WhatsApp.*`;
 
-      // Guardar en Firestore primero
-      const db = getFirestoreDb();
-      const firestoreItems = cartItemsToFirestore(items);
-      const orderData = {
-        userId: user.uid,
-        cliente: form.contactName,
-        telefono: form.contactPhone,
-        email: form.contactEmail || undefined,
-        direccion: form.direccion || "",
-        diaEntrega: form.deliveryDay,
-        observaciones: form.notes || undefined,
-        metodoPago: metodoPago,
-        items: firestoreItems,
-        total: totalFinalDOP,
-        totalUSD: requierePaypal ? totalFinalUSD : undefined,
-        paypalLink: paypalLink || undefined,
-        estado: requierePaypal ? "Pendiente Pago" : "Recibido",
-        // fechaCreacion se agrega automáticamente con serverTimestamp() en saveOrderToFirestore
-      };
-
-      // Preparar URL de WhatsApp antes de guardar
-      const numeroWhatsApp = "18493757338";
-      
-      // Log del mensaje completo para depuración
-      console.log("=== MENSAJE DE WHATSAPP COMPLETO ===");
-      console.log(mensajeWhatsApp);
-      console.log("Longitud del mensaje:", mensajeWhatsApp.length);
-      console.log("Primeros 300 caracteres:", mensajeWhatsApp.substring(0, 300));
-      
+      // 3. Abrir WhatsApp
+      const numeroWhatsApp = "18097537338";
       const mensajeCodificado = encodeURIComponent(mensajeWhatsApp);
       const whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`;
-      
-      // Log de la URL para verificar
-      console.log("=== URL DE WHATSAPP GENERADA ===");
-      console.log("Longitud de la URL:", whatsappUrl.length);
-      console.log("Primeros 300 caracteres de la URL:", whatsappUrl.substring(0, 300));
-      
-      // Verificar que el mensaje no esté vacío
-      if (!mensajeWhatsApp || mensajeWhatsApp.trim().length === 0) {
-        console.error("ERROR: El mensaje de WhatsApp está vacío!");
-        toast.error("Error: No se pudo construir el mensaje del pedido.");
-        setSubmitting(false);
-        return;
-      }
 
-      // Guardar en Firestore primero
-      try {
-        console.log("Guardando pedido en Firestore...", { 
-          userId: orderData.userId, 
-          cliente: orderData.cliente,
-          itemsCount: orderData.items.length 
-        });
-        const orderId = await saveOrderToFirestore(db, orderData);
-        console.log("Pedido guardado en Firestore con ID:", orderId);
-      } catch (firestoreError: any) {
-        console.error("Error al guardar en Firestore:", firestoreError);
-        console.error("Detalles del error:", {
-          message: firestoreError?.message,
-          code: firestoreError?.code,
-        });
-        // Continuar con el envío por WhatsApp aunque falle Firestore
-        toast.error(`Error al guardar en Firestore: ${firestoreError?.message || "Error desconocido"}. El pedido se enviará por WhatsApp de todas formas.`, { duration: 5000 });
-      }
-
-      // Abrir WhatsApp con toda la información (SIEMPRE al final, después de guardar)
-      console.log("Abriendo WhatsApp...");
-      console.log("URL length:", whatsappUrl.length);
-      
-      // Verificar si la URL es demasiado larga (límite de WhatsApp es ~4096 caracteres)
       if (whatsappUrl.length > 4000) {
-        console.warn("URL de WhatsApp muy larga, puede causar problemas");
-        toast.error("El mensaje es muy largo. Por favor contacta directamente por WhatsApp.");
+        console.warn("URL de WhatsApp muy larga");
+        toast.error("El mensaje es muy largo. Por favor contacta soporte.");
         setSubmitting(false);
         return;
       }
-      
-      // Usar método más confiable: crear link y hacer click programáticamente
+
       try {
-        const link = document.createElement("a");
-        link.href = whatsappUrl;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.style.display = "none";
-        document.body.appendChild(link);
-        
-        // Hacer click en el link
-        link.click();
-        
-        // Limpiar después de un momento
-        setTimeout(() => {
-          if (document.body.contains(link)) {
-            document.body.removeChild(link);
-          }
-        }, 1000);
-        
-        console.log("WhatsApp abierto exitosamente");
+        // Usar window.open directamente para asegurar redirección, 
+        // ya que estamos en un contexto de evento de usuario (click)
+        const newWindow = window.open(whatsappUrl, "_blank");
+        if (!newWindow) {
+          // Fallback si el popup blocker lo detiene
+          window.location.href = whatsappUrl;
+        }
       } catch (error) {
         console.error("Error al abrir WhatsApp:", error);
-        // Fallback: intentar window.open
-        try {
-          const newWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-          if (!newWindow) {
-            // Si fue bloqueado, mostrar mensaje al usuario con opción de abrir manualmente
-            toast.error("No se pudo abrir WhatsApp automáticamente. Por favor haz click en el botón de abajo para abrir WhatsApp manualmente.", {
-              duration: 10000,
-            });
-            // Crear un botón visible para abrir WhatsApp
-            const button = document.createElement("button");
-            button.textContent = "Abrir WhatsApp";
-            button.className = "fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg z-50";
-            button.onclick = () => {
-              window.location.href = whatsappUrl;
-              document.body.removeChild(button);
-            };
-            document.body.appendChild(button);
-          }
-        } catch (e) {
-          console.error("Error en fallback:", e);
-          toast.error("Error al abrir WhatsApp. Por favor contacta directamente por WhatsApp.", { duration: 8000 });
-        }
+        toast.error("Pedido guardado, pero no se pudo abrir WhatsApp. Revisa tus popups.");
       }
 
-      // Mensaje de éxito
+      // 4. Finalizar
       if (requierePaypal) {
-        toast.success("¡Pedido enviado! Revisa WhatsApp y completa el pago usando el link de PayPal. Recibirás los detalles del pago por WhatsApp.", { duration: 6000 });
+        toast.success("¡Pedido creado! Completando proceso en WhatsApp...", { duration: 6000 });
       } else {
-        toast.success("¡Pedido enviado con éxito! Revisa WhatsApp para confirmar. Recibirás los detalles del pago por WhatsApp.", { duration: 5000 });
+        toast.success("¡Pedido creado con éxito!", { duration: 5000 });
       }
-      
-      // Limpiar carrito y redirigir después de enviar
+
       clear();
+
+      // Force sync for logged in users to avoid "zombie cart" on reload
+      if (user) {
+        await syncCart([]);
+      }
+
+      if (typeof window !== "undefined") {
+        // Explicitly clear local buffers to prevent restoration on reload
+        const STORAGE_KEY = "gd-cart";
+        const GUEST_STORAGE_KEY = "gd-cart-guest";
+
+        if (user?.uid) {
+          window.localStorage.removeItem(`${STORAGE_KEY}-${user.uid}`);
+        }
+        window.sessionStorage.removeItem(GUEST_STORAGE_KEY);
+        window.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+      }
+
+      // Dar tiempo para que el usuario vea el toast antes de redirigir/limpiar UI
       setTimeout(() => {
         window.location.href = "/";
-      }, 2000);
+      }, 1500);
+
     } catch (error) {
       const message = error instanceof Error ? error.message : t("checkout.order_error");
       toast.error(message);
@@ -359,73 +540,113 @@ ${metodoPago}`;
     }
   };
 
-  // Si showSummary es true, mostrar resumen del pedido
+  const authGate =
+    showAuthGate && !user && typeof window !== "undefined"
+      ? createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+          onClick={handleAuthClose}
+        >
+          <div
+            className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000]"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="p-6 pb-4 border-b border-gray-200">
+              <h2 className="mb-2 font-display text-2xl text-[var(--color-foreground)]">
+                {t("checkout.auth_title")}
+              </h2>
+              <p className="text-sm text-[var(--color-muted)]">{t("checkout.auth_desc")}</p>
+              <ul className="mt-4 space-y-2 text-sm text-[var(--color-muted)]">
+                <li>✓ {t("checkout.auth_benefit_1")}</li>
+                <li>✓ {t("checkout.auth_benefit_2")}</li>
+                <li>✓ {t("checkout.auth_benefit_3")}</li>
+              </ul>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 p-6 pt-4 border-t border-gray-200 bg-white rounded-b-3xl">
+              <button
+                type="button"
+                onClick={handleAuthLogin}
+                className="flex-1 rounded-full bg-[var(--gd-color-forest)] px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-[var(--gd-color-leaf)]"
+              >
+                {t("checkout.auth_login")}
+              </button>
+              <button
+                type="button"
+                onClick={handleAuthGuest}
+                className="flex-1 rounded-full border border-[var(--gd-color-forest)]/30 px-6 py-3 text-sm font-semibold text-[var(--gd-color-forest)] transition hover:bg-[var(--gd-color-leaf)]/10"
+              >
+                {t("checkout.auth_guest")}
+              </button>
+            </div>
+            <p className="px-6 pb-6 text-xs text-[var(--color-muted)]">
+              {t("checkout.auth_guest_hint")}
+            </p>
+            <div className="px-6 pb-6">
+              <button
+                type="button"
+                onClick={handleAuthClose}
+                className="w-full rounded-full border border-[var(--color-border)] px-6 py-3 text-sm font-semibold text-[var(--color-foreground)] transition hover:bg-[var(--color-background-muted)]"
+              >
+                {t("checkout.auth_back")}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )
+      : null;
+
+  // Si showSummary es true, mostrar solo el resumen del pedido (sin aside duplicado)
   if (showSummary) {
     return (
       <main className="min-h-screen bg-[var(--color-background)]">
-        <div className="mx-auto max-w-5xl px-4 py-10 space-y-8">
+        <div className="mx-auto max-w-3xl px-4 py-10 space-y-8">
           <header className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.35em] text-[var(--color-muted)]">Resumen del Pedido</p>
-            <h1 className="font-display text-3xl text-[var(--color-foreground)]">Confirma tu Pedido</h1>
+            <p className="text-xs uppercase tracking-[0.35em] text-[var(--color-muted)]">{t("checkout.review_title")}</p>
+            <h1 className="font-display text-3xl text-[var(--color-foreground)]">{t("checkout.review_heading")}</h1>
             <p className="text-sm text-[var(--color-muted)]">
-              Revisa todos los detalles antes de enviar
+              {t("checkout.review_subtitle")}
             </p>
           </header>
 
-          <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-            <section className="space-y-6 rounded-3xl border border-[var(--color-border)] bg-white p-6 shadow-soft">
-              <OrderSummaryView 
-                form={form}
-                items={items}
-                orderCalculations={orderCalculations}
-              />
-              
-              <div className="pt-6 border-t-2 border-[var(--color-border)] space-y-4">
-                <button
-                  onClick={() => setShowSummary(false)}
-                  className="w-full rounded-full border-2 border-[var(--color-border)] px-8 py-4 text-base font-semibold text-[var(--color-foreground)] transition-all hover:bg-[var(--color-background-muted)]"
-                >
-                  ← Volver a Editar
-                </button>
-                <button
-                  onClick={handleSendOrder}
-                  disabled={submitting}
-                  className="w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                >
-                  {submitting ? (
-                    <>
-                      <span className="animate-spin">⏳</span>
-                      <span>Enviando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>📱</span>
-                      <span>Enviar Pedido por WhatsApp</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </section>
+          <section className="space-y-6 rounded-3xl border border-[var(--color-border)] bg-white p-6 shadow-soft">
+            <OrderSummaryView
+              form={form}
+              items={items}
+              orderCalculations={orderCalculations}
+              resolvePreferenceLabel={resolvePreferenceLabel}
+            />
 
-            <aside className="space-y-4 rounded-3xl border border-[var(--color-border)] bg-white p-6 shadow-soft">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-[var(--color-muted)]">{t("checkout.summary")}</p>
-                <p className="font-display text-2xl text-[var(--color-foreground)]">{t("checkout.your_cart")}</p>
-                <p className="text-sm text-[var(--color-muted)]">{items.length} {t("checkout.items")} · {metrics.itemCount} {t("checkout.units")}</p>
-              </div>
-              <div className="space-y-3">
-                {items.map((item) => (
-                  <CartLine key={`${item.slug}-${item.configuration ? "box" : "simple"}`} item={item} />
-                ))}
-              </div>
-              <OrderSummary 
-                subtotal={subtotal} 
-                deliveryDay={form.deliveryDay} 
-                metodoPago={form.metodoPago} 
-              />
-            </aside>
-          </div>
+            <div className="pt-6 border-t-2 border-[var(--color-border)] space-y-4">
+              <button
+                onClick={() => setShowSummary(false)}
+                className="w-full rounded-full border-2 border-[var(--color-border)] px-8 py-4 text-base font-semibold text-[var(--color-foreground)] transition-all hover:bg-[var(--color-background-muted)]"
+              >
+                {t("checkout.review_back")}
+              </button>
+              <button
+                onClick={handleSendOrder}
+                disabled={submitting}
+                className="w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    <span>{t("checkout.review_sending")}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📱</span>
+                    <span>{t("checkout.review_send_whatsapp")}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </section>
         </div>
+        {authGate}
       </main>
     );
   }
@@ -562,41 +783,55 @@ ${metodoPago}`;
               <p className="text-sm text-[var(--color-muted)]">{items.length} {t("checkout.items")} · {metrics.itemCount} {t("checkout.units")}</p>
             </div>
             <div className="space-y-3">
-              {items.map((item) => (
-                <CartLine key={`${item.slug}-${item.configuration ? "box" : "simple"}`} item={item} />
+              {items.map((item, index) => (
+                <CartLine key={`${item.slug}-${item.configuration ? "box" : "simple"}-${index}`} item={item} resolvePreferenceLabel={resolvePreferenceLabel} />
               ))}
             </div>
-            <OrderSummary 
-              subtotal={subtotal} 
-              deliveryDay={form.deliveryDay} 
-              metodoPago={form.metodoPago} 
+            {boxItems.length > 0 && (
+              <AlaCarteReminder catalogHref={catalogHref} hasPreferences={hasPreferences} />
+            )}
+            <OrderSummary
+              subtotal={subtotal}
+              deliveryDay={form.deliveryDay}
+              metodoPago={form.metodoPago}
             />
           </aside>
         </div>
       </div>
+      {authGate}
     </main>
   );
 }
 
-function CartLine({ item }: { item: CartItem }) {
+function CartLine({ item, resolvePreferenceLabel }: { item: CartItem; resolvePreferenceLabel: (value: string) => string }) {
   const { t } = useTranslation();
   const isBox = item.type === "box" && item.configuration;
+  const unitPrice = item.configuration?.price?.final ?? item.price;
+  const variantKey = item.configuration
+    ? resolveVariantKey(item.configuration.variant, item.configuration.mix)
+    : "mix";
+  const variantLabel = isBox ? getVariantLabel(variantKey, t) : "";
+  const likes = (item.configuration?.likes || []).map(resolvePreferenceLabel).filter(Boolean);
+  const dislikes = (item.configuration?.dislikes || []).map(resolvePreferenceLabel).filter(Boolean);
+  const showProductNotes = item.type === "product" && (Boolean(item.notes) || (item.excludedIngredients?.length ?? 0) > 0);
   return (
     <div className="rounded-2xl border border-[var(--color-border)] p-4 bg-[var(--color-background-muted)]/60">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="font-semibold text-[var(--color-foreground)]">{item.name}</p>
           <p className="text-xs text-[var(--color-muted)]">
-            {item.quantity} x RD${item.price.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
+            {item.quantity} x RD${unitPrice.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </p>
         </div>
         <p className="text-sm font-semibold text-[var(--color-foreground)]">
-          RD${(item.price * item.quantity).toLocaleString("es-DO", { minimumFractionDigits: 2 })}
+          RD${(unitPrice * item.quantity).toLocaleString("es-DO", { minimumFractionDigits: 2 })}
         </p>
       </div>
       {isBox && (
         <div className="mt-2 space-y-2 text-xs text-[var(--color-muted)]">
-          <p>{t("checkout.mix")} {item.configuration?.mix || item.configuration?.variant || "mix"}</p>
+          <p>{t("cart.mix")}: {variantLabel}</p>
+          {likes.length > 0 && <p>👍 {t("cart.likes")}: {likes.join(", ")}</p>}
+          {dislikes.length > 0 && <p>👎 {t("cart.dislikes")}: {dislikes.join(", ")}</p>}
           <p>{t("cart.delivery_zone")}: {item.configuration?.deliveryZone || t("checkout.delivery_to_define")} · {t("cart.delivery_day")}: {item.configuration?.deliveryDay || t("checkout.day_to_agree")}</p>
           {item.configuration?.selectedProducts && (
             <div className="flex flex-wrap gap-1">
@@ -605,7 +840,7 @@ function CartLine({ item }: { item: CartItem }) {
                 .slice(0, 6)
                 .map(([slug, qty]) => (
                   <span key={slug} className="rounded-full bg-white px-2 py-1">
-                    {slug} x{qty}
+                    {resolvePreferenceLabel(slug)} x{qty}
                   </span>
                 ))}
             </div>
@@ -618,17 +853,25 @@ function CartLine({ item }: { item: CartItem }) {
           )}
         </div>
       )}
+      {showProductNotes && (
+        <div className="mt-2 space-y-1 text-xs text-[var(--color-muted)]">
+          {item.excludedIngredients?.length ? (
+            <p>{t("cart.excluded_ingredients")}: {item.excludedIngredients.join(", ")}</p>
+          ) : null}
+          {item.notes ? <p>{t("cart.notes")}: {item.notes}</p> : null}
+        </div>
+      )}
     </div>
   );
 }
 
-function OrderSummary({ 
-  subtotal, 
-  deliveryDay, 
-  metodoPago 
-}: { 
-  subtotal: number; 
-  deliveryDay: string; 
+function OrderSummary({
+  subtotal,
+  deliveryDay,
+  metodoPago
+}: {
+  subtotal: number;
+  deliveryDay: string;
   metodoPago: string;
 }) {
   const { t } = useTranslation();
@@ -681,27 +924,27 @@ function OrderSummary({
   );
 }
 
-function OrderSummaryView({ 
-  form, 
-  items, 
-  orderCalculations 
-}: { 
-  form: FormState; 
+function OrderSummaryView({
+  form,
+  items,
+  orderCalculations,
+  resolvePreferenceLabel,
+}: {
+  form: FormState;
   items: CartItem[];
   orderCalculations: {
     cargoEnvio: number;
     metodoPago: string;
-    subtotalConEnvio: number;
     requierePaypal: boolean;
     cargoPaypal: number;
     totalFinalDOP: number;
     totalFinalUSD: number;
-    paypalLink: string;
   };
+  resolvePreferenceLabel: (value: string) => string;
 }) {
   const { t } = useTranslation();
-  const { cargoEnvio, metodoPago, requierePaypal, cargoPaypal, totalFinalDOP, totalFinalUSD, paypalLink } = orderCalculations;
-  
+  const { cargoEnvio, metodoPago, requierePaypal, cargoPaypal, totalFinalDOP, totalFinalUSD } = orderCalculations;
+
   const subtotal = items.reduce(
     (sum, item) => sum + (item.configuration?.price?.final ?? item.price) * item.quantity,
     0
@@ -740,12 +983,14 @@ function OrderSummaryView({
                 </div>
                 {item.type === "box" && item.configuration && (
                   <div className="mt-2 space-y-2 text-xs text-[var(--color-muted)] border-t border-[var(--color-border)] pt-2">
-                    <p>{t("checkout.mix")} {item.configuration?.mix || item.configuration?.variant || "mix"}</p>
+                    <p>
+                      {t("cart.mix")}: {getVariantLabel(resolveVariantKey(item.configuration.variant, item.configuration.mix), t)}
+                    </p>
                     {item.configuration?.likes?.length > 0 && (
-                      <p>👍 Gustos: {item.configuration.likes.join(", ")}</p>
+                      <p>👍 {t("cart.likes")}: {item.configuration.likes.map(resolvePreferenceLabel).join(", ")}</p>
                     )}
                     {item.configuration?.dislikes?.length > 0 && (
-                      <p>👎 Disgustos: {item.configuration.dislikes.join(", ")}</p>
+                      <p>👎 {t("cart.dislikes")}: {item.configuration.dislikes.map(resolvePreferenceLabel).join(", ")}</p>
                     )}
                     {item.configuration?.selectedProducts && (
                       <div className="flex flex-wrap gap-1 mt-2">
@@ -753,11 +998,19 @@ function OrderSummaryView({
                           .filter(([, qty]) => qty && qty > 0)
                           .map(([slug, qty]) => (
                             <span key={slug} className="rounded-full bg-white px-2 py-1">
-                              {slug} x{qty}
+                              {resolvePreferenceLabel(slug)} x{qty}
                             </span>
                           ))}
                       </div>
                     )}
+                  </div>
+                )}
+                {item.type === "product" && (item.notes || item.excludedIngredients?.length) && (
+                  <div className="mt-2 space-y-2 text-xs text-[var(--color-muted)] border-t border-[var(--color-border)] pt-2">
+                    {item.excludedIngredients?.length ? (
+                      <p>{t("cart.excluded_ingredients")}: {item.excludedIngredients.join(", ")}</p>
+                    ) : null}
+                    {item.notes ? <p>{t("cart.notes")}: {item.notes}</p> : null}
                   </div>
                 )}
               </div>
@@ -824,6 +1077,26 @@ function OrderSummaryView({
   );
 }
 
+function AlaCarteReminder({ catalogHref, hasPreferences }: { catalogHref: string; hasPreferences: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-2xl border border-[var(--gd-color-leaf)]/30 bg-[var(--gd-color-sprout)]/20 p-4">
+      <p className="text-xs uppercase tracking-[0.35em] text-[var(--gd-color-forest)]">
+        {t("cart.add_a_la_carte_title")}
+      </p>
+      <p className="mt-2 text-sm text-[var(--color-muted)]">
+        {hasPreferences ? t("cart.add_a_la_carte_hint_with_likes") : t("cart.add_a_la_carte_hint_no_likes")}
+      </p>
+      <Link
+        href={catalogHref}
+        className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--gd-color-leaf)]/40 bg-white px-4 py-2 text-xs font-semibold text-[var(--gd-color-forest)] hover:bg-[var(--gd-color-sprout)]/30 transition-colors"
+      >
+        {t("cart.view_catalog")}
+      </Link>
+    </div>
+  );
+}
+
 function buildNotesFromProfile(profile: { likes?: string; dislikes?: string }): string {
   const notes: string[] = [];
   if (profile.likes) {
@@ -835,14 +1108,4 @@ function buildNotesFromProfile(profile: { likes?: string; dislikes?: string }): 
   return notes.join("\n");
 }
 
-function mapCartItemToOrderItem(item: CartItem) {
-  return {
-    type: item.type,
-    slug: item.slug,
-    name: item.name,
-    quantity: item.quantity,
-    price: item.configuration?.price?.final ?? item.price,
-    image: item.image,
-    configuration: item.configuration,
-  };
-}
+

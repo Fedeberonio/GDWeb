@@ -1,15 +1,17 @@
 "use client";
 
+import { Apple, Citrus, Leaf, Package, Salad } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selector/helpers";
-import { getBoxContentsForVariant } from "@/modules/box-builder/utils";
-import productMetadata from "@/data/productMetadata.json";
 import { ProductImageFallback } from "./product-image-fallback";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import type { BoxRule, BoxVariant, Product } from "@/modules/catalog/types";
 
 type BoxVariantsDisplayProps = {
-  baseContents: Array<{ productSlug: string; quantity: number; name: string }>;
-  boxId?: string; // ID de la caja para obtener contenidos específicos por variante
+  baseContents: Array<{ productSku: string; quantity: number; name: string }>;
+  boxRule?: BoxRule;
+  productMap?: Map<string, Product>;
+  boxVariants?: BoxVariant[];
   compact?: boolean; // Si es true, muestra versión compacta inicialmente
   onVariantSelect?: (variant: VariantType) => void; // Callback cuando se selecciona una variante
   initialVariant?: VariantType; // Variante preseleccionada (ej: desde la tarjeta)
@@ -17,15 +19,36 @@ type BoxVariantsDisplayProps = {
 
 export function BoxVariantsDisplay({
   baseContents,
-  boxId,
+  boxRule,
+  productMap,
+  boxVariants,
   compact = false,
   onVariantSelect,
   initialVariant,
 }: BoxVariantsDisplayProps) {
-  const { t, locale } = useTranslation();
+  const { t, locale, tData } = useTranslation();
   const [selectedVariant, setSelectedVariant] = useState<VariantType | null>(initialVariant ?? null);
   const [expandedVariant, setExpandedVariant] = useState<VariantType | null>(initialVariant ?? null);
   const variants: VariantType[] = ["mix", "fruity", "veggie"];
+  const variantIcons: Record<VariantType, React.ReactNode> = {
+    mix: <Apple className="w-4 h-4 text-red-500" />,
+    fruity: <Citrus className="w-4 h-4 text-orange-500" />,
+    veggie: <Salad className="w-4 h-4 text-green-600" />,
+  };
+  const resolveProduct = (sku: string) => {
+    if (!productMap) return undefined;
+    return (
+      productMap.get(sku) ||
+      productMap.get(sku.toLowerCase()) ||
+      productMap.get(sku.toUpperCase())
+    );
+  };
+
+  const resolveProductLabel = (sku: string, fallback?: string) => {
+    const product = resolveProduct(sku);
+    const localized = product ? tData(product.name) : "";
+    return localized || fallback || sku;
+  };
 
   // Sincronizar la variante inicial cuando viene del padre (ej. selección previa en la tarjeta)
   useEffect(() => {
@@ -45,18 +68,26 @@ export function BoxVariantsDisplay({
     return undefined;
   }, [initialVariant]);
 
+  const getPlaceholderContents = (variant: VariantType) => {
+    const placeholderItems =
+      variant === "fruity"
+        ? ["Piña", "Lechoza", "Guineos", "Mango", "Chinola", "Limones"]
+        : ["Berenjena", "Zuccini", "Tomates", "Ajíes", "Verduras", "Rúcula"];
+    return placeholderItems.map((name, index) => ({
+      productSku: `${variant}-placeholder-${index + 1}`,
+      quantity: 1,
+      name,
+    }));
+  };
+
   // Filtrar contenido según la variante
-  // Si hay boxId, usar getBoxContentsForVariant para obtener contenidos específicos
   const getFilteredContents = (variant: VariantType) => {
-    // Si hay boxId y existe contenido específico para la variante, usarlo
-    if (boxId) {
-      const variantContents = getBoxContentsForVariant(boxId, variant);
-      if (variantContents.length > 0) {
-        return variantContents.map((item) => ({
-          ...item,
-          name: productMetadata.find((p) => p.slug === item.productSlug)?.name ?? item.productSlug,
-        }));
-      }
+    // Si hay contenido específico para la variante, usarlo
+    if (boxRule?.variantContents?.[variant]?.length) {
+      return boxRule.variantContents[variant]!.map((item) => ({
+        ...item,
+        name: resolveProductLabel(item.productSku, item.name),
+      }));
     }
 
     // Fallback: filtrar baseContents como antes
@@ -65,19 +96,20 @@ export function BoxVariantsDisplay({
       return baseContents;
     } else if (variant === "fruity") {
       // Fruity: solo frutas tropicales y cítricos, SIN aromáticas de cocina (ajo, cebolla, etc.)
-      return baseContents.filter((item) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
-        const category = getVisualCategory(item.productSlug, item.name, meta?.category);
-        const slugLower = item.productSlug.toLowerCase();
-        const nameLower = item.name.toLowerCase();
+      const filtered = baseContents.filter((item) => {
+        const product = resolveProduct(item.productSku);
+        const localizedName = item.name || resolveProductLabel(item.productSku);
+        const category = getVisualCategory(item.productSku, localizedName, product?.categoryId);
+        const skuLower = item.productSku.toLowerCase();
+        const nameLower = localizedName.toLowerCase();
 
         // Excluir aromáticas de cocina (ajo, cebolla, apio, perejil, cilantro)
         const isCookingAromatic =
-          slugLower.includes("ajo") ||
-          slugLower.includes("cebolla") ||
-          slugLower.includes("apio") ||
-          slugLower.includes("perejil") ||
-          slugLower.includes("cilantro") ||
+          skuLower.includes("ajo") ||
+          skuLower.includes("cebolla") ||
+          skuLower.includes("apio") ||
+          skuLower.includes("perejil") ||
+          skuLower.includes("cilantro") ||
           nameLower.includes("ajo") ||
           nameLower.includes("cebolla") ||
           nameLower.includes("apio") ||
@@ -92,11 +124,16 @@ export function BoxVariantsDisplay({
           !isCookingAromatic
         );
       });
+      if (filtered.length === 0 || filtered.length === baseContents.length) {
+        return getPlaceholderContents("fruity");
+      }
+      return filtered;
     } else {
       // Veggie: solo vegetales (hojas, raíces, aromáticas), sin frutas ni cítricos
-      return baseContents.filter((item) => {
-        const meta = productMetadata.find((p) => p.slug === item.productSlug);
-        const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+      const filtered = baseContents.filter((item) => {
+        const product = resolveProduct(item.productSku);
+        const localizedName = item.name || resolveProductLabel(item.productSku);
+        const category = getVisualCategory(item.productSku, localizedName, product?.categoryId);
         return (
           category === "leafy" ||
           category === "root" ||
@@ -104,16 +141,24 @@ export function BoxVariantsDisplay({
           (category !== "fruit_large" && category !== "fruit_small" && category !== "citrus")
         );
       });
+      if (filtered.length === 0 || filtered.length === baseContents.length) {
+        return getPlaceholderContents("veggie");
+      }
+      return filtered;
     }
   };
 
+  const resolveVariantData = (variant: VariantType) =>
+    boxVariants?.find((item) => item.id === variant || item.slug === variant);
   const filteredContents = selectedVariant ? getFilteredContents(selectedVariant) : [];
-  const variantInfo = selectedVariant ? getVariantInfo(selectedVariant, locale) : { tagline: "", description: "", icon: "" };
+  const variantInfo = selectedVariant
+    ? getVariantInfo(selectedVariant, locale, resolveVariantData(selectedVariant))
+    : { tagline: "", description: "", icon: "mix" as const };
 
   // Agrupar por categoría para mostrar mejor
   const contentsByCategory = filteredContents.reduce((acc, item) => {
-    const meta = productMetadata.find((p) => p.slug === item.productSlug);
-    const category = getVisualCategory(item.productSlug, item.name, meta?.category);
+    const product = resolveProduct(item.productSku);
+    const category = getVisualCategory(item.productSku, item.name, product?.categoryId);
     const categoryKey = category === "fruit_large" || category === "fruit_small" ? "fruit" : category;
 
     if (!acc[categoryKey]) acc[categoryKey] = [];
@@ -121,13 +166,13 @@ export function BoxVariantsDisplay({
     return acc;
   }, {} as Record<string, typeof baseContents>);
 
-  const categoryLabels: Record<string, { icon: string; label: string }> = {
-    aromatic: { icon: "🌶️", label: t("variants.categories.aromatic") },
-    leafy: { icon: "🥬", label: t("variants.categories.leafy") },
-    fruit: { icon: "🍎", label: t("variants.categories.fruit") },
-    root: { icon: "🥔", label: t("variants.categories.root") },
-    citrus: { icon: "🍊", label: t("variants.categories.citrus") },
-    otros: { icon: "📦", label: t("variants.categories.others") },
+  const categoryLabels: Record<string, { icon: React.ReactNode; label: string }> = {
+    aromatic: { icon: <Leaf className="w-4 h-4 text-green-600" />, label: t("variants.categories.aromatic") },
+    leafy: { icon: <Salad className="w-4 h-4 text-green-600" />, label: t("variants.categories.leafy") },
+    fruit: { icon: <Apple className="w-4 h-4 text-red-500" />, label: t("variants.categories.fruit") },
+    root: { icon: <Leaf className="w-4 h-4 text-green-600" />, label: t("variants.categories.root") },
+    citrus: { icon: <Citrus className="w-4 h-4 text-orange-500" />, label: t("variants.categories.citrus") },
+    otros: { icon: <Package className="w-4 h-4 text-green-600" />, label: t("variants.categories.others") },
   };
 
   const handleVariantClick = (variant: VariantType) => {
@@ -151,7 +196,7 @@ export function BoxVariantsDisplay({
       {/* Selector de variantes - Compacto */}
       <div className="flex gap-2">
         {variants.map((variant) => {
-          const info = getVariantInfo(variant, locale);
+          const info = getVariantInfo(variant, locale, resolveVariantData(variant));
           const isSelected = selectedVariant === variant;
           const isExpanded = expandedVariant === variant;
           const variantContents = getFilteredContents(variant);
@@ -168,7 +213,7 @@ export function BoxVariantsDisplay({
                 }`}
             >
               <div className="flex flex-col items-center gap-1">
-                <span className="text-lg">{info.icon}</span>
+                <span className="text-lg">{variantIcons[info.icon]}</span>
                 <span>{variant.toUpperCase()}</span>
               </div>
               {isExpanded && compact && (
@@ -183,7 +228,10 @@ export function BoxVariantsDisplay({
 
       {/* Contenido expandido de la variante seleccionada */}
       {expandedVariant && expandedVariant === selectedVariant && (
-        <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div
+          key={selectedVariant}
+          className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300"
+        >
           <div className="text-center p-3 rounded-lg bg-[var(--gd-color-sprout)]/20 border border-[var(--gd-color-leaf)]/20">
             <p className="text-sm md:text-base font-bold text-[var(--gd-color-forest)] mb-1">
               {variantInfo.tagline}
@@ -194,29 +242,27 @@ export function BoxVariantsDisplay({
           </div>
 
           {/* Contenido completo agrupado por categoría */}
-          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 transition-opacity duration-300">
             {Object.keys(contentsByCategory).length === 0 ? (
               <p className="text-sm text-[var(--color-muted)] text-center py-4">
                 {t("discover.content_processing")}
               </p>
             ) : (
               Object.entries(contentsByCategory).map(([category, items]) => {
-                const label = categoryLabels[category] || { icon: "", label: category }; // Icon removed from label if desired, but user said "icons are horrible" for *products*, check context. "Elimina los iconos, son horribles" referred to product cards probably, but let's keep category icons for now as they are emojis. Wait, user said "Elimina los textos donde indica la cantidad... 15 productos". "Luego en las tarjetas de los productos: ver imagen... Elimina los iconos".
-                // For the list items below, I will ensure no weird icons are shown.
+                const label = categoryLabels[category] || { icon: null, label: category };
 
                 return (
                   <div key={category} className="rounded-lg bg-white/80 p-3 border border-[var(--gd-color-leaf)]/20 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm md:text-base font-bold text-[var(--gd-color-forest)] flex items-center gap-1.5">
-                        {/* Keeping category icon for now as they are structural emojis, removing if user insists on ALL icons */}
-                        <span className="text-lg">{label.icon}</span>
+                        {label.icon}
                         <span>{label.label}</span>
                       </span>
                     </div>
                     <div className="space-y-1.5">
                       {items.map((item) => (
                         <div
-                          key={item.productSlug}
+                          key={item.productSku}
                           className="flex items-center justify-between text-sm bg-white/60 rounded px-2 py-1.5"
                         >
                           <div className="flex items-center gap-2 flex-1 min-w-0">

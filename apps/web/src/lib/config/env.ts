@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  NEXT_PUBLIC_API_BASE_URL: z
-    .string()
-    .url()
-    .default("http://localhost:5001/api"),
+  NEXT_PUBLIC_API_BASE_URL: z.string().url(),
   NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1),
   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().min(1),
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1),
@@ -12,7 +9,6 @@ const envSchema = z.object({
   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1),
   NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().optional(),
-  NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS: z.string().optional().default(""),
 });
 
 export type ClientEnv = z.infer<typeof envSchema>;
@@ -21,12 +17,6 @@ let cachedEnv: ClientEnv | null = null;
 
 export function getClientEnv(): ClientEnv {
   if (cachedEnv) return cachedEnv;
-
-  console.log("DEBUG ENV VARS:", {
-    API_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-    FIREBASE_PROJECT: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    ADMIN_EMAILS: process.env.NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS,
-  });
 
   const runtimeEnv = {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -37,25 +27,13 @@ export function getClientEnv(): ClientEnv {
     NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-    NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS: process.env.NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS,
   } satisfies Partial<ClientEnv>;
 
   const parsed = envSchema.safeParse(runtimeEnv);
 
   if (!parsed.success) {
     const details = JSON.stringify(parsed.error.flatten().fieldErrors);
-    console.error("ENV VALIDATION FAILED:", details);
-    // Fallback instead of throwing to allow debugging in Vercel logs
-    return {
-      NEXT_PUBLIC_API_BASE_URL: "http://mock-fallback",
-      NEXT_PUBLIC_FIREBASE_API_KEY: "mock",
-      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "mock",
-      NEXT_PUBLIC_FIREBASE_PROJECT_ID: "mock",
-      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "mock",
-      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "mock",
-      NEXT_PUBLIC_FIREBASE_APP_ID: "mock",
-      NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS: "",
-    } as ClientEnv;
+    throw new Error(`ENV VALIDATION FAILED: ${details}`);
   }
 
   cachedEnv = parsed.data;
@@ -66,9 +44,17 @@ export function getApiBaseUrl(): string {
   return getClientEnv().NEXT_PUBLIC_API_BASE_URL;
 }
 
+const DEFAULT_ADMIN_EMAIL = "greendolioexpress@gmail.com";
+
 export function getAdminAllowedEmails(): string[] {
-  const env = getClientEnv();
-  return env.NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS.split(",")
-    .map((email) => email.trim().toLowerCase())
+  const emails = process.env.ADMIN_ALLOWED_EMAILS ?? process.env.NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS ?? "";
+  const list = emails
+    .split(",")
+    .map((e) => e.trim())
     .filter(Boolean);
+  const normalizedDefault = DEFAULT_ADMIN_EMAIL.toLowerCase();
+  const filtered = (list.length > 0 ? list : [DEFAULT_ADMIN_EMAIL]).filter(
+    (email) => email.toLowerCase() === normalizedDefault,
+  );
+  return filtered.length > 0 ? filtered : [DEFAULT_ADMIN_EMAIL];
 }

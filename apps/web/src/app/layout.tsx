@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Montserrat, Patua_One } from "next/font/google";
+import { Montserrat, Open_Sans } from "next/font/google";
 import { Providers } from "./providers";
-import { WhatsAppFloatButton } from "./_components/whatsapp-float-button";
+import { ConditionalSocialButtons } from "./_components/conditional-social-buttons";
+import { AuthModal } from "@/modules/auth/auth-modal";
 import { ProfileFormModal } from "@/modules/user/profile-form-modal";
 import "./globals.css";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/modules/i18n/locales";
+import { translations } from "@/modules/i18n/translations";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -14,14 +16,13 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
-const patuaOne = Patua_One({
+const openSans = Open_Sans({
   subsets: ["latin"],
-  variable: "--font-patua",
-  weight: "400",
   display: "swap",
+  variable: "--font-open-sans",
 });
 
-export const metadata: Metadata = {
+const BASE_METADATA: Metadata = {
   title: {
     default: "Green Dolio | De la huerta a tu puerta",
     template: "%s | Green Dolio",
@@ -40,8 +41,8 @@ export const metadata: Metadata = {
     "Santo Domingo",
   ],
   icons: {
-    icon: "/images/logo/favicon.png",
-    apple: "/images/logo/favicon.png",
+    icon: "/assets/images/logo/favicon.png",
+    apple: "/assets/images/logo/favicon.png",
   },
   openGraph: {
     title: "Green Dolio | De la huerta a tu puerta",
@@ -73,13 +74,55 @@ export default async function RootLayout({
 
   return (
     <html lang={initialLocale}>
-      <body className={`${montserrat.variable} ${patuaOne.variable} antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Caveat+Brush&family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/images/hero/hero-lifestyle-kitchen.webp"
+          imagesrcset="/assets/images/hero/hero-lifestyle-kitchen.webp 1x, /assets/images/hero/hero-lifestyle-kitchen@2x.webp 2x"
+          imagesizes="100vw"
+        />
+      </head>
+      <body className={`${montserrat.variable} ${openSans.variable} antialiased bg-organic-texture`}>
         <Providers initialLocale={initialLocale}>
           {children}
-          <WhatsAppFloatButton />
+          <ConditionalSocialButtons />
+          <AuthModal />
           <ProfileFormModal />
         </Providers>
       </body>
     </html>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await resolveInitialLocale();
+  const localized = translations[locale];
+  const defaultTitle = localized["meta.title"];
+  const description = localized["meta.description"];
+  return {
+    ...BASE_METADATA,
+    title: {
+      default: defaultTitle,
+      template: "%s | Green Dolio",
+    },
+    description,
+    openGraph: {
+      ...BASE_METADATA.openGraph,
+      title: defaultTitle,
+      description,
+      locale: locale === "en" ? "en_US" : "es_DO",
+    },
+    twitter: {
+      ...BASE_METADATA.twitter,
+      title: defaultTitle,
+      description,
+    },
+  };
 }

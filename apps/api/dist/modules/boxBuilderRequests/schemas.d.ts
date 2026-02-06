@@ -21,9 +21,9 @@ export declare const boxBuilderRequestSchema: z.ZodObject<{
     deliveryZone: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     deliveryDay: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     mix: z.ZodOptional<z.ZodNullable<z.ZodEnum<{
+        mix: "mix";
         frutas: "frutas";
         vegetales: "vegetales";
-        mix: "mix";
     }>>>;
     likes: z.ZodDefault<z.ZodArray<z.ZodString>>;
     dislikes: z.ZodDefault<z.ZodArray<z.ZodString>>;

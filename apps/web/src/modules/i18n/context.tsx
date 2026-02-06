@@ -1,10 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { DEFAULT_LOCALE, LOCALE_LABELS, SUPPORTED_LOCALES, type Locale, isLocale } from "./locales";
+import { DEFAULT_LOCALE, LOCALE_LABELS, SUPPORTED_LOCALES, type Locale } from "./locales";
 
-const STORAGE_KEY = "gd:locale";
 const COOKIE_NAME = "gd-locale";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 180; // 180 días
 
@@ -23,26 +22,18 @@ type Props = {
 };
 
 export function LanguageProvider({ children, initialLocale = DEFAULT_LOCALE }: Props) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window === "undefined") {
-      return initialLocale;
-    }
-
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored && isLocale(stored) ? stored : initialLocale;
-  });
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    window.localStorage.setItem(STORAGE_KEY, locale);
     document.documentElement.setAttribute("lang", locale);
-    document.cookie = `${COOKIE_NAME}=${locale}; path=/; max-age=${COOKIE_MAX_AGE}`;
+    document.cookie = `${COOKIE_NAME}=${locale}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
   }, [locale]);
 
-  const setLocale = (value: Locale) => {
+  const setLocale = useCallback((value: Locale) => {
     setLocaleState(value);
-  };
+  }, []);
 
   const value = useMemo<LocaleContextValue>(
     () => ({
@@ -51,7 +42,7 @@ export function LanguageProvider({ children, initialLocale = DEFAULT_LOCALE }: P
       labels: LOCALE_LABELS,
       setLocale,
     }),
-    [locale],
+    [locale, setLocale],
   );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
