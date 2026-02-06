@@ -164,6 +164,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  console.log("DELETE order attempt:", id);
   try {
     await requireAdminSession(request);
     const { searchParams } = new URL(request.url);

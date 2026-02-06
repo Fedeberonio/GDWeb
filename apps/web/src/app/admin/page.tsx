@@ -25,20 +25,6 @@ type MetricsState = {
 };
 
 function DashboardContent() {
-  const mockFinanceData = [
-    { label: "Lun", sales: 6200, orders: 12 },
-    { label: "Mar", sales: 8400, orders: 16 },
-    { label: "Mié", sales: 5400, orders: 9 },
-    { label: "Jue", sales: 9100, orders: 18 },
-    { label: "Vie", sales: 11200, orders: 21 },
-    { label: "Sáb", sales: 7600, orders: 14 },
-    { label: "Dom", sales: 6800, orders: 11 },
-  ];
-  const totalRevenue = mockFinanceData.reduce((sum, item) => sum + item.sales, 0);
-  const totalOrders = mockFinanceData.reduce((sum, item) => sum + item.orders, 0);
-  const averageOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
-  const maxSales = Math.max(...mockFinanceData.map((item) => item.sales), 1);
-
   const [counts, setCounts] = useState<CountsState>({
     productCount: 0,
     boxCount: 0,
@@ -53,6 +39,7 @@ function DashboardContent() {
     newCustomers: 0,
   });
   const [activity, setActivity] = useState<any[]>([]);
+  const [financeData, setFinanceData] = useState<any[]>([]);
   const [status, setStatus] = useState<StatusState>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -67,6 +54,13 @@ function DashboardContent() {
           adminFetch("/api/admin/dashboard/metrics", { cache: "no-store" }),
           adminFetch("/api/admin/dashboard/activity?limit=5", { cache: "no-store" }),
         ]);
+
+        // Cargar ventas diarias
+        const salesRes = await adminFetch("/api/admin/dashboard/daily-sales?days=7", { cache: "no-store" });
+        if (salesRes.ok) {
+          const salesData = await salesRes.json();
+          setFinanceData(salesData.data || []);
+        }
 
         if (!summaryRes.ok || !metricsRes.ok || !activityRes.ok) {
           throw new Error("No se pudo cargar el resumen del catálogo");
@@ -102,12 +96,16 @@ function DashboardContent() {
     load();
   }, []);
 
+  const totalRevenue = financeData.reduce((sum, item) => sum + item.sales, 0);
+  const totalOrders = financeData.reduce((sum, item) => sum + item.orders, 0);
+  const averageOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
+  const maxSales = Math.max(...financeData.map((item) => item.sales), 1);
+
   return (
     <section className="space-y-6">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-slate-900">Finance Overview</h2>
-          <span className="text-xs text-[var(--gd-color-text-muted)]">Datos simulados</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-organic bg-white p-6 shadow-sm border border-slate-200">
@@ -131,7 +129,7 @@ function DashboardContent() {
           <div className="rounded-organic bg-white p-6 shadow-sm border border-slate-200">
             <p className="text-xs uppercase tracking-[0.35em] text-[var(--gd-color-text-muted)]">Ventas promedio día</p>
             <p className="mt-2 text-2xl font-semibold text-[var(--gd-color-forest)]">
-              RD${(totalRevenue / mockFinanceData.length).toLocaleString("es-DO", { maximumFractionDigits: 0 })}
+              RD${(totalRevenue / financeData.length).toLocaleString("es-DO", { maximumFractionDigits: 0 })}
             </p>
           </div>
         </div>
@@ -142,7 +140,7 @@ function DashboardContent() {
             <span className="text-xs text-[var(--gd-color-text-muted)]">Últimos 7 días</span>
           </div>
           <div className="mt-6 grid grid-cols-7 items-end gap-3 h-40">
-            {mockFinanceData.map((item) => (
+            {financeData.map((item) => (
               <div key={item.label} className="flex flex-col items-center gap-2">
                 <div className="relative h-28 w-full rounded-xl bg-[var(--gd-color-leaf)]/15 flex items-end overflow-hidden">
                   <div
