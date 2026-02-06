@@ -50,11 +50,19 @@ export function getAdminAllowedEmails(): string[] {
   const emails = process.env.ADMIN_ALLOWED_EMAILS ?? process.env.NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS ?? "";
   const list = emails
     .split(",")
-    .map((e) => e.trim())
+    .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
+
+  // Si no hay emails en env, usar el default
+  if (list.length === 0) {
+    return [DEFAULT_ADMIN_EMAIL.toLowerCase()];
+  }
+
+  // Asegurar que el email default siempre esté incluido
   const normalizedDefault = DEFAULT_ADMIN_EMAIL.toLowerCase();
-  const filtered = (list.length > 0 ? list : [DEFAULT_ADMIN_EMAIL]).filter(
-    (email) => email.toLowerCase() === normalizedDefault,
-  );
-  return filtered.length > 0 ? filtered : [DEFAULT_ADMIN_EMAIL];
+  if (!list.includes(normalizedDefault)) {
+    list.push(normalizedDefault);
+  }
+
+  return list;
 }
