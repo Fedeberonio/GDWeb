@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     const ordersRef = collection(db, "orders");
     const q = query(
       ordersRef,
-      where("status", "==", "finalized"),
+      where("status", "==", "confirmed"),
       where("createdAt", ">=", Timestamp.fromDate(startDate))
     );
 
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
         salesByDay[dayKey] = { sales: 0, orders: 0 };
       }
       
-      salesByDay[dayKey].sales += data.totalAmount || 0;
+      salesByDay[dayKey].sales += data.totals?.total || 0;
       salesByDay[dayKey].orders += 1;
     });
 
