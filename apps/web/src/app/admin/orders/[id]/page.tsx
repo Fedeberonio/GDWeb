@@ -122,16 +122,32 @@ export default function OrderDetailPage() {
   }, [order, editedOrder]);
 
   const calculations = useMemo(() => {
-    if (!editedOrder) return { subtotal: 0, deliveryFee: 0, total: 0 };
+    if (!editedOrder) return { subtotal: 0, deliveryFee: 0, paymentFee: 0, total: 0 };
+    
     const subtotal = editedOrder.items.reduce(
       (acc, item) => acc + item.unitPrice.amount * item.quantity,
       0,
     );
-    const deliveryFee = editedOrder.totals.deliveryFee?.amount || 0;
+    
+    const diasConCargo = ["Martes", "Jueves", "Sábado"];
+    const deliveryDay = editedOrder.delivery?.window?.day || "";
+    const deliveryFee = diasConCargo.includes(deliveryDay) ? 100 : 0;
+    
+    const methodLower = (editedOrder.paymentMethod || "").toLowerCase();
+    const requierePaypal = 
+      methodLower === "online" ||
+      methodLower === "card";
+    const subtotalConEnvio = subtotal + deliveryFee;
+    const paymentFee = requierePaypal ? Math.round(subtotalConEnvio * 0.1) : 0;
+    
+    const discount = editedOrder.totals?.discount?.amount || 0;
+
     return {
       subtotal,
       deliveryFee,
-      total: subtotal + deliveryFee,
+      paymentFee,
+      discount,
+      total: subtotal + deliveryFee + paymentFee - discount,
     };
   }, [editedOrder]);
 
@@ -209,6 +225,7 @@ export default function OrderDetailPage() {
         delivery: editedOrder.delivery,
         paymentMethod: editedOrder.paymentMethod,
         paymentStatus: editedOrder.paymentStatus,
+        status: editedOrder.status,
       };
 
       const response = await adminFetch(`/api/admin/orders/${orderId}`, {
@@ -515,6 +532,36 @@ export default function OrderDetailPage() {
                   <span>Envío</span>
                   <span>RD$ {calculations.deliveryFee.toLocaleString()}</span>
                 </div>
+                {calculations.paymentFee > 0 && (
+                  <div className="w-64 flex justify-between text-orange-600 text-sm font-semibold">
+                    <span>Cargo Pago Digital (10%)</span>
+                    <span>RD$ {calculations.paymentFee.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="w-64 flex justify-between items-center text-sm">
+                  <span className="text-slate-500">Descuento</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-500">RD$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={editedOrder?.totals?.discount?.amount || 0}
+                      onChange={(e) => {
+                        const value = Math.max(0, parseInt(e.target.value) || 0);
+                        setEditedOrder((prev) => 
+                          prev ? {
+                            ...prev,
+                            totals: {
+                              ...prev.totals,
+                              discount: { amount: value, currency: "DOP" }
+                            }
+                          } : prev
+                        );
+                      }}
+                      className="w-24 px-2 py-1 text-right border border-gray-200 rounded"
+                    />
+                  </div>
+                </div>
                 <div className="w-64 h-px bg-gray-200 my-1" />
                 <div className="w-64 flex justify-between font-black text-xl text-emerald-700">
                   <span>Total</span>
@@ -581,8 +628,10 @@ export default function OrderDetailPage() {
                   >
                     <option value="transfer_popular">Popular</option>
                     <option value="transfer_qik">Qik</option>
+                    <option value="transfer">Transferencia</option>
                     <option value="cash">Efectivo</option>
-                    <option value="card">Tarjeta</option>
+                    <option value="card">Tarjeta (+10%)</option>
+                    <option value="online">PayPal (+10%)</option>
                   </select>
                   <select
                     value={editedOrder.paymentStatus || "unpaid"}
@@ -729,11 +778,13 @@ export default function OrderDetailPage() {
                     className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"
                   >
                     <option value="">Selecciona</option>
-                    {DELIVERY_DAYS.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
+                    <option value="Lunes">Lunes</option>
+                    <option value="Martes">Martes (+RD$100)</option>
+                    <option value="Miércoles">Miércoles</option>
+                    <option value="Jueves">Jueves (+RD$100)</option>
+                    <option value="Viernes">Viernes</option>
+                    <option value="Sábado">Sábado (+RD$100)</option>
+                    <option value="Domingo">Domingo</option>
                   </select>
                 </div>
                 <div className="space-y-2">
