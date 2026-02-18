@@ -6,6 +6,7 @@
     "node": ">=18.18.0"
   },
   "scripts": {
+    "predev": "node scripts/check-branch.js",
     "dev": "next dev --webpack",
     "build": "./build.sh",
     "start": "next start",
