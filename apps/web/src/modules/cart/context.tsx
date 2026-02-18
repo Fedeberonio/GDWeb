@@ -22,6 +22,7 @@ type CartContextValue = {
 
 const STORAGE_KEY = "gd-cart";
 const GUEST_STORAGE_KEY = "gd-cart-guest";
+const PERSIST_KEY = "gd_cart";
 
 const CartContext = createContext<CartContextValue | null>(null);
 
@@ -60,6 +61,16 @@ export function CartProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
+      const persistedCart = window.localStorage.getItem(PERSIST_KEY);
+      if (persistedCart) {
+        const parsedPersisted = parseStoredItems(persistedCart);
+        if (parsedPersisted.length > 0) {
+          setItems(parsedPersisted);
+          setHasInitialized(true);
+          return;
+        }
+      }
+
       if (user?.uid) {
         // Logged In: Check for existing user cart
         const userKey = `${STORAGE_KEY}-${user.uid}`;
@@ -132,6 +143,7 @@ export function CartProvider({ children }: PropsWithChildren) {
     if (!hasInitialized) return;
     try {
       const payload = JSON.stringify(items);
+      window.localStorage.setItem(PERSIST_KEY, payload);
       if (user?.uid) {
         window.localStorage.setItem(`${STORAGE_KEY}-${user.uid}`, payload);
       } else {

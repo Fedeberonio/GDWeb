@@ -124,6 +124,10 @@ function OrdersContent() {
               const statusInfo = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
               const StatusIcon = statusInfo.icon;
               const isPending = order.status === "pending";
+              const stockWarningCount = order.stockValidation?.hasInsufficientStock
+                ? order.stockValidation.items.length
+                : 0;
+              const hasStockWarning = stockWarningCount > 0;
 
               return (
                 <motion.div
@@ -155,6 +159,12 @@ function OrdersContent() {
                             {order.delivery.address.contactName}
                           </h3>
                           <p className="text-xs font-mono text-slate-400">Order #{order.id.slice(0, 8)}</p>
+                          {hasStockWarning && (
+                            <p className="mt-1 inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                              <AlertCircle className="h-3 w-3" />
+                              Stock insuficiente ({stockWarningCount})
+                            </p>
+                          )}
                         </div>
                         {isPending && (
                           <span className="relative flex h-3 w-3 ml-2">

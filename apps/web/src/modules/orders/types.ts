@@ -22,7 +22,9 @@ export type OrderItem = {
 export type OrderTotals = {
   subtotal: Price;
   deliveryFee?: Price;
+  paymentFee?: Price;
   discounts?: Price;
+  tip?: Price;
   total: Price;
 };
 
@@ -46,6 +48,28 @@ export type PaymentDetails = {
   method: "cash" | "transfer" | "card" | "online";
   status: "pending" | "paid" | "refunded" | "cancelled";
   transactionId?: string;
+  cash?: {
+    currency: "DOP" | "USD";
+    exchangeRateDop: number;
+    amountDue: number;
+    requiresChange: boolean;
+    paidWithAmount?: number | null;
+    changeAmount?: number;
+    remainingAmount?: number;
+  };
+};
+
+export type OrderStockWarningItem = {
+  id: string;
+  name?: string;
+  requested: number;
+  available: number;
+};
+
+export type OrderStockValidation = {
+  hasInsufficientStock: boolean;
+  checkedAt: string;
+  items: OrderStockWarningItem[];
 };
 
 export type Order = {
@@ -59,10 +83,30 @@ export type Order = {
   payment: PaymentDetails;
   paymentStatus?: "unpaid" | "paid" | "refunded";
   paymentMethod?: "transfer_popular" | "transfer_qik" | "cash" | "card" | "other";
+  paymentCash?: {
+    currency: "DOP" | "USD";
+    exchangeRateDop: number;
+    amountDue: number;
+    requiresChange: boolean;
+    paidWithAmount?: number | null;
+    changeAmount?: number;
+    remainingAmount?: number;
+  };
   createdAt: string;
   updatedAt?: string;
+  stockValidation?: OrderStockValidation;
+  returnsPackaging?: {
+    returned: boolean;
+    discountAmount: number;
+    customerReturnCountAfterOrder?: number;
+    qualifiesForSpecialReward?: boolean;
+  };
+  tip?: {
+    amount: number;
+    type: "none" | "10" | "15" | "20" | "custom";
+  };
   metadata?: {
     language?: "es" | "en";
-    [key: string]: any;
+    [key: string]: unknown;
   };
 };

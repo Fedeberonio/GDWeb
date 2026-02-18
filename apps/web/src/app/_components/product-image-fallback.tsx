@@ -42,17 +42,19 @@ export function ProductImageFallback({
     product?.categoryId === "cajas" ||
     product?.slug?.toLowerCase().includes("box") ||
     productKey.toUpperCase().startsWith("GD-CAJA");
-  const isComboProduct =
-    product?.categoryId?.toLowerCase().includes("combo") ||
-    product?.slug?.toLowerCase().includes("combo") ||
+  const isSaladProduct =
+    product?.categoryId?.toLowerCase().includes("ensalada") ||
+    productKey.toUpperCase().startsWith("GD-SAL-") ||
+    productKey.toUpperCase().startsWith("GD-SALA-") ||
     productKey.toUpperCase().startsWith("GD-COMB") ||
+    productKey.toUpperCase().includes("SALAD-") ||
     productKey.toUpperCase().startsWith("COMBO-");
-  const comboAliasMap: Record<string, string> = {
+  const saladAliasMap: Record<string, string> = {
     "COMBO-DETOX": "GD-COMB-001.png",
     "COMBO-MEDITERR": "GD-COMB-002.png",
     "COMBO-TROPICAL": "GD-COMB-003.png",
   };
-  const comboAlias = comboAliasMap[productKey.toUpperCase()];
+  const saladAlias = saladAliasMap[productKey.toUpperCase()];
 
   const [imageSrc, setImageSrc] = useState<string>(`/assets/images/products/${productKey}.png`);
   const [hasError, setHasError] = useState(false);
@@ -64,11 +66,11 @@ export function ProductImageFallback({
     const isLocalImage = rawImage && !rawImage.startsWith("http");
     const isBoxImage = typeof rawImage === "string" && rawImage.includes("/assets/images/boxes/");
     const isProductImage = typeof rawImage === "string" && rawImage.includes("/assets/images/products/");
-    const isComboImage = typeof rawImage === "string" && rawImage.includes("/assets/images/combos/");
+    const isSaladImage = typeof rawImage === "string" && rawImage.includes("/assets/images/salads/");
 
     if (isLocalImage && (!isBoxProduct || isBoxImage)) {
-      if (isComboProduct && !isComboImage && !rawImage?.startsWith("/")) {
-        sources.push(`/assets/images/combos/${rawImage}`);
+      if (isSaladProduct && !isSaladImage && !rawImage?.startsWith("/")) {
+        sources.push(`/assets/images/salads/${rawImage}`);
       } else {
         sources.push(rawImage as string);
       }
@@ -79,21 +81,21 @@ export function ProductImageFallback({
       sources.push(`/assets/images/boxes/${productKey}.jpg`);
     }
 
-    if (isComboProduct && productKey) {
-      if (comboAlias) {
-        sources.push(`/assets/images/combos/${comboAlias}`);
+    if (isSaladProduct && productKey) {
+      if (saladAlias) {
+        sources.push(`/assets/images/salads/${saladAlias}`);
       }
-      sources.push(`/assets/images/combos/${productKey}.png`);
-      sources.push(`/assets/images/combos/${productKey}.jpg`);
-      sources.push(`/assets/images/combos/${productKey}.jpeg`);
+      sources.push(`/assets/images/salads/${productKey}.png`);
+      sources.push(`/assets/images/salads/${productKey}.jpg`);
+      sources.push(`/assets/images/salads/${productKey}.jpeg`);
       const digits = productKey.match(/\d+/)?.[0];
       if (digits) {
         const padded = digits.padStart(3, "0");
-        sources.push(`/assets/images/combos/GD-COMB-${padded}.png`);
+        sources.push(`/assets/images/salads/GD-COMB-${padded}.png`);
       }
     }
 
-    if (productKey && !isBoxProduct && !isComboProduct) {
+    if (productKey && !isBoxProduct && !isSaladProduct) {
       sources.push(`/assets/images/products/${productKey}.png`);
       sources.push(`/assets/images/products/${productKey}.jpg`);
       sources.push(`/assets/images/products/${productKey}.jpeg`);
@@ -107,13 +109,13 @@ export function ProductImageFallback({
       sources.push(rawImage as string);
     }
 
-    if (isComboProduct && isProductImage) {
+    if (isSaladProduct && isProductImage) {
       sources.push(rawImage as string);
     }
 
     sources.push("/assets/images/products/placeholder.png");
     return sources;
-  }, [productKey, rawImage, isBoxProduct, isComboProduct, comboAlias]);
+  }, [productKey, rawImage, isBoxProduct, isSaladProduct, saladAlias]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

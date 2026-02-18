@@ -1,3 +1,5 @@
+import type { TranslationKey } from "@/modules/i18n/translations";
+
 /**
  * Lead Source options for "How did you find us?" — must match across Email and Google onboarding.
  */
@@ -26,7 +28,7 @@ export const PAYMENT_OPTIONS = [
 
 export type PaymentPreferenceValue = (typeof PAYMENT_OPTIONS)[number]["value"];
 
-const LEAD_SOURCE_LABEL_KEYS: Record<LeadSourceValue, string> = {
+const LEAD_SOURCE_LABEL_KEYS: Record<LeadSourceValue, TranslationKey> = {
   WhatsApp: "profile.heard_whatsapp",
   Flyer: "profile.heard_flyer",
   Instagram: "profile.heard_instagram",
@@ -38,6 +40,6 @@ const LEAD_SOURCE_LABEL_KEYS: Record<LeadSourceValue, string> = {
   "¡Lo soñé!": "profile.heard_dream",
 };
 
-export function getLeadSourceLabelKey(value: LeadSourceValue): string {
-  return LEAD_SOURCE_LABEL_KEYS[value] ?? value;
+export function getLeadSourceLabelKey(value: LeadSourceValue): TranslationKey {
+  return LEAD_SOURCE_LABEL_KEYS[value];
 }

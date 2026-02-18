@@ -187,7 +187,7 @@ exports.supplySchema = zod_1.z.object({
     unitPrice: zod_1.z.number().nonnegative().optional(),
     isReturnable: zod_1.z.boolean(),
     stock: zod_1.z.number().int().nonnegative().optional(),
-    minStockAlert: zod_1.z.number().int().nonnegative().optional(),
+    minStock: zod_1.z.number().int().nonnegative().optional(),
     meta: zod_1.z
         .object({
         material: optionalNonEmptyStringSchema,

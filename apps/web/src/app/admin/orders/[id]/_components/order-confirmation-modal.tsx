@@ -3,6 +3,11 @@
 import { useState, useEffect } from "react";
 import { X, Check, Save } from "lucide-react";
 import type { Order, OrderDelivery } from "@/modules/orders/types";
+import {
+    buildOrderConfirmationMessage,
+    type OrderTotalsSummary,
+    type ProductLabelMap,
+} from "@/modules/orders/whatsapp-message";
 
 type OrderDetailsModalProps = {
     isOpen: boolean;
@@ -11,6 +16,8 @@ type OrderDetailsModalProps = {
     order: Order;
     loading?: boolean;
     mode: 'confirm' | 'edit';
+    totals?: OrderTotalsSummary;
+    productLabelMap?: ProductLabelMap;
 };
 
 export type ConfirmationData = {
@@ -31,6 +38,8 @@ export function OrderDetailsModal({
     order,
     loading = false,
     mode = 'confirm',
+    totals,
+    productLabelMap,
 }: OrderDetailsModalProps) {
     // Local state for form fields
     const [customerName, setCustomerName] = useState("");
@@ -67,27 +76,29 @@ export function OrderDetailsModal({
         }
     }, [isOpen, order]);
 
+    const buildDelivery = (): OrderDelivery => ({
+        ...order.delivery,
+        address: {
+            ...order.delivery.address,
+            contactName: customerName,
+            phone: customerPhone,
+            label: addressLabel,
+            city,
+            zone,
+        },
+        notes: deliveryNotes,
+        window: {
+            day: order.delivery.window?.day || "Hoy",
+            slot: `${timeStart} - ${timeEnd}`,
+        },
+    });
+
     const handleSubmit = async () => {
         const data: ConfirmationData = {
             customerName,
             customerPhone,
             language,
-            delivery: {
-                ...order.delivery,
-                address: {
-                    ...order.delivery.address,
-                    contactName: customerName,
-                    phone: customerPhone,
-                    label: addressLabel,
-                    city,
-                    zone,
-                },
-                notes: deliveryNotes,
-                window: {
-                    day: order.delivery.window?.day || "Hoy",
-                    slot: `${timeStart} - ${timeEnd}`,
-                }
-            },
+            delivery: buildDelivery(),
             timeWindow: {
                 start: timeStart,
                 end: timeEnd,
@@ -96,16 +107,17 @@ export function OrderDetailsModal({
         await onConfirm(data);
     };
 
-    const getPreviewMessage = () => {
-        const orderId = order.id;
-        const start = timeStart || "??:??";
-        const end = timeEnd || "??:??";
-
-        if (language === "en") {
-            return `Hi ${customerName}, we confirm that your order #${orderId} is confirmed and will be delivered between ${start} and ${end}. You will receive a new message when it arrives.`;
-        }
-        return `Hola ${customerName}, te confirmamos que tu pedido #${orderId} está confirmado y será entregado entre las ${start} y ${end}. Recibirás un nuevo mensaje cuando haya llegado.`;
-    };
+    const getPreviewMessage = () =>
+        buildOrderConfirmationMessage({
+            order,
+            language,
+            customerName,
+            customerPhone,
+            delivery: buildDelivery(),
+            timeWindow: { start: timeStart, end: timeEnd },
+            totals,
+            productLabelMap,
+        });
 
     // Render nothing if not open (or could use CSS visibility/opacity for animation)
     if (!isOpen) return null;
@@ -254,8 +266,8 @@ export function OrderDetailsModal({
                     {isConfirmMode && (
                         <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
                             <p className="text-xs font-semibold text-green-700 mb-1">Vista previa del mensaje:</p>
-                            <p className="text-xs text-green-800 italic leading-relaxed">
-                                "{getPreviewMessage()}"
+                            <p className="text-xs text-green-800 italic leading-relaxed whitespace-pre-wrap">
+                                {getPreviewMessage()}
                             </p>
                         </div>
                     )}

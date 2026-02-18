@@ -55,17 +55,46 @@ export async function POST(request: Request) {
         ? (rawBody as Record<string, unknown>)
         : {};
 
-    const docRef = db.collection(PRODUCT_COLLECTION).doc();
+    // CRITICAL: Use SKU as document ID (like existing products GD-VEGE-067, etc.)
+    const sku = body.sku?.toString().trim();
+
+    if (!sku) {
+      return NextResponse.json(
+        { error: "SKU es requerido para crear un producto" },
+        { status: 400 }
+      );
+    }
+
+    // Validate SKU format (optional but recommended)
+    if (!/^[A-Za-z0-9\-_]+$/.test(sku)) {
+      return NextResponse.json(
+        { error: "SKU solo puede contener letras, números, guiones y guiones bajos" },
+        { status: 400 }
+      );
+    }
+
+    // Check if SKU already exists (prevent duplicates)
+    const docRef = db.collection(PRODUCT_COLLECTION).doc(sku);
+    const existingDoc = await docRef.get();
+
+    if (existingDoc.exists) {
+      return NextResponse.json(
+        { error: `El SKU "${sku}" ya existe. Por favor usa otro SKU.` },
+        { status: 409 }
+      );
+    }
+
+    // Create product with SKU as document ID
     await docRef.set({
       ...body,
+      sku: sku, // Ensure sku field matches document ID
+      id: sku, // Set id field to match document ID
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
 
-    await docRef.set({ id: docRef.id }, { merge: true });
-
     return NextResponse.json({
-      data: { id: docRef.id, ...body }
+      data: { id: sku, ...body }
     }, { status: 201 });
 
   } catch (error) {

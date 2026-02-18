@@ -23,6 +23,21 @@ export type ProductCategory = {
   status: "active" | "inactive";
 };
 
+export type ProductType = "simple" | "box" | "salad" | "prepared";
+
+export interface RecipeIngredient {
+  productId?: string;  // ID de producto (GD-VEGE-053)
+  supplyId?: string;   // ID de insumo (GD-SUPP-001)
+  quantity: number;
+  unit: string;
+  name?: LocalizedString;
+}
+
+export interface Recipe {
+  yields: number;
+  ingredients: RecipeIngredient[];
+}
+
 /**
  * Product from catalog API. `name` (and optional `description`, `unit`) use LocalizedString
  * { es, en } — aligned with API catalog schema and gd-locale for SSR/CSR.
@@ -44,6 +59,8 @@ export type Product = {
   price: number;
   salePrice?: number;
   status?: "active" | "inactive" | "coming_soon" | "discontinued" | "hidden";
+  type?: ProductType;
+  recipe?: Recipe;
   image?: string;
   tags?: string[];
   isFeatured?: boolean;
@@ -126,12 +143,10 @@ export type BoxRule = {
   variantContents?: Partial<Record<"mix" | "fruity" | "veggie", Array<{ productSku: string; quantity: number }>>>;
 };
 
-export type Combo = {
+export type Salad = {
   id: string;
   name: LocalizedString;
-  salad: LocalizedString;
-  juice: LocalizedString;
-  dessert: LocalizedString;
+  description?: LocalizedString;
   price: number;
   cost?: number;
   margin?: number;
@@ -153,19 +168,6 @@ export type Combo = {
   isFeatured: boolean;
 };
 
-export type LunchCombo = {
-  id: string;
-  name: LocalizedString;
-  price: number;
-  nutrition: {
-    calories: number;
-    protein: number;
-    isGlutenFree: boolean;
-  };
-  benefits: LocalizedString;
-  image?: string;
-};
-
 export type BoxDefinition = {
   id: string;
   variants: Array<{
@@ -176,3 +178,6 @@ export type BoxDefinition = {
     }>;
   }>;
 };
+
+/** @deprecated Use Salad instead */
+export type Combo = Salad;

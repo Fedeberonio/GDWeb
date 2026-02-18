@@ -1,11 +1,19 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, type DocumentData, type DocumentSnapshot } from "firebase-admin/firestore";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-session";
 import type { OrderItem, OrderTotals } from "@/modules/orders/types";
 import type { Product } from "@/modules/catalog/types";
 import { createProductStockLogAdmin } from "@/modules/inventory/services/stockLogServiceAdmin";
+
+type FinalizeRequestBody = {
+    items: OrderItem[];
+    delivery?: Record<string, unknown>;
+    customerName?: string;
+    customerPhone?: string;
+    language?: "es" | "en";
+};
 
 // Helper to calculate totals on the server side to ensure data integrity
 function calculateTotals(items: OrderItem[]): OrderTotals {
@@ -23,15 +31,15 @@ function calculateTotals(items: OrderItem[]): OrderTotals {
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         // 1. Security Check
         const user = await requireAdminSession(request);
 
-        const orderId = params.id;
-        const body = await request.json();
-        const { items } = body as { items: OrderItem[] };
+        const { id: orderId } = await params;
+        const body = (await request.json()) as FinalizeRequestBody;
+        const { items } = body;
 
         if (!items || !Array.isArray(items)) {
             return NextResponse.json(
@@ -41,12 +49,7 @@ export async function POST(
         }
 
         // Optional fields from confirmation modal
-        const { delivery, customerName, customerPhone, language } = body as {
-            delivery?: any,
-            customerName?: string,
-            customerPhone?: string,
-            language?: "es" | "en"
-        };
+        const { delivery, customerName, customerPhone, language } = body;
 
         const db = getAdminFirestore();
         const orderRef = db.collection("orders").doc(orderId);
@@ -56,7 +59,7 @@ export async function POST(
         const productRefs = productItems.map((item) =>
             db.collection("catalog_products").doc(item.id)
         );
-        let productDocs: any[] = [];
+        let productDocs: Array<DocumentSnapshot<DocumentData>> = [];
 
         // 2. Transaction
         await db.runTransaction(async (transaction) => {
@@ -101,22 +104,23 @@ export async function POST(
             // 2e. Update Order
             // We explicitly rely on the items passed from the client as the final list.
             const currentOrderData = orderDoc.data();
+            const existingTotals = currentOrderData?.totals;
             const newTotals = calculateTotals(items);
 
             // Preserve existing delivery fee and discounts if they exist
-            if (currentOrderData?.totals?.deliveryFee) {
-                newTotals.deliveryFee = currentOrderData.totals.deliveryFee;
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                newTotals.total.amount += newTotals.deliveryFee!.amount;
+            const deliveryFeeAmount = existingTotals?.deliveryFee?.amount;
+            if (typeof deliveryFeeAmount === "number" && existingTotals?.deliveryFee) {
+                newTotals.deliveryFee = existingTotals.deliveryFee;
+                newTotals.total.amount += deliveryFeeAmount;
             }
-            if (currentOrderData?.totals?.discounts) {
-                newTotals.discounts = currentOrderData.totals.discounts;
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                newTotals.total.amount -= newTotals.discounts!.amount;
+            const discountsAmount = existingTotals?.discounts?.amount;
+            if (typeof discountsAmount === "number" && existingTotals?.discounts) {
+                newTotals.discounts = existingTotals.discounts;
+                newTotals.total.amount -= discountsAmount;
             }
 
             // Construct update object
-            const updateData: any = {
+            const updateData: Record<string, unknown> = {
                 items: items,
                 totals: newTotals,
                 status: "confirmed",
@@ -139,16 +143,21 @@ export async function POST(
             // Note: If we had a separate 'customer' document, we would update that too, 
             // but here we just update the snapshot in the order.
             if (customerName || customerPhone) {
-                // Ensure we don't overwrite the whole delivery object if we didn't pass 'delivery' prop
-                if (!updateData.delivery) {
-                    updateData.delivery = currentOrderData?.delivery || {};
-                }
-                if (!updateData.delivery.address) {
-                    updateData.delivery.address = currentOrderData?.delivery?.address || {};
-                }
+                const deliveryData =
+                    (typeof updateData.delivery === "object" && updateData.delivery !== null
+                        ? (updateData.delivery as Record<string, unknown>)
+                        : ((currentOrderData?.delivery as Record<string, unknown> | undefined) ?? {}));
 
-                if (customerName) updateData.delivery.address.contactName = customerName;
-                if (customerPhone) updateData.delivery.address.phone = customerPhone;
+                const addressData =
+                    (typeof deliveryData.address === "object" && deliveryData.address !== null
+                        ? (deliveryData.address as Record<string, unknown>)
+                        : ((currentOrderData?.delivery?.address as Record<string, unknown> | undefined) ?? {}));
+
+                if (customerName) addressData.contactName = customerName;
+                if (customerPhone) addressData.phone = customerPhone;
+
+                deliveryData.address = addressData;
+                updateData.delivery = deliveryData;
             }
 
             transaction.update(orderRef, updateData);

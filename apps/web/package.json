@@ -9,7 +9,8 @@
     "dev": "next dev --webpack",
     "build": "./build.sh",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:combos-to-salads": "tsx scripts/migrate-combos-to-salads.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",

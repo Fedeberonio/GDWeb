@@ -12,7 +12,7 @@ type CatalogItem = {
   id: string;
   name: string;
   price: number;
-  type: "product" | "box" | "combo";
+  type: "product" | "box" | "salad";
   image?: string;
   stock?: number;
 };
@@ -20,7 +20,7 @@ type CatalogItem = {
 type CartItem = {
   id: string;
   name: string;
-  type: "product" | "box" | "combo";
+  type: "product" | "box" | "salad";
   quantity: number;
   unitPrice: number;
   stock?: number;
@@ -75,20 +75,17 @@ export default function AdminCreateOrderPage() {
   const loadCatalog = useCallback(async () => {
     try {
       setLoading(true);
-      const [productsRes, combosRes, customersRes] = await Promise.all([
+      const [productsRes, customersRes] = await Promise.all([
         adminFetch("/api/admin/catalog/products", { cache: "no-store" }),
-        adminFetch("/api/admin/catalog/combos", { cache: "no-store" }),
         adminFetch("/api/admin/customers", { cache: "no-store" }),
       ]);
 
-      const [productsJson, combosJson, customersJson] = await Promise.all([
+      const [productsJson, customersJson] = await Promise.all([
         productsRes.json(),
-        combosRes.json(),
         customersRes.json(),
       ]);
 
       const products = Array.isArray(productsJson.data) ? productsJson.data : [];
-      const combos = Array.isArray(combosJson.data) ? combosJson.data : [];
       const customerList = Array.isArray(customersJson.data) ? customersJson.data : [];
 
       const normalizedProducts: CatalogItem[] = products.map((item: any) => ({
@@ -100,15 +97,7 @@ export default function AdminCreateOrderPage() {
         stock: item?.metadata?.stock,
       }));
 
-      const normalizedCombos: CatalogItem[] = combos.map((item: any) => ({
-        id: item.id,
-        name: normalizeName(item.name) || item.id,
-        price: Number(item.price ?? 0),
-        type: "combo",
-        image: item.image,
-      }));
-
-      setCatalogItems([...normalizedProducts, ...normalizedCombos]);
+      setCatalogItems([...normalizedProducts]);
       setCustomers(
         customerList.map((customer: any) => ({
           id: customer.id,
@@ -283,7 +272,7 @@ export default function AdminCreateOrderPage() {
                 <input
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Buscar productos, cajas o combos"
+                  placeholder="Buscar productos, cajas o ensaladas..."
                   className="w-full bg-transparent text-sm text-slate-700 focus:outline-none"
                 />
               </div>
@@ -306,7 +295,7 @@ export default function AdminCreateOrderPage() {
                     >
                       <div>
                         <p className="text-sm font-semibold text-slate-800">{item.name}</p>
-                        <p className="text-xs text-slate-500">{item.type === "box" ? "Caja" : item.type === "combo" ? "Combo" : "Producto"}</p>
+                        <p className="text-xs text-slate-500">{item.type === "box" ? "Caja" : item.type === "salad" ? "Ensalada" : "Producto"}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold text-slate-700">{formatCurrency(item.price)}</p>
@@ -336,7 +325,7 @@ export default function AdminCreateOrderPage() {
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <p className="text-sm font-semibold text-slate-800">{item.name}</p>
-                            <p className="text-xs text-slate-500">{item.type === "box" ? "Caja" : item.type === "combo" ? "Combo" : "Producto"}</p>
+                            <p className="text-xs text-slate-500">{item.type === "box" ? "Caja" : item.type === "salad" ? "Ensalada" : "Producto"}</p>
                             {showWarning && (
                               <p className="mt-2 text-xs text-amber-600 flex items-center gap-1">
                                 <AlertTriangle className="h-3 w-3" />

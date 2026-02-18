@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { adminFetch } from "@/modules/admin/api/client";
@@ -39,7 +40,14 @@ type PrintOrder = {
   totals?: {
     subtotal?: { amount: number; currency: string };
     deliveryFee?: { amount: number; currency: string };
+    paymentFee?: { amount: number; currency: string };
+    discounts?: { amount: number; currency: string };
+    tip?: { amount: number; currency: string };
     total?: { amount: number; currency: string };
+  };
+  returnsPackaging?: {
+    returned?: boolean;
+    discountAmount?: number;
   };
   delivery?: {
     address?: {
@@ -101,7 +109,12 @@ export default function OrderPrintPage() {
   const items = order?.items ?? [];
   const subtotal = order?.totals?.subtotal?.amount ?? 0;
   const deliveryFee = order?.totals?.deliveryFee?.amount ?? 0;
-  const total = order?.totals?.total?.amount ?? subtotal + deliveryFee;
+  const paymentFee = order?.totals?.paymentFee?.amount ?? 0;
+  const discount = order?.totals?.discounts?.amount ?? 0;
+  const returnDiscount = order?.returnsPackaging?.returned ? (order?.returnsPackaging?.discountAmount ?? 0) : 0;
+  const otherDiscount = Math.max(0, discount - returnDiscount);
+  const tip = order?.totals?.tip?.amount ?? 0;
+  const total = order?.totals?.total?.amount ?? subtotal + deliveryFee + paymentFee - discount + tip;
   const currency = order?.totals?.total?.currency ?? "DOP";
 
   const billedTo = useMemo(() => {
@@ -135,7 +148,7 @@ export default function OrderPrintPage() {
 
   return (
     <div className="min-h-screen bg-slate-200/60 p-6 md:p-10 font-sans text-slate-900">
-      <style jsx global>{`
+      <style>{`
         @media print {
           .no-print {
             display: none !important;
@@ -166,7 +179,7 @@ export default function OrderPrintPage() {
         <div className="h-2 bg-[var(--gd-color-forest)]" />
         <header className="flex flex-col gap-6 p-8 md:flex-row md:items-start md:justify-between">
           <div className="flex items-center gap-4">
-            <img src={LOGO_SRC} alt="Green Dolio" className="h-16 w-auto" />
+            <Image src={LOGO_SRC} alt="Green Dolio" width={120} height={64} className="h-16 w-auto" />
             <div>
               <p className="text-sm text-[var(--gd-color-forest)] font-semibold">Green Dolio</p>
               <p className="text-xs text-slate-400">Orden de Compra</p>
@@ -240,6 +253,30 @@ export default function OrderPrintPage() {
               <span>Delivery</span>
               <span>{formatCurrency(deliveryFee, currency)}</span>
             </div>
+            {paymentFee > 0 && (
+              <div className="flex items-center justify-between text-slate-600">
+                <span>Cargo pago digital</span>
+                <span>{formatCurrency(paymentFee, currency)}</span>
+              </div>
+            )}
+            {returnDiscount > 0 && (
+              <div className="flex items-center justify-between text-emerald-700">
+                <span>Descuento devolución envases</span>
+                <span>-{formatCurrency(returnDiscount, currency)}</span>
+              </div>
+            )}
+            {otherDiscount > 0 && (
+              <div className="flex items-center justify-between text-emerald-700">
+                <span>Descuento</span>
+                <span>-{formatCurrency(otherDiscount, currency)}</span>
+              </div>
+            )}
+            {tip > 0 && (
+              <div className="flex items-center justify-between text-slate-600">
+                <span>Propina</span>
+                <span>{formatCurrency(tip, currency)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between text-slate-900 font-semibold text-base border-t border-slate-200 pt-2">
               <span>Total</span>
               <span>{formatCurrency(total, currency)}</span>

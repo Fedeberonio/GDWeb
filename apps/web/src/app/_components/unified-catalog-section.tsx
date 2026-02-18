@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
-import type { Product, ProductCategory } from "@/modules/catalog/types";
+
+import type { LocalizedString, Product, ProductCategory } from "@/modules/catalog/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
 interface Props {
@@ -11,42 +12,70 @@ interface Props {
   categories: ProductCategory[];
 }
 
+const CATALOG_CATEGORY_ORDER = [
+  "productos-de-granja",
+  "frutas",
+  "vegetales",
+  "hierbas-y-especias",
+  "otros",
+] as const;
+
+const CATEGORY_COLORS: Record<string, string> = {
+  "productos-de-granja": "from-yellow-600/60 to-amber-700/60",
+  frutas: "from-pink-500/60 to-red-600/60",
+  vegetales: "from-green-600/60 to-emerald-700/60",
+  "hierbas-y-especias": "from-lime-600/60 to-green-700/60",
+  otros: "from-slate-600/60 to-gray-700/60",
+};
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  "productos-de-granja": "/assets/images/categories/productos-de-granja.png",
+  frutas: "/assets/images/categories/frutas.png",
+  vegetales: "/assets/images/categories/vegetales.png",
+  "hierbas-y-especias": "/assets/images/categories/hierbas-y-especias.png",
+  otros: "/assets/images/categories/otros.png",
+};
+
+const CATEGORY_LABEL_FALLBACKS: Record<string, LocalizedString> = {
+  "productos-de-granja": { es: "Productos de Granja", en: "Farm Products" },
+  frutas: { es: "Frutas", en: "Fruits" },
+  vegetales: { es: "Vegetales", en: "Vegetables" },
+  "hierbas-y-especias": { es: "Hierbas y Especias", en: "Herbs & Spices" },
+  otros: { es: "Otros", en: "Others" },
+};
+
+function resolveStatus(product: Product): string {
+  return String(product.status ?? (product.isActive ? "active" : "inactive")).toLowerCase();
+}
+
+function countSellableProducts(products: Product[], categoryId: string): number {
+  return products.filter((product) => {
+    if (String(product.categoryId ?? "") !== categoryId) return false;
+    const status = resolveStatus(product);
+    const unitPrice = Number(product.salePrice ?? product.price);
+    return status === "active" && Number.isFinite(unitPrice) && unitPrice > 0;
+  }).length;
+}
+
 export function UnifiedCatalogSection({ products, categories }: Props) {
   const { t, tData } = useTranslation();
-  // Filtrar categorías relevantes (excluir "cajas")
-  const visibleCategories = categories.filter((cat) => cat.id !== "cajas");
 
-  // Obtener colores por categoría (overlay sutil)
-  const getCategoryColor = (categoryId: string) => {
-    const colors: Record<string, string> = {
-      frutas: "from-pink-500/60 to-red-600/60",
-      vegetales: "from-green-600/60 to-emerald-700/60",
-      "productos-caseros": "from-amber-600/60 to-orange-700/60",
-      "productos-de-granja": "from-yellow-600/60 to-amber-700/60",
-      "jugos-naturales": "from-cyan-600/60 to-blue-700/60",
-      "hierbas-y-especias": "from-lime-600/60 to-green-700/60",
-      otros: "from-slate-600/60 to-gray-700/60",
-    };
-    return colors[categoryId] || "from-slate-600/60 to-gray-700/60";
-  };
-
-  const getCategoryImage = (categoryId: string) => {
-    const images: Record<string, string> = {
-      frutas: "/assets/images/categories/frutas.png",
-      vegetales: "/assets/images/categories/vegetales.png",
-      "productos-caseros": "/assets/images/categories/productos-caseros.png",
-      "productos-de-granja": "/assets/images/categories/productos-de-granja.png",
-      "jugos-naturales": "/assets/images/categories/jugos.png",
-      "hierbas-y-especias": "/assets/images/categories/hierbas-y-especias.png",
-      otros: "/assets/images/categories/otros.png",
-    };
-    return images[categoryId] || "/assets/images/hero/hero-lifestyle-kitchen.jpg";
-  };
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const visibleCategories = CATALOG_CATEGORY_ORDER.map((categoryId) => {
+    const existing = categoryById.get(categoryId);
+    if (existing) return existing;
+    return {
+      id: categoryId,
+      slug: categoryId,
+      name: CATEGORY_LABEL_FALLBACKS[categoryId],
+      sortOrder: 0,
+      status: "active",
+    } as ProductCategory;
+  });
 
   return (
     <section id="catalogo" className="relative bg-white py-12 md:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <header className="text-center space-y-4 mb-10">
           <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)]/20 to-[var(--gd-color-sprout)]/30 px-4 py-2 border-2 border-[var(--gd-color-leaf)]/30">
             <ShoppingCart className="w-4 h-4 text-[var(--gd-color-forest)]" />
@@ -64,14 +93,12 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
           </p>
         </header>
 
-        {/* Category Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {visibleCategories.map((category) => {
-            const count = products.filter((p) => p.categoryId === category.id).length;
-            if (count === 0) return null;
-
-            const colorClasses = getCategoryColor(category.id);
-            const bgImage = getCategoryImage(category.id);
+            const count = countSellableProducts(products, category.id);
+            const colorClasses = CATEGORY_COLORS[category.id] || "from-slate-600/60 to-gray-700/60";
+            const bgImage = CATEGORY_IMAGES[category.id] || "/assets/images/hero/hero-lifestyle-kitchen.jpg";
+            const label = tData(category.name);
 
             return (
               <Link
@@ -79,29 +106,23 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
                 href={`/categoria/${category.slug}`}
                 className="group relative rounded-3xl border-2 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-[var(--gd-color-leaf)] min-h-[250px] flex flex-col justify-end"
               >
-                {/* Background Image */}
                 <div className="absolute inset-0">
                   <Image
                     src={bgImage}
-                    alt={tData(category.name)}
+                    alt={label}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 </div>
 
-                {/* Overlay gradient for text readability (darker at bottom) */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity" />
-
-                {/* Colored Tint Overlay (Optional, very subtle) */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${colorClasses} opacity-20 mix-blend-overlay`} />
 
-                {/* Content */}
                 <div className="relative p-8 space-y-2 z-10">
-                  {/* Title */}
                   <div>
                     <h3 className="font-caveat text-2xl md:text-3xl lg:text-4xl leading-tight text-white mb-1 drop-shadow-md">
-                      {tData(category.name)}
+                      {label}
                     </h3>
                     {category.description && (
                       <p className="font-inter text-sm md:text-base text-white/90 leading-relaxed drop-shadow font-medium line-clamp-2">
@@ -110,7 +131,6 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
                     )}
                   </div>
 
-                  {/* Count */}
                   <div className="flex items-center justify-between pt-3 border-t border-white/30">
                     <span className="text-xs font-inter font-bold uppercase tracking-wider text-white drop-shadow-md">
                       {count} {t("catalog.products_count")}

@@ -4,14 +4,15 @@ import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-sessio
 
 export async function DELETE(
   request: Request,
-  context: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     await requireAdminSession(request);
+    const { id } = await context.params;
     const url = new URL(request.url);
     const pathParts = url.pathname.split("/").filter(Boolean);
     const fallbackId = pathParts[pathParts.length - 1];
-    const userId = context?.params?.id ?? fallbackId;
+    const userId = id ?? fallbackId;
     if (!userId) {
       return NextResponse.json({ error: "Missing user id" }, { status: 400 });
     }
@@ -19,8 +20,11 @@ export async function DELETE(
     const auth = getAdminAuth();
     try {
       await auth.deleteUser(userId);
-    } catch (error: any) {
-      const code = error?.code ?? "";
+    } catch (error: unknown) {
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: unknown }).code ?? "")
+          : "";
       if (code !== "auth/user-not-found") {
         throw error;
       }

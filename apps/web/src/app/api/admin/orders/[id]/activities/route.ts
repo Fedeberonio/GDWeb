@@ -6,7 +6,7 @@ import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-sessio
 // GET: Fetch activities
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdminSession(request);
@@ -40,7 +40,7 @@ export async function GET(
 // POST: Add new activity
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAdminSession(request);

@@ -3,7 +3,6 @@
 import { Apple, Citrus, Leaf, Package, Salad } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getVariantInfo, getVisualCategory, type VariantType } from "./box-selector/helpers";
-import { ProductImageFallback } from "./product-image-fallback";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import type { BoxRule, BoxVariant, Product } from "@/modules/catalog/types";
 
@@ -86,7 +85,7 @@ export function BoxVariantsDisplay({
     if (boxRule?.variantContents?.[variant]?.length) {
       return boxRule.variantContents[variant]!.map((item) => ({
         ...item,
-        name: resolveProductLabel(item.productSku, item.name),
+        name: resolveProductLabel(item.productSku),
       }));
     }
 
@@ -176,6 +175,12 @@ export function BoxVariantsDisplay({
   };
 
   const handleVariantClick = (variant: VariantType) => {
+    if (compact) {
+      setSelectedVariant(variant);
+      onVariantSelect?.(variant);
+      return;
+    }
+
     // Si la variante ya está seleccionada, deseleccionarla
     if (selectedVariant === variant && expandedVariant === variant) {
       setSelectedVariant(null);
@@ -192,31 +197,34 @@ export function BoxVariantsDisplay({
   };
 
   return (
-    <div className="space-y-3">
+    <div className={compact ? "space-y-2" : "space-y-3"}>
       {/* Selector de variantes - Compacto */}
-      <div className="flex gap-2">
+      <div className={compact ? "grid grid-cols-3 gap-2" : "flex gap-2"}>
         {variants.map((variant) => {
           const info = getVariantInfo(variant, locale, resolveVariantData(variant));
           const isSelected = selectedVariant === variant;
           const isExpanded = expandedVariant === variant;
-          const variantContents = getFilteredContents(variant);
-          const variantCount = variantContents.length;
 
           return (
             <button
               key={variant}
               type="button"
               onClick={() => handleVariantClick(variant)}
-              className={`flex-1 rounded-lg px-2 py-2 text-sm md:text-base font-semibold transition-all duration-200 relative border-2 ${isSelected && isExpanded
-                ? "bg-[var(--gd-color-leaf)] text-white shadow-md border-[var(--gd-color-leaf)]"
-                : "bg-white/60 text-[var(--color-muted)] hover:bg-[var(--gd-color-sprout)]/40 border-transparent hover:border-[var(--gd-color-leaf)]/30"
-                }`}
+              className={`rounded-lg font-semibold transition-all duration-200 relative border-2 ${
+                compact
+                  ? `px-2 py-1.5 text-xs md:text-[13px] ${isSelected
+                      ? "bg-[var(--gd-color-leaf)] text-white shadow-sm border-[var(--gd-color-leaf)]"
+                      : "bg-white/75 text-[var(--color-muted)] hover:bg-[var(--gd-color-sprout)]/45 border-transparent hover:border-[var(--gd-color-leaf)]/30"}`
+                  : `flex-1 px-2 py-2 text-sm md:text-base ${isSelected && isExpanded
+                      ? "bg-[var(--gd-color-leaf)] text-white shadow-md border-[var(--gd-color-leaf)]"
+                      : "bg-white/60 text-[var(--color-muted)] hover:bg-[var(--gd-color-sprout)]/40 border-transparent hover:border-[var(--gd-color-leaf)]/30"}`
+              }`}
             >
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-lg">{variantIcons[info.icon]}</span>
-                <span>{variant.toUpperCase()}</span>
+              <div className={`flex flex-col items-center ${compact ? "gap-0.5" : "gap-1"}`}>
+                <span className={compact ? "scale-90" : "text-lg"}>{variantIcons[info.icon]}</span>
+                <span className={compact ? "tracking-wide" : ""}>{variant.toUpperCase()}</span>
               </div>
-              {isExpanded && compact && (
+              {isExpanded && compact && !onVariantSelect && (
                 <div className="absolute top-full left-0 right-0 mt-1 z-20">
                   <div className="w-2 h-2 bg-[var(--gd-color-leaf)] rotate-45 absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </div>
@@ -227,7 +235,7 @@ export function BoxVariantsDisplay({
       </div>
 
       {/* Contenido expandido de la variante seleccionada */}
-      {expandedVariant && expandedVariant === selectedVariant && (
+      {!compact && expandedVariant && expandedVariant === selectedVariant && (
         <div
           key={selectedVariant}
           className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300"

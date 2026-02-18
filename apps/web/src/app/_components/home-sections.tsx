@@ -349,24 +349,24 @@ export function HomeSections() {
                         <p className="text-lg text-white/90 max-w-2xl mx-auto">{t("home.payment_desc")}</p>
                     </div>
 
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
                         <PaymentMethodCard
-                            imageSrc="/assets/icons/payment_methods/01_payment_cash.png"
+                            imageSrc="/assets/icons/payment_methods/01_payment_cash.webp"
                             title={t("home.payment_cash")}
                             description={t("home.payment_cash_desc")}
                         />
                         <PaymentMethodCard
-                            imageSrc="/assets/icons/payment_methods/02_payment_bank_transfer.png"
+                            imageSrc="/assets/icons/payment_methods/02_payment_bank_transfer.webp"
                             title={t("home.payment_transfer")}
                             description={t("home.payment_transfer_desc")}
                         />
                         <PaymentMethodCard
-                            imageSrc="/assets/icons/payment_methods/03_payment_credit_card.png"
+                            imageSrc="/assets/icons/payment_methods/03_payment_credit_card.webp"
                             title={t("home.payment_card")}
                             description={t("home.payment_card_desc")}
                         />
                         <PaymentMethodCard
-                            imageSrc="/assets/icons/payment_methods/04_payment_paypal.png"
+                            imageSrc="/assets/icons/payment_methods/04_payment_paypal.webp"
                             title={t("home.payment_paypal")}
                             description={t("home.payment_paypal_desc")}
                         />

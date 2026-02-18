@@ -36,7 +36,7 @@ export function Footer() {
             <p className="font-bold text-sm uppercase tracking-wider mb-4">{t("footer.navigation")}</p>
             <ul className="space-y-2 text-sm text-white/80">
               <li><Link href="#cajas" className="hover:text-white transition">{t("nav.boxes")}</Link></li>
-              <li><Link href="#combos" className="hover:text-white transition">{t("nav.combos")}</Link></li>
+              <li><Link href="#recien-preparado" className="hover:text-white transition">{t("nav.freshly_prepared")}</Link></li>
               <li><Link href="#catalogo" className="hover:text-white transition">{t("nav.catalog")}</Link></li>
               <li><Link href="#confianza" className="hover:text-white transition">{t("nav.about")}</Link></li>
             </ul>

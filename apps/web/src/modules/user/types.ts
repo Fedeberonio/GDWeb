@@ -9,6 +9,16 @@ export type UserProfile = {
   comoNosConocio?: string;
   fechaCreacion?: Date;
   carrito?: CartItemFromFirestore[];
+  returnStats?: {
+    totalReturns: number;
+    qualifiesForSpecialReward: boolean;
+    lastReturnAt?: Date | string;
+  };
+  returnHistory?: Array<{
+    orderId: string;
+    returnedAt: Date | string;
+    discountAmount: number;
+  }>;
 };
 
 export type CartItemFromFirestore = {

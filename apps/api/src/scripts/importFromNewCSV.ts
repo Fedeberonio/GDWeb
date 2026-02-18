@@ -3,6 +3,7 @@
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+import type { Firestore } from "firebase-admin/firestore";
 
 import { getDb } from "../lib/firestore";
 import { catalogCollections } from "../modules/catalog/repository";
@@ -34,6 +35,12 @@ interface CSVProduct {
   Valor_Nutricional: string;
 }
 
+function toNumber(value: string): number {
+  const normalized = value.replace(/[^\d.-]/g, "");
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function parseCSV(filePath: string): CSVProduct[] {
   const content = fs.readFileSync(filePath, "utf-8");
   const lines = content.split("\n");
@@ -46,13 +53,36 @@ function parseCSV(filePath: string): CSVProduct[] {
     if (!line) continue;
 
     const values = line.split(",");
-    const product: any = {};
+    const row: Record<string, string> = {};
 
     headers.forEach((header, index) => {
-      product[header.trim()] = values[index]?.trim() || "";
+      row[header.trim()] = values[index]?.trim() || "";
     });
 
-    products.push(product as CSVProduct);
+    const product: CSVProduct = {
+      SKU: row.SKU ?? "",
+      Nombre_Producto: row.Nombre_Producto ?? "",
+      Categoria: row.Categoria ?? "",
+      Subcategoria: row.Subcategoria ?? "",
+      Precio_DOP: toNumber(row.Precio_DOP ?? ""),
+      Precio_Compra: toNumber(row.Precio_Compra ?? ""),
+      Peso_En_Libras: toNumber(row.Peso_En_Libras ?? ""),
+      Descripcion_Corta: row.Descripcion_Corta ?? "",
+      URL_Imagen: row.URL_Imagen ?? "",
+      Tags: row.Tags ?? "",
+      Destacado_Web: row.Destacado_Web ?? "",
+      Activo: row.Activo ?? "",
+      Organico: row.Organico ?? "",
+      Apto_Vegano: row.Apto_Vegano ?? "",
+      Libre_Gluten: row.Libre_Gluten ?? "",
+      Unidad_Venta: row.Unidad_Venta ?? "",
+      Almacenamiento: row.Almacenamiento ?? "",
+      Vida_Util: row.Vida_Util ?? "",
+      Ingredientes: row.Ingredientes ?? "",
+      Valor_Nutricional: row.Valor_Nutricional ?? "",
+    };
+
+    products.push(product);
   }
 
   return products;
@@ -141,18 +171,23 @@ function translateToEnglish(spanishName: string): string {
 function mapCategoryToId(categoria: string): string {
   const categoryMap: Record<string, string> = {
     "Cajas": "cajas",
-    "Productos Caseros": "productos-caseros",
-    "Jugos Naturales": "jugos-naturales",
-    "Productos de Granja": "productos-granja",
+    "Ensaladas": "ensaladas",
+    "Jugos": "jugos",
+    "Jugos Naturales": "jugos",
+    "Productos Caseros": "otros",
+    "Legumbres": "otros",
+    "Productos de Granja": "productos-de-granja",
     "Otros": "otros",
     "Frutas": "frutas",
     "Vegetales": "vegetales",
+    "Hierbas": "hierbas-y-especias",
+    "Hierbas y Especias": "hierbas-y-especias",
   };
 
   return categoryMap[categoria] || generateSlug(categoria);
 }
 
-async function createCategories(db: FirebaseFirestore.Firestore) {
+async function createCategories(db: Firestore) {
   const categoriesRef = db.collection(catalogCollections.categories);
 
   const categories = [
@@ -165,11 +200,27 @@ async function createCategories(db: FirebaseFirestore.Firestore) {
       status: "active" as const,
     },
     {
-      id: "jugos-naturales",
-      slug: "jugos-naturales",
-      name: { es: "Jugos Naturales", en: "Natural Juices" },
-      description: { es: "Jugos detox 100% naturales sin azúcar añadida", en: "100% natural detox juices without added sugar" },
+      id: "ensaladas",
+      slug: "ensaladas",
+      name: { es: "Ensaladas", en: "Salads" },
+      description: { es: "Ensaladas listas para disfrutar", en: "Ready-to-eat salads" },
       sortOrder: 2,
+      status: "active" as const,
+    },
+    {
+      id: "jugos",
+      slug: "jugos",
+      name: { es: "Jugos", en: "Juices" },
+      description: { es: "Jugos naturales recién preparados", en: "Freshly prepared natural juices" },
+      sortOrder: 3,
+      status: "active" as const,
+    },
+    {
+      id: "productos-de-granja",
+      slug: "productos-de-granja",
+      name: { es: "Productos de Granja", en: "Farm Products" },
+      description: { es: "Huevos y miel de productores locales", en: "Eggs and honey from local producers" },
+      sortOrder: 4,
       status: "active" as const,
     },
     {
@@ -177,7 +228,7 @@ async function createCategories(db: FirebaseFirestore.Firestore) {
       slug: "frutas",
       name: { es: "Frutas", en: "Fruits" },
       description: { es: "Frutas frescas de temporada", en: "Fresh seasonal fruits" },
-      sortOrder: 3,
+      sortOrder: 5,
       status: "active" as const,
     },
     {
@@ -185,23 +236,15 @@ async function createCategories(db: FirebaseFirestore.Firestore) {
       slug: "vegetales",
       name: { es: "Vegetales", en: "Vegetables" },
       description: { es: "Vegetales frescos del día", en: "Fresh vegetables of the day" },
-      sortOrder: 4,
-      status: "active" as const,
-    },
-    {
-      id: "productos-caseros",
-      slug: "productos-caseros",
-      name: { es: "Productos Caseros", en: "Homemade Products" },
-      description: { es: "Productos elaborados artesanalmente", en: "Artisanal homemade products" },
-      sortOrder: 5,
-      status: "active" as const,
-    },
-    {
-      id: "productos-granja",
-      slug: "productos-granja",
-      name: { es: "Productos de Granja", en: "Farm Products" },
-      description: { es: "Huevos y miel de productores locales", en: "Eggs and honey from local producers" },
       sortOrder: 6,
+      status: "active" as const,
+    },
+    {
+      id: "hierbas-y-especias",
+      slug: "hierbas-y-especias",
+      name: { es: "Hierbas y Especias", en: "Herbs and Spices" },
+      description: { es: "Hierbas frescas y especias aromáticas", en: "Fresh herbs and aromatic spices" },
+      sortOrder: 7,
       status: "active" as const,
     },
     {
@@ -209,7 +252,7 @@ async function createCategories(db: FirebaseFirestore.Firestore) {
       slug: "otros",
       name: { es: "Otros", en: "Others" },
       description: { es: "Aceites, granos y productos de despensa", en: "Oils, grains and pantry products" },
-      sortOrder: 7,
+      sortOrder: 8,
       status: "active" as const,
     },
   ];
@@ -221,7 +264,7 @@ async function createCategories(db: FirebaseFirestore.Firestore) {
   }
 }
 
-async function importProducts(db: FirebaseFirestore.Firestore, csvPath: string) {
+async function importProducts(db: Firestore, csvPath: string) {
   console.log("📂 Leyendo CSV:", csvPath);
 
   const products = parseCSV(csvPath);

@@ -6,13 +6,11 @@ import { usePathname } from "next/navigation";
 import {
   Package,
   ShoppingCart,
-  History,
   Settings,
   LayoutDashboard,
   Warehouse,
   DollarSign,
-  MessageSquare,
-  Ruler,
+  Truck,
   Users,
   Menu,
   X,
@@ -26,14 +24,12 @@ import { AdminGuard } from "@/modules/admin/components/admin-guard";
 
 const SIDEBAR_LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/orders", label: "Pedidos", icon: Truck },
+  { href: "/admin/shopping", label: "Preparación Pedidos", icon: ShoppingCart },
   { href: "/admin/products", label: "Productos", icon: Package },
-  { href: "/admin/box-rules", label: "Reglas de Cajas", icon: Ruler },
   { href: "/admin/supplies", label: "Insumos", icon: Warehouse },
-  { href: "/admin/orders", label: "Pedidos", icon: ShoppingCart },
-  { href: "/admin/requests", label: "Solicitudes Personalizadas", icon: MessageSquare },
-  { href: "/admin/finances", label: "Finanzas", icon: DollarSign },
   { href: "/admin/customers", label: "Clientes", icon: Users },
-  { href: "/admin/history", label: "Historial", icon: History },
+  { href: "/admin/finances", label: "Finanzas", icon: DollarSign },
   { href: "/admin/settings", label: "Configuración", icon: Settings },
 ];
 

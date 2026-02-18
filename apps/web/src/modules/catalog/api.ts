@@ -1,8 +1,8 @@
-import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 import { getFirestoreDb } from "@/lib/firebase/client";
 
-import type { Box, BoxRule, LunchCombo, Product, ProductCategory } from "./types";
+import type { Box, BoxRule, Product, ProductCategory } from "./types";
 import { resolveLocalizedField } from "./localization";
 
 const COLLECTIONS = {
@@ -10,7 +10,6 @@ const COLLECTIONS = {
   products: "catalog_products",
   boxes: "catalog_boxes",
   boxRules: "catalog_box_rules",
-  lunchCombos: "lunch_combos",
 };
 // Confirmed: Collections match seeded data (catalog_*)
 
@@ -19,24 +18,35 @@ export async function fetchProductCategories() {
     const db = getFirestoreDb();
     if (!db) return [];
 
-    // Ordered by sortOrder as per repository
-    const q = query(
-      collection(db, COLLECTIONS.categories),
-      orderBy("sortOrder")
-    );
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(query(collection(db, COLLECTIONS.categories)));
 
-    return snapshot.docs.map((doc) => {
+    const categories = snapshot.docs.map((doc) => {
       const data = doc.data() as ProductCategory & Record<string, unknown>;
       const name = resolveLocalizedField(data, "name");
       const description = data.description ? resolveLocalizedField(data, "description") : undefined;
+      const displayOrderRaw = (data as { displayOrder?: number; sortOrder?: number }).displayOrder;
+      const sortOrderRaw = (data as { displayOrder?: number; sortOrder?: number }).sortOrder;
+      const order =
+        typeof displayOrderRaw === "number"
+          ? displayOrderRaw
+          : typeof sortOrderRaw === "number"
+            ? sortOrderRaw
+            : Number.MAX_SAFE_INTEGER;
+
       return {
         ...data,
         id: doc.id,
         name,
         description,
+        sortOrder: order,
       };
     }) as ProductCategory[];
+
+    return categories.sort((a, b) => {
+      const left = typeof a.sortOrder === "number" ? a.sortOrder : Number.MAX_SAFE_INTEGER;
+      const right = typeof b.sortOrder === "number" ? b.sortOrder : Number.MAX_SAFE_INTEGER;
+      return left - right;
+    });
   } catch (error) {
     console.error("Error fetching categories from Firestore:", error);
     return [];
@@ -172,51 +182,14 @@ export async function fetchBoxRules() {
         : undefined;
 
       return {
-        id: doc.id,
         ...data,
+        id: doc.id,
         baseContents: normalizeContents(data.baseContents),
         variantContents,
       };
     }) as BoxRule[];
   } catch (error) {
     console.error("Error fetching box rules from Firestore:", error);
-    return [];
-  }
-}
-
-export async function fetchLunchCombos(): Promise<LunchCombo[]> {
-  try {
-    const db = getFirestoreDb();
-    if (!db) return [];
-
-    const snapshot = await getDocs(collection(db, COLLECTIONS.lunchCombos));
-
-    return snapshot.docs.map((doc) => {
-      const combo = doc.data() as Record<string, unknown>;
-      const name = (combo.name as Record<string, string>) ?? {};
-      const benefits = (combo.benefits as Record<string, string>) ?? {};
-      const nutrition = (combo.nutrition as Record<string, unknown>) ?? {};
-      return {
-        id: doc.id,
-        name: {
-          es: name.es ?? name.en ?? "",
-          en: name.en ?? name.es ?? "",
-        },
-        price: Number(combo.price) || 0,
-        nutrition: {
-          calories: Number((nutrition as { calories?: number }).calories) || 0,
-          protein: Number((nutrition as { protein?: number }).protein) || 0,
-          isGlutenFree: Boolean((nutrition as { isGlutenFree?: boolean }).isGlutenFree),
-        },
-        benefits: {
-          es: benefits.es ?? benefits.en ?? "",
-          en: benefits.en ?? benefits.es ?? "",
-        },
-        image: (combo.image as string) ?? "",
-      } as LunchCombo;
-    });
-  } catch (error) {
-    console.error("Error fetching lunch combos from Firestore:", error);
     return [];
   }
 }

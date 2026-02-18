@@ -84,9 +84,9 @@ export default async function RootLayout({
         <link
           rel="preload"
           as="image"
-          href="/assets/images/hero/hero-lifestyle-kitchen.webp"
-          imagesrcset="/assets/images/hero/hero-lifestyle-kitchen.webp 1x, /assets/images/hero/hero-lifestyle-kitchen@2x.webp 2x"
-          imagesizes="100vw"
+          href="/assets/images/hero/hero-lifestyle-kitchen.jpg"
+          imageSrcSet="/assets/images/hero/hero-lifestyle-kitchen.jpg 1x, /assets/images/hero/hero-lifestyle-kitchen@2x.webp 2x"
+          imageSizes="100vw"
         />
       </head>
       <body className={`${montserrat.variable} ${openSans.variable} antialiased bg-organic-texture`}>

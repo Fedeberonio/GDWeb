@@ -21,21 +21,35 @@ function BoxesContent() {
       setStatus("loading");
       setError(null);
 
-      const [boxesRes, productsRes] = await Promise.all([
+      const [boxesRes, simpleProductsRes, legacyProductsRes] = await Promise.all([
         adminFetch("/api/admin/catalog/products?type=box", { cache: "no-store" }),
+        adminFetch("/api/admin/catalog/products?type=simple", { cache: "no-store" }),
         adminFetch("/api/admin/catalog/products?type=product", { cache: "no-store" }),
       ]);
 
-      if (!boxesRes.ok || !productsRes.ok) {
+      if (!boxesRes.ok || (!simpleProductsRes.ok && !legacyProductsRes.ok)) {
         throw new Error("No se pudo cargar la lista de cajas y productos");
       }
 
-      const [boxesJson, productsJson] = await Promise.all([boxesRes.json(), productsRes.json()]);
+      const [boxesJson, simpleProductsJson, legacyProductsJson] = await Promise.all([
+        boxesRes.json(),
+        simpleProductsRes.ok ? simpleProductsRes.json() : Promise.resolve({ data: [] }),
+        legacyProductsRes.ok ? legacyProductsRes.json() : Promise.resolve({ data: [] }),
+      ]);
 
       const rawBoxes = Array.isArray(boxesJson.data) ? boxesJson.data : [];
       const filteredBoxes = rawBoxes.filter((box: Box) => (box as any).type === "box");
-      const rawProducts = Array.isArray(productsJson.data) ? productsJson.data : [];
-      const filteredProducts = rawProducts.filter((product: Product) => product.type === "product");
+      const rawProducts = [
+        ...(Array.isArray(simpleProductsJson.data) ? simpleProductsJson.data : []),
+        ...(Array.isArray(legacyProductsJson.data) ? legacyProductsJson.data : []),
+      ];
+      const dedupedProducts = Array.from(
+        new Map(rawProducts.map((product: Product) => [product.id, product])).values(),
+      );
+      const filteredProducts = dedupedProducts.filter(
+        (product: Product) =>
+          product.type === "simple" || (product as any).type === "product" || !product.type,
+      );
 
       setBoxes(filteredBoxes);
       setProducts(filteredProducts);

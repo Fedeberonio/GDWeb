@@ -2,19 +2,15 @@ import { NextResponse } from "next/server";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-session";
 import { FieldValue } from "firebase-admin/firestore";
-import type { OrderItem } from "@/modules/orders/types";
+import { loadOrderSettings } from "@/lib/config/load-order-settings";
+import { calculateOrderTotals } from "@/lib/utils/order-totals";
 
-// Helper to recalculate simple totals (same logic as finalize)
-function calculateTotals(items: OrderItem[]) {
-  const subtotalAmount = items.reduce(
-    (sum, item) => sum + item.unitPrice.amount * item.quantity,
-    0
-  );
-  return {
-    subtotal: { amount: subtotalAmount, currency: "DOP" },
-    total: { amount: subtotalAmount, currency: "DOP" }, // Base logic
-  };
-}
+type EditableOrderItem = {
+  quantity?: number;
+  unitPrice?: number | { amount?: number; currency?: string };
+  startPrice?: number | { amount?: number; currency?: string };
+  [key: string]: unknown;
+};
 
 export async function GET(
   request: Request,
@@ -54,7 +50,7 @@ export async function PATCH(
   try {
     await requireAdminSession(request);
     const body = await request.json();
-    const { items, deliveryFee, delivery, paymentStatus, paymentMethod } = body;
+    const { items, deliveryFee, delivery, paymentStatus, paymentMethod, status } = body;
 
     // Validate if at least one updateable field is present
     if (!items && !delivery && !deliveryFee && !paymentStatus && !paymentMethod) {
@@ -74,34 +70,61 @@ export async function PATCH(
     const db = getAdminFirestore();
     const docRef = db.collection("orders").doc(id);
 
-    // Calculate new totals if items are present
-    const cleanItems = Array.isArray(items)
-      ? items.map((item: any) => {
-          const unitAmount = cleanNumber(item?.unitPrice?.amount ?? item?.unitPrice ?? 0);
-          const startAmount = cleanNumber(item?.startPrice?.amount ?? unitAmount);
-          return {
-            ...item,
-            quantity: cleanNumber(item?.quantity ?? 0),
-            unitPrice: {
-              amount: unitAmount,
-              currency: item?.unitPrice?.currency ?? "DOP",
-            },
-            startPrice: {
-              amount: startAmount,
-              currency: item?.startPrice?.currency ?? item?.unitPrice?.currency ?? "DOP",
-            },
-          };
-        })
-      : null;
-
-    const newTotals = cleanItems ? calculateTotals(cleanItems) : null;
-
     // If deliveryFee provided, or if we should fetch existing to preserve it?
     // Let's fetch existing for safety to preserve other fields
     const docSnap = await docRef.get();
     if (!docSnap.exists) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
     const existingData = docSnap.data();
+
+    // Calculate new totals if items are present
+    const cleanItems = Array.isArray(items)
+      ? (items as EditableOrderItem[]).map((item) => {
+          const unitPriceObj = typeof item.unitPrice === "object" && item.unitPrice !== null ? item.unitPrice : null;
+          const startPriceObj = typeof item.startPrice === "object" && item.startPrice !== null ? item.startPrice : null;
+          const unitAmount = cleanNumber(unitPriceObj?.amount ?? item?.unitPrice ?? 0);
+          const startAmount = cleanNumber(startPriceObj?.amount ?? unitAmount);
+          return {
+            ...item,
+            quantity: cleanNumber(item?.quantity ?? 0),
+            unitPrice: {
+              amount: unitAmount,
+              currency: unitPriceObj?.currency ?? "DOP",
+            },
+            startPrice: {
+              amount: startAmount,
+              currency: startPriceObj?.currency ?? unitPriceObj?.currency ?? "DOP",
+            },
+          };
+        })
+      : null;
+
+    // Recalculate totals if items, payment, or delivery changed
+    const shouldRecalculate = cleanItems || paymentMethod || delivery?.window?.day;
+    const itemsToUse = cleanItems || (existingData?.items || []);
+    const settings = await loadOrderSettings();
+    const existingDiscountAmount = cleanNumber(
+      existingData?.totals?.discounts?.amount ?? existingData?.totals?.discount?.amount ?? 0,
+    );
+    const existingTipAmount = cleanNumber(
+      existingData?.totals?.tip?.amount ?? existingData?.tip?.amount ?? 0,
+    );
+
+    const newTotals = shouldRecalculate
+      ? calculateOrderTotals(
+          {
+            items: itemsToUse,
+            deliveryDay: delivery?.window?.day || existingData?.delivery?.window?.day,
+            paymentMethod: paymentMethod || existingData?.paymentMethod,
+            manualDiscount: existingDiscountAmount,
+          },
+          {
+            paymentFeePercentage: settings.paymentFeePercentage,
+            deliveryFeeAmount: settings.deliveryFeeAmount,
+            deliveryFeeDays: settings.deliveryFeeDays,
+          },
+        )
+      : null;
 
     // VALIDATION: Cannot mark as paid if status is pending or cancelled
     // Exception: If we are also updating status to something else in this same request (though UI keeps them separate usually)
@@ -118,27 +141,51 @@ export async function PATCH(
       ? { amount: cleanNumber(deliveryFee), currency: "DOP" }
       : (existingData?.totals?.deliveryFee || { amount: 0, currency: "DOP" });
 
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updatedAt: FieldValue.serverTimestamp(),
     };
 
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
     if (paymentMethod) updateData.paymentMethod = paymentMethod;
+    if (status) updateData.status = status;
 
     if (cleanItems) {
       updateData.items = cleanItems;
+      const recalculatedSubtotal = newTotals?.subtotal ?? { amount: 0, currency: "DOP" };
+      const recalculatedPaymentFee = newTotals?.paymentFee ?? { amount: 0, currency: "DOP" };
+      const recalculatedDeliveryFee = newTotals?.deliveryFee ?? existingFee;
+      const recalculatedBaseTotal =
+        recalculatedSubtotal.amount + recalculatedDeliveryFee.amount + recalculatedPaymentFee.amount - existingDiscountAmount;
       updateData.totals = {
-        ...newTotals,
-        deliveryFee: existingFee
+        subtotal: recalculatedSubtotal,
+        deliveryFee: recalculatedDeliveryFee,
+        paymentFee: recalculatedPaymentFee,
+        discounts: { amount: existingDiscountAmount, currency: "DOP" },
+        tip: { amount: existingTipAmount, currency: "DOP" },
+        total: {
+          amount: recalculatedBaseTotal + existingTipAmount,
+          currency: "DOP",
+        },
       };
     } else if (deliveryFee !== undefined) {
       // If only delivery fee update without items
       const existingSubtotal = existingData?.totals?.subtotal || { amount: 0, currency: "DOP" };
+      const existingPaymentFee = existingData?.totals?.paymentFee || { amount: 0, currency: "DOP" };
+      const existingDiscount = existingData?.totals?.discounts || { amount: existingDiscountAmount, currency: "DOP" };
+      const existingTip = existingData?.totals?.tip || { amount: existingTipAmount, currency: "DOP" };
       updateData.totals = {
         subtotal: existingSubtotal,
         deliveryFee: existingFee,
+        paymentFee: existingPaymentFee,
+        discounts: existingDiscount,
+        tip: existingTip,
         total: {
-          amount: existingSubtotal.amount + existingFee.amount,
+          amount:
+            existingSubtotal.amount +
+            existingFee.amount +
+            (existingPaymentFee?.amount ?? 0) -
+            (existingDiscount?.amount ?? 0) +
+            (existingTip?.amount ?? 0),
           currency: "DOP"
         }
       };

@@ -2,12 +2,12 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Edit2, Search, Filter, Plus } from "lucide-react";
+import { X, Edit2, Search, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { adminFetch } from "@/modules/admin/api/client";
 import { ProductImageFallback } from "@/app/_components/product-image-fallback";
-import type { Box, Product, ProductCategory } from "@/modules/catalog/types";
+import type { Box, LocalizedString, Product, ProductCategory } from "@/modules/catalog/types";
 import { ProductEditDrawer } from "./product-edit-drawer";
 import { BoxEditDrawer } from "./box-edit-drawer";
 
@@ -27,6 +27,10 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newProductCategoryId, setNewProductCategoryId] = useState("");
+  const [newProductSku, setNewProductSku] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const createSlug = (value: string) =>
     value
@@ -38,11 +42,26 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
       .replace(/(^-|-$)+/g, "");
 
   const handleCreateProduct = useCallback(async () => {
+    if (!newProductCategoryId) {
+      toast.error("Selecciona una categoría");
+      return;
+    }
+    if (!newProductSku.trim()) {
+      toast.error("El SKU es requerido");
+      return;
+    }
+    if (!/^[A-Za-z0-9\-_]+$/.test(newProductSku.trim())) {
+      toast.error("Formato de SKU inválido");
+      return;
+    }
+
     try {
+      setIsCreating(true);
       const timestamp = Date.now();
       const baseName = "Nuevo producto";
+      const normalizedSku = newProductSku.trim();
       const payload: Partial<Product> = {
-        sku: "",
+        sku: normalizedSku,
         slug: `${createSlug(baseName)}-${timestamp}`,
         name: { es: baseName, en: "New product" },
         description: { es: "", en: "" },
@@ -50,7 +69,7 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
         isActive: false,
         price: 0,
         status: "inactive",
-        categoryId: "",
+        categoryId: newProductCategoryId,
         image: "",
         tags: [],
         isFeatured: false,
@@ -75,13 +94,34 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
       setProducts((prev) => [created, ...prev]);
       setSelectedProduct(created);
       setIsDrawerOpen(true);
+      setIsCreateModalOpen(false);
+      setNewProductCategoryId("");
+      setNewProductSku("");
       onProductCreated?.(created);
       toast.success("Producto creado");
     } catch (error) {
       console.error("Error creando producto:", error);
       toast.error(error instanceof Error ? error.message : "No se pudo crear el producto");
+    } finally {
+      setIsCreating(false);
     }
-  }, [onProductCreated]);
+  }, [newProductCategoryId, newProductSku, onProductCreated]);
+
+  const handleAutoGenerateSku = useCallback(async () => {
+    if (!newProductCategoryId) {
+      toast.error("Selecciona una categoría primero");
+      return;
+    }
+    try {
+      const { generateNextSKU } = await import("@/lib/utils/generate-sku");
+      const nextSku = await generateNextSKU(newProductCategoryId);
+      setNewProductSku(nextSku);
+      toast.success(`SKU generado: ${nextSku}`);
+    } catch (error) {
+      console.error("Error generating SKU:", error);
+      toast.error("Error al generar SKU");
+    }
+  }, [newProductCategoryId]);
 
   const isBoxProduct = useCallback((product: Product) => {
     const sku = product.sku ?? product.id ?? "";
@@ -90,30 +130,29 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
     return category === "cajas" || /^GD-CAJA-/i.test(sku) || /^GD-CAJA-/i.test(id);
   }, []);
 
-  const isComboProduct = useCallback((product: Product) => {
-    const sku = product.sku ?? product.id ?? "";
-    const id = product.id ?? "";
+  const isSaladProduct = useCallback((product: Product) => {
     const category = product.categoryId ?? "";
     const normalizedCategory = category.toLowerCase();
-    return (
-      normalizedCategory.includes("combo") ||
-      /^GD-COMB-/i.test(sku) ||
-      /^GD-COMB-/i.test(id) ||
-      /^COMBO-/i.test(sku) ||
-      /^COMBO-/i.test(id)
-    );
+    return normalizedCategory.includes("ensalada");
   }, []);
 
   const resolveItemType = useCallback(
     (product: Product) => {
-      if (product.type === "product" || product.type === "box" || product.type === "combo") {
+      if (product.type === "box") {
         return product.type;
       }
+      if (product.type === "simple" || product.type === "prepared") {
+        return "product";
+      }
+      const legacyType = (product as { type?: unknown }).type;
+      if (legacyType === "product") {
+        return "product";
+      }
       if (isBoxProduct(product)) return "box";
-      if (isComboProduct(product)) return "combo";
+      if (isSaladProduct(product)) return "prepared";
       return "product";
     },
-    [isBoxProduct, isComboProduct],
+    [isBoxProduct, isSaladProduct],
   );
 
   // Filtrar productos
@@ -131,8 +170,8 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
         categoryFilter === "all" ||
         product.categoryId === categoryFilter ||
         (categoryFilter === "cajas" && resolvedType === "box") ||
-        (categoryFilter === "combos" &&
-          (resolvedType === "combo" || (product.categoryId ?? "").toLowerCase().includes("combo")));
+        (categoryFilter === "ensaladas" &&
+          (resolvedType === "prepared" || (product.categoryId ?? "").toLowerCase().includes("ensalada")));
 
       return matchesSearch && matchesStatus && matchesCategory;
     });
@@ -195,10 +234,16 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
       prev.map((product) => {
         const productKey = (product.sku ?? product.id ?? "").toUpperCase();
         if (productKey !== updatedBox.id.toUpperCase()) return product;
+        const nextDescription: LocalizedString | undefined = updatedBox.description
+          ? {
+              es: updatedBox.description.es ?? product.description?.es ?? "",
+              en: updatedBox.description.en ?? product.description?.en ?? "",
+            }
+          : product.description;
         return {
           ...product,
           name: updatedBox.name,
-          description: updatedBox.description,
+          description: nextDescription,
           price: updatedBox.price.amount,
           image: updatedBox.heroImage ?? product.image,
         };
@@ -257,7 +302,7 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
           <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
             <button
               type="button"
-              onClick={handleCreateProduct}
+              onClick={() => setIsCreateModalOpen(true)}
               className="px-5 py-2.5 rounded-2xl bg-[var(--gd-color-leaf)] text-white font-medium text-sm hover:bg-[var(--gd-color-forest)] transition-colors flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -295,7 +340,7 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
               >
                 <option value="all">Todas las categorías</option>
                 <option value="cajas">Cajas</option>
-                <option value="combos">Combos</option>
+                <option value="ensaladas">Ensaladas</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name.es}
@@ -319,8 +364,8 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
             const imageBase =
               resolvedType === "box"
                 ? "/assets/images/boxes"
-                : resolvedType === "combo"
-                  ? "/assets/images/combos"
+                : resolvedType === "prepared" && isSaladProduct(product)
+                  ? "/assets/images/salads"
                   : "/assets/images/products";
             const imageKey = product.sku ?? product.id;
             const imageUrl = product.image || (imageKey ? `${imageBase}/${imageKey}.png` : "");
@@ -376,9 +421,9 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
                         Caja
                       </p>
                     )}
-                    {resolvedType === "combo" && (
+                    {resolvedType === "prepared" && isSaladProduct(product) && (
                       <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--gd-color-forest)]/70">
-                        Combo
+                        Ensalada
                       </p>
                     )}
                     {product.sku && (
@@ -418,6 +463,102 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
           })}
         </div>
       )}
+
+      <AnimatePresence>
+        {isCreateModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 8 }}
+              className="w-full max-w-lg rounded-3xl border border-white/60 bg-white p-6 shadow-2xl"
+            >
+              <div className="mb-5 flex items-start justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold text-[var(--gd-color-forest)]">Nuevo producto</h3>
+                  <p className="text-sm text-[var(--gd-color-text-muted)]">
+                    Selecciona categoría y SKU antes de crear.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => !isCreating && setIsCreateModalOpen(false)}
+                  className="rounded-xl p-2 text-[var(--gd-color-text-muted)] hover:bg-slate-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-[var(--gd-color-text-muted)]">
+                    Categoría *
+                  </label>
+                  <select
+                    value={newProductCategoryId}
+                    onChange={(e) => setNewProductCategoryId(e.target.value)}
+                    className="w-full rounded-xl border border-white/60 bg-white/60 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gd-color-leaf)]/30"
+                    disabled={isCreating}
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name.es}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-[var(--gd-color-text-muted)]">SKU *</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newProductSku}
+                      onChange={(e) => setNewProductSku(e.target.value)}
+                      placeholder="GD-VEGE-068"
+                      className="flex-1 rounded-xl border border-white/60 bg-white/60 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gd-color-leaf)]/30"
+                      disabled={isCreating}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAutoGenerateSku}
+                      disabled={isCreating || !newProductCategoryId}
+                      className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Auto-generar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                  disabled={isCreating}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateProduct}
+                  disabled={isCreating || !newProductCategoryId || !newProductSku.trim()}
+                  className="rounded-xl bg-[var(--gd-color-leaf)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--gd-color-forest)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isCreating ? "Creando..." : "Crear"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Drawer de edición */}
       <ProductEditDrawer

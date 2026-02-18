@@ -8,7 +8,13 @@ import { useTranslation } from "@/modules/i18n/use-translation";
 
 function getAllowedEmailsCache(): Set<string> {
   try {
-    return new Set(getAdminAllowedEmails());
+    const emails = getAdminAllowedEmails();
+    console.log("[AdminGuard] Allowed emails:", emails);
+    console.log("[AdminGuard] Env vars:", {
+      ADMIN_ALLOWED_EMAILS: process.env.ADMIN_ALLOWED_EMAILS,
+      NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS: process.env.NEXT_PUBLIC_ADMIN_ALLOWED_EMAILS,
+    });
+    return new Set(emails);
   } catch (error) {
     console.error("Failed to parse admin allowed emails", error);
     return new Set<string>();
@@ -26,6 +32,11 @@ export function AdminGuard({ children }: AdminGuardProps) {
   const isAuthorized = useMemo(() => {
     if (!user?.email) return false;
     const allowedEmailsCache = getAllowedEmailsCache();
+    console.log("[AdminGuard] Checking authorization:", {
+      userEmail: user.email,
+      allowedEmails: Array.from(allowedEmailsCache),
+      isAuthorized: allowedEmailsCache.has(user.email.toLowerCase()),
+    });
     if (allowedEmailsCache.size === 0) return false;
     return allowedEmailsCache.has(user.email.toLowerCase());
   }, [user]);

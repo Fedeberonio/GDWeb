@@ -25,53 +25,22 @@ function ProductsContent() {
       setStatus("loading");
       setError(null);
 
-      const [productsRes, categoriesRes, combosRes] = await Promise.all([
+      const [productsRes, categoriesRes] = await Promise.all([
         adminFetch("/api/admin/catalog/products", { cache: "no-store" }),
         fetch("/api/catalog/categories", { cache: "no-store" }),
-        adminFetch("/api/admin/catalog/combos", { cache: "no-store" }),
       ]);
 
-      if (!productsRes.ok || !categoriesRes.ok || !combosRes.ok) {
+      if (!productsRes.ok || !categoriesRes.ok) {
         throw new Error("No se pudieron cargar los datos del catálogo");
       }
 
-      const [productsJson, categoriesJson, combosJson] = await Promise.all([
+      const [productsJson, categoriesJson] = await Promise.all([
         productsRes.json(),
         categoriesRes.json(),
-        combosRes.json(),
       ]);
 
       const rawProducts = Array.isArray(productsJson.data) ? productsJson.data : [];
-      const rawCombos = Array.isArray(combosJson.data) ? combosJson.data : [];
-      const comboProducts = rawCombos.map((combo: any) => ({
-        id: combo.id,
-        slug: combo.slug ?? combo.id,
-        sku: combo.sku ?? combo.id,
-        name: combo.name ?? { es: "", en: "" },
-        description: combo.benefit ?? { es: "", en: "" },
-        unit: "",
-        isActive: combo.status === "active",
-        price: Number(combo.price) || 0,
-        salePrice: combo.salePrice ? Number(combo.salePrice) : undefined,
-        status: combo.status ?? "active",
-        image: combo.image ?? "",
-        tags: combo.tags ?? [],
-        isFeatured: combo.isFeatured ?? false,
-        categoryId: "combos",
-        metadata: {},
-        logistics: {},
-        nutrition: {
-          calories: Number(combo.calories) || 0,
-          protein: Number(combo.protein) || 0,
-          carbs: Number(combo.carbs) || 0,
-          fats: Number(combo.fats) || 0,
-          fiber: Number(combo.fiber) || 0,
-          sugars: Number(combo.sugars) || 0,
-        },
-        type: "combo",
-      }));
-
-      setProducts([...rawProducts, ...comboProducts]);
+      setProducts(rawProducts);
       setCategories(Array.isArray(categoriesJson.data) ? categoriesJson.data : []);
       setStatus("ready");
     } catch (err) {

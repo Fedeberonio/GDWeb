@@ -47,7 +47,14 @@ type InvoiceOrder = {
   totals?: {
     subtotal?: { amount: number; currency: string };
     deliveryFee?: { amount: number; currency: string };
+    paymentFee?: { amount: number; currency: string };
+    discounts?: { amount: number; currency: string };
+    tip?: { amount: number; currency: string };
     total?: { amount: number; currency: string };
+  };
+  returnsPackaging?: {
+    returned?: boolean;
+    discountAmount?: number;
   };
   delivery?: {
     address?: {
@@ -103,7 +110,12 @@ export default function OrderInvoicePage() {
   const items = order?.items ?? [];
   const subtotal = order?.totals?.subtotal?.amount ?? 0;
   const deliveryFee = order?.totals?.deliveryFee?.amount ?? 0;
-  const total = order?.totals?.total?.amount ?? subtotal + deliveryFee;
+  const paymentFee = order?.totals?.paymentFee?.amount ?? 0;
+  const discount = order?.totals?.discounts?.amount ?? 0;
+  const returnDiscount = order?.returnsPackaging?.returned ? (order?.returnsPackaging?.discountAmount ?? 0) : 0;
+  const otherDiscount = Math.max(0, discount - returnDiscount);
+  const tip = order?.totals?.tip?.amount ?? 0;
+  const total = order?.totals?.total?.amount ?? subtotal + deliveryFee + paymentFee - discount + tip;
   const currency = order?.totals?.total?.currency ?? "DOP";
 
   const billedTo = useMemo(() => {
@@ -153,7 +165,7 @@ export default function OrderInvoicePage() {
 
   return (
     <div className="min-h-screen bg-slate-200/60 p-6 md:p-10 print:bg-white print:p-0 font-sans text-slate-900">
-      <style jsx global>{`
+      <style>{`
         @page {
           size: A4;
           margin: 12mm;
@@ -289,6 +301,30 @@ export default function OrderInvoicePage() {
               <span>Delivery</span>
               <span>{formatCurrency(deliveryFee, currency)}</span>
             </div>
+            {paymentFee > 0 && (
+              <div className="flex items-center justify-between text-slate-600">
+                <span>Cargo pago digital</span>
+                <span>{formatCurrency(paymentFee, currency)}</span>
+              </div>
+            )}
+            {returnDiscount > 0 && (
+              <div className="flex items-center justify-between text-emerald-700">
+                <span>Descuento devolución envases</span>
+                <span>-{formatCurrency(returnDiscount, currency)}</span>
+              </div>
+            )}
+            {otherDiscount > 0 && (
+              <div className="flex items-center justify-between text-emerald-700">
+                <span>Descuento</span>
+                <span>-{formatCurrency(otherDiscount, currency)}</span>
+              </div>
+            )}
+            {tip > 0 && (
+              <div className="flex items-center justify-between text-slate-600">
+                <span>Propina</span>
+                <span>{formatCurrency(tip, currency)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between border-t border-slate-200 pt-2">
               <span className="text-base font-extrabold text-slate-900">TOTAL</span>
               <span className="text-base font-extrabold text-slate-900">{formatCurrency(total, currency)}</span>

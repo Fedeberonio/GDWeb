@@ -1,8 +1,9 @@
-"use client";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
+"use client";
 import React from "react";
 import type { ComponentType, ReactNode } from "react";
-import { Document, Page, Text, View, StyleSheet, Image, Font } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import type { Order } from "@/modules/orders/types";
 
 // Helper to fix potential type issues with ReactPDF.Document
@@ -225,6 +226,11 @@ function formatCurrency(amount: number) {
 export function OrderDocumentPDF({ order, type = "invoice" }: { order: Order; type?: "purchase_order" | "invoice" }) {
     const subtotal = order.totals.subtotal.amount;
     const deliveryFee = order.totals.deliveryFee?.amount || 0;
+    const paymentFee = order.totals.paymentFee?.amount || 0;
+    const discount = order.totals.discounts?.amount || 0;
+    const returnDiscount = order.returnsPackaging?.returned ? (order.returnsPackaging.discountAmount || 0) : 0;
+    const otherDiscount = Math.max(0, discount - returnDiscount);
+    const tip = order.totals.tip?.amount || order.tip?.amount || 0;
     const total = order.totals.total.amount;
 
     const theme = THEMES[type] || THEMES.invoice;
@@ -278,6 +284,7 @@ export function OrderDocumentPDF({ order, type = "invoice" }: { order: Order; ty
             <Page size="A4" style={styles.page}>
                 {/* Header */}
                 <View style={[styles.headerRow, dynamicStyles.headerRow]}>
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
                     <Image
                         src="/assets/images/logo/favicon.png"
                         style={styles.logo}
@@ -344,6 +351,30 @@ export function OrderDocumentPDF({ order, type = "invoice" }: { order: Order; ty
                             <Text style={styles.totalValue}>{formatCurrency(deliveryFee)}</Text>
                         </View>
                     )}
+                    {paymentFee > 0 && (
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Cargo pago digital:</Text>
+                            <Text style={styles.totalValue}>{formatCurrency(paymentFee)}</Text>
+                        </View>
+                    )}
+                    {returnDiscount > 0 && (
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Desc. devolución envases:</Text>
+                            <Text style={styles.totalValue}>-{formatCurrency(returnDiscount)}</Text>
+                        </View>
+                    )}
+                    {otherDiscount > 0 && (
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Descuento:</Text>
+                            <Text style={styles.totalValue}>-{formatCurrency(otherDiscount)}</Text>
+                        </View>
+                    )}
+                    {tip > 0 && (
+                        <View style={styles.totalRow}>
+                            <Text style={styles.totalLabel}>Propina:</Text>
+                            <Text style={styles.totalValue}>{formatCurrency(tip)}</Text>
+                        </View>
+                    )}
                     <View style={[styles.totalRow, styles.grandTotal, dynamicStyles.grandTotal]}>
                         <Text style={[styles.totalLabel, dynamicStyles.grandTotalValue]}>TOTAL:</Text>
                         <Text style={[styles.totalValue, dynamicStyles.grandTotalValue]}>{formatCurrency(total)}</Text>
@@ -373,4 +404,3 @@ export function OrderDocumentPDF({ order, type = "invoice" }: { order: Order; ty
 
 // Keep existing exports for backward compatibility if needed, but alias them
 export const InvoicePDF = ({ order }: { order: Order }) => <OrderDocumentPDF order={order} type="invoice" />;
-

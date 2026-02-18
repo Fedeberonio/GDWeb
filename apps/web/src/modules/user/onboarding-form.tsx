@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import type { TranslationKey } from "@/modules/i18n/translations";
 import {
   LEAD_SOURCE_OPTIONS,
   PAYMENT_OPTIONS,
   getLeadSourceLabelKey,
   type PaymentPreferenceValue,
-  type LeadSourceValue,
 } from "./onboarding-constants";
 
 export type OnboardingFormData = {
@@ -34,9 +34,9 @@ type OnboardingFormProps = {
   submitting?: boolean;
   loading?: boolean;
   showNameField?: boolean;
-  titleKey?: string;
-  descKey?: string;
-  guestHintKey?: string;
+  titleKey?: TranslationKey;
+  descKey?: TranslationKey;
+  guestHintKey?: TranslationKey;
 };
 
 export function OnboardingForm({
@@ -63,6 +63,7 @@ export function OnboardingForm({
 
   useEffect(() => {
     if (initialFormData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Form state must hydrate when async profile data loads.
       setFormData((prev) => ({
         ...prev,
         ...initialFormData,
@@ -84,6 +85,11 @@ export function OnboardingForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
       <div className="p-6 pt-4 space-y-4 overflow-y-auto flex-1">
+        <header className="space-y-1">
+          <h2 className="text-lg font-semibold text-[var(--color-foreground)]">{t(titleKey)}</h2>
+          <p className="text-sm text-[var(--color-muted)]">{t(descKey)}</p>
+        </header>
+
         {showNameField && displayName !== undefined && (
           <div>
             <label className="block text-sm font-semibold text-[var(--color-foreground)] mb-1">
@@ -163,7 +169,7 @@ export function OnboardingForm({
             <option value="">{t("profile.heard_from_placeholder")}</option>
             {LEAD_SOURCE_OPTIONS.map((value) => (
               <option key={value} value={value}>
-                {t(getLeadSourceLabelKey(value as LeadSourceValue))}
+                {t(getLeadSourceLabelKey(value))}
               </option>
             ))}
           </select>

@@ -45,15 +45,15 @@ exports.productCategories = [
         status: "active",
     },
     {
-        id: "productos-elaborados",
-        slug: "productos-elaborados",
+        id: "ensaladas",
+        slug: "ensaladas",
         name: {
-            es: "Productos elaborados",
-            en: "Prepared products",
+            es: "Ensaladas",
+            en: "Salads",
         },
         description: {
-            es: "Hummus, dips y más",
-            en: "Hummus, dips and more",
+            es: "Ensaladas listas para disfrutar",
+            en: "Ready-to-eat salads",
         },
         sortOrder: 3,
         status: "active",
@@ -73,10 +73,10 @@ exports.productCategories = [
         status: "active",
     },
     {
-        id: "productos-de-campo",
-        slug: "productos-de-campo",
+        id: "productos-de-granja",
+        slug: "productos-de-granja",
         name: {
-            es: "Productos de campo",
+            es: "Productos de granja",
             en: "Farm products",
         },
         description: {
@@ -84,6 +84,20 @@ exports.productCategories = [
             en: "Eggs, honey and more",
         },
         sortOrder: 5,
+        status: "active",
+    },
+    {
+        id: "hierbas-y-especias",
+        slug: "hierbas-y-especias",
+        name: {
+            es: "Hierbas y especias",
+            en: "Herbs and spices",
+        },
+        description: {
+            es: "Hierbas frescas y especias aromáticas",
+            en: "Fresh herbs and aromatic spices",
+        },
+        sortOrder: 6,
         status: "active",
     },
     {
@@ -97,7 +111,7 @@ exports.productCategories = [
             es: "Granos, aceites y complementos",
             en: "Grains, oils and pantry items",
         },
-        sortOrder: 6,
+        sortOrder: 7,
         status: "active",
     },
 ];

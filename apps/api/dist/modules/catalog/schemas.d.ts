@@ -256,7 +256,7 @@ export declare const supplySchema: z.ZodObject<{
     unitPrice: z.ZodOptional<z.ZodNumber>;
     isReturnable: z.ZodBoolean;
     stock: z.ZodOptional<z.ZodNumber>;
-    minStockAlert: z.ZodOptional<z.ZodNumber>;
+    minStock: z.ZodOptional<z.ZodNumber>;
     meta: z.ZodDefault<z.ZodObject<{
         material: z.ZodOptional<z.ZodPipe<z.ZodUnion<readonly [z.ZodString, z.ZodLiteral<"">]>, z.ZodTransform<string, string>>>;
         dimensions: z.ZodOptional<z.ZodPipe<z.ZodUnion<readonly [z.ZodString, z.ZodLiteral<"">]>, z.ZodTransform<string, string>>>;

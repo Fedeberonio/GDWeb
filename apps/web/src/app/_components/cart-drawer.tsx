@@ -194,7 +194,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[11000] bg-black/70 backdrop-blur-md"
             onClick={onClose}
           />
           {/* Drawer */}
@@ -203,7 +203,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 z-[9999] h-full w-full md:w-96 bg-white shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 z-[11001] h-full w-full md:w-96 bg-white shadow-2xl flex flex-col"
           >
             <div className="flex items-center justify-between border-b border-[var(--color-border)] p-6">
               <h2 className="font-display text-2xl text-[var(--color-foreground)]">{t("cart.title")}</h2>

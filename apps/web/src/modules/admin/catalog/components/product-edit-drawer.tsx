@@ -9,7 +9,7 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 
 import { adminFetch } from "@/modules/admin/api/client";
 import { ProductImageFallback } from "@/app/_components/product-image-fallback";
-import type { Product, ProductCategory } from "@/modules/catalog/types";
+import type { Product, ProductCategory, ProductType } from "@/modules/catalog/types";
 import { getFirebaseApp } from "@/lib/firebase/client";
 
 type ProductEditDrawerProps = {
@@ -36,6 +36,14 @@ type FormState = {
   status: Product["status"];
   isFeatured: boolean;
   categoryId: string;
+  type: ProductType;
+  recipeYields: string;
+  recipeIngredients: {
+    productId?: string;
+    supplyId?: string;
+    quantity: number;
+    unit: string
+  }[];
   slotValue: string;
   wholesaleCost: string;
   weightKg: string;
@@ -61,9 +69,57 @@ type SupplyOption = {
   name: string;
 };
 
+type ProductOption = {
+  id: string;
+  name: string;
+  unit?: string;
+};
+
 const STATUS_OPTIONS: Product["status"][] = ["active", "inactive", "coming_soon", "discontinued"];
 
+function resolveProductType(product: Product): ProductType {
+  const rawType = typeof (product as { type?: unknown }).type === "string"
+    ? String((product as { type?: string }).type).toLowerCase()
+    : "";
+
+  if (rawType === "simple" || rawType === "box" || rawType === "salad" || rawType === "prepared") {
+    return rawType;
+  }
+
+  // Legacy value still present in some records.
+  if (rawType === "combo") {
+    return "prepared";
+  }
+
+  const skuOrId = product.sku ?? product.id ?? "";
+  const normalizedCategory = (product.categoryId ?? "").toLowerCase();
+  if (normalizedCategory === "cajas" || /^GD-CAJA-/i.test(skuOrId)) {
+    return "box";
+  }
+  if (normalizedCategory.includes("ensalada")) {
+    return "prepared";
+  }
+
+  return "simple";
+}
+
+function resolveUnitFields(unit: Product["unit"]): { es: string; en: string } {
+  if (typeof unit === "string") {
+    return { es: unit, en: unit };
+  }
+  if (unit && typeof unit === "object") {
+    return {
+      es: unit.es ?? unit.en ?? "",
+      en: unit.en ?? unit.es ?? "",
+    };
+  }
+  return { es: "", en: "" };
+}
+
 function buildInitialForm(product: Product): FormState {
+  const resolvedType = resolveProductType(product);
+  const unitFields = resolveUnitFields(product.unit);
+
   const billOfMaterials = Array.isArray(product.metadata?.billOfMaterials)
     ? product.metadata?.billOfMaterials
         .map((item) => ({
@@ -73,6 +129,14 @@ function buildInitialForm(product: Product): FormState {
         }))
         .filter((item) => item.supplyId)
     : [];
+  const recipeIngredients = Array.isArray(product.recipe?.ingredients)
+    ? product.recipe?.ingredients.map((item) => ({
+        productId: item.productId ?? "",
+        supplyId: item.supplyId ?? "",
+        quantity: typeof item.quantity === "number" ? item.quantity : Number(item.quantity) || 0,
+        unit: item.unit ?? "und",
+      }))
+    : [];
   return {
     sku: product.sku ?? product.id ?? "",
     nameEs: product.name.es ?? "",
@@ -81,13 +145,16 @@ function buildInitialForm(product: Product): FormState {
     salePriceAmount: product.salePrice?.toString() ?? "",
     descriptionEs: product.description?.es ?? "",
     descriptionEn: product.description?.en ?? "",
-    unitEs: product.unit ?? "",
-    unitEn: product.unit ?? "",
+    unitEs: unitFields.es,
+    unitEn: unitFields.en,
     image: product.image ?? "",
     tags: product.tags?.join(", ") ?? "",
     status: product.status ?? (product.isActive ? "active" : "inactive"),
     isFeatured: product.isFeatured ?? false,
     categoryId: product.categoryId ?? "",
+    type: resolvedType,
+    recipeYields: product.recipe?.yields ? product.recipe.yields.toString() : "1",
+    recipeIngredients,
     slotValue: product.metadata?.slotValue?.toString() ?? "",
     wholesaleCost: product.metadata?.wholesaleCost?.toString() ?? "",
     weightKg: product.logistics?.weightKg?.toString() ?? "",
@@ -125,10 +192,13 @@ export function ProductEditDrawer({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [availableProducts, setAvailableProducts] = useState<ProductOption[]>([]);
   const [availableSupplies, setAvailableSupplies] = useState<SupplyOption[]>([]);
-  const [suppliesLoading, setSuppliesLoading] = useState(false);
+  const [recipeSourcesLoading, setRecipeSourcesLoading] = useState(false);
   const [selectedSupplyId, setSelectedSupplyId] = useState("");
   const [addQuantity, setAddQuantity] = useState("1");
+  const [ingredientSearch, setIngredientSearch] = useState<Record<number, string>>({});
+  const [activeIngredientDropdown, setActiveIngredientDropdown] = useState<number | null>(null);
   const resolveImagePath = useCallback((sku: string, currentImage?: string) => {
     if (currentImage?.startsWith("/assets/images/")) return currentImage;
     if (/^GD-CAJA-/i.test(sku)) return `/assets/images/boxes/${sku}.png`;
@@ -144,6 +214,8 @@ export function ProductEditDrawer({
       setSelectedFile(null);
       setPreviewUrl(null);
       setAddQuantity("1");
+      setIngredientSearch({});
+      setActiveIngredientDropdown(null);
     }
   }, [product, isOpen]);
 
@@ -154,35 +226,70 @@ export function ProductEditDrawer({
   }, [previewUrl]);
 
   useEffect(() => {
-    if (activeTab !== "supplies") return;
-    if (suppliesLoading || availableSupplies.length > 0) return;
+    if (!isOpen || (!formState && activeTab !== "supplies")) return;
+    if (recipeSourcesLoading || (availableSupplies.length > 0 && availableProducts.length > 0)) return;
 
-    const fetchSupplies = async () => {
-      setSuppliesLoading(true);
+    const fetchRecipeSources = async () => {
+      setRecipeSourcesLoading(true);
       try {
         const db = getFirestore(getFirebaseApp());
-        const snapshot = await getDocs(collection(db, "catalog_supplies"));
-        const supplies = snapshot.docs
+        const [suppliesSnapshot, productsSnapshot] = await Promise.all([
+          getDocs(collection(db, "catalog_supplies")),
+          getDocs(collection(db, "catalog_products")),
+        ]);
+
+        const supplies = suppliesSnapshot.docs
           .map((docSnap) => {
             const data = docSnap.data() as { name?: string };
             return { id: docSnap.id, name: data.name ?? docSnap.id };
           })
           .sort((a, b) => a.name.localeCompare(b.name));
+
+        const products = productsSnapshot.docs
+          .map((docSnap) => {
+            const data = docSnap.data() as {
+              sku?: string;
+              name?: { es?: string; en?: string };
+              unit?: string | { es?: string; en?: string };
+            };
+            const id = data.sku ?? docSnap.id;
+            const name = data.name?.es || data.name?.en || id;
+            const unit =
+              typeof data.unit === "string"
+                ? data.unit
+                : data.unit?.es || data.unit?.en || undefined;
+            return {
+              id,
+              name,
+              unit,
+            };
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
+
         setAvailableSupplies(supplies);
+        setAvailableProducts(products);
         if (!selectedSupplyId && supplies.length > 0) {
           setSelectedSupplyId(supplies[0].id);
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : "No se pudieron cargar los insumos.";
+        const message = err instanceof Error ? err.message : "No se pudieron cargar productos e insumos.";
         setError(message);
         toast.error(message);
       } finally {
-        setSuppliesLoading(false);
+        setRecipeSourcesLoading(false);
       }
     };
 
-    fetchSupplies();
-  }, [activeTab, availableSupplies.length, suppliesLoading, selectedSupplyId]);
+    fetchRecipeSources();
+  }, [
+    activeTab,
+    availableProducts.length,
+    availableSupplies.length,
+    formState,
+    isOpen,
+    recipeSourcesLoading,
+    selectedSupplyId,
+  ]);
 
   const handleSubmit = useCallback(
     async (e: FormEvent<HTMLFormElement>) => {
@@ -190,6 +297,23 @@ export function ProductEditDrawer({
       if (!product || !formState) return;
 
       setSaving(true);
+
+      // Validate SKU is required
+      if (!formState.sku?.trim()) {
+        setError("El SKU es requerido. Usa el botón 'Auto-generar' o escribe uno manualmente.");
+        setSaving(false);
+        toast.error("SKU requerido");
+        return;
+      }
+
+      // Validate SKU format
+      if (!/^[A-Za-z0-9\-_]+$/.test(formState.sku)) {
+        setError("El SKU solo puede contener letras, números, guiones y guiones bajos");
+        setSaving(false);
+        toast.error("Formato de SKU inválido");
+        return;
+      }
+
       setError(null);
       setMessage(null);
 
@@ -224,6 +348,25 @@ export function ProductEditDrawer({
           }
         }
 
+        const normalizedRecipeIngredients = formState.recipeIngredients
+          .map((ingredient) => ({
+            ...(ingredient.productId && { productId: ingredient.productId.trim() }),
+            ...(ingredient.supplyId && { supplyId: ingredient.supplyId.trim() }),
+            quantity: Number(ingredient.quantity) || 0,
+            unit: ingredient.unit || "und",
+          }))
+          .filter((ingredient) =>
+            (ingredient.productId || ingredient.supplyId) && ingredient.quantity > 0
+          );
+
+        const recipePayload =
+          formState.type === "prepared"
+            ? {
+                yields: Math.max(1, Math.floor(Number(formState.recipeYields) || 1)),
+                ingredients: normalizedRecipeIngredients,
+              }
+            : null;
+
         const updatePayload = {
           name: {
             es: formState.nameEs,
@@ -242,6 +385,8 @@ export function ProductEditDrawer({
           status: formState.status,
           isFeatured: formState.isFeatured,
           categoryId: formState.categoryId,
+          type: formState.type,
+          recipe: recipePayload,
           tags: formState.tags
             .split(",")
             .map((t) => t.trim())
@@ -305,13 +450,135 @@ export function ProductEditDrawer({
         }, 1000);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Error inesperado";
-        setError(message);
-        toast.error(message);
+
+        // Special handling for duplicate SKU (409)
+        if (message.includes("ya existe") || message.includes("409")) {
+          setError("SKU duplicado. Este SKU ya está en uso. Usa 'Auto-generar' para obtener uno nuevo.");
+          toast.error("SKU duplicado - genera uno nuevo");
+        } else {
+          setError(message);
+          toast.error(message);
+        }
       } finally {
         setSaving(false);
       }
     },
     [product, formState, onProductUpdated, onClose, resolveImagePath, selectedFile]
+  );
+
+  const handleFieldChange = useCallback(<K extends keyof FormState,>(field: K, value: FormState[K]) => {
+    setFormState((prev) => {
+      if (!prev) return prev;
+      return { ...prev, [field]: value };
+    });
+  }, []);
+
+  const handleRecipeYieldChange = useCallback((value: string) => {
+    setFormState((prev) => {
+      if (!prev) return prev;
+      return { ...prev, recipeYields: value };
+    });
+  }, []);
+
+  const handleAddIngredient = useCallback(() => {
+    setFormState((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        recipeIngredients: [
+          ...prev.recipeIngredients,
+          { productId: "", supplyId: "", quantity: 1, unit: "und" }
+        ],
+      };
+    });
+  }, []);
+
+  const handleRemoveIngredient = useCallback((index: number) => {
+    setFormState((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        recipeIngredients: prev.recipeIngredients.filter((_, idx) => idx !== index),
+      };
+    });
+  }, []);
+
+  const handleIngredientChange = useCallback(
+    (index: number, field: "productId" | "supplyId" | "quantity" | "unit", value: string) => {
+      setFormState((prev) => {
+        if (!prev) return prev;
+        if (!prev.recipeIngredients[index]) return prev;
+        const nextIngredients = [...prev.recipeIngredients];
+        const current = nextIngredients[index];
+        const nextValue =
+          field === "quantity" ? (Number.isFinite(Number(value)) ? Number(value) : 0) : value;
+        nextIngredients[index] = { ...current, [field]: nextValue };
+        return { ...prev, recipeIngredients: nextIngredients };
+      });
+    },
+    [],
+  );
+
+  const handleIngredientTypeChange = useCallback((index: number, type: "product" | "supply") => {
+    setFormState((prev) => {
+      if (!prev) return prev;
+      if (!prev.recipeIngredients[index]) return prev;
+      const nextIngredients = [...prev.recipeIngredients];
+      const current = nextIngredients[index];
+      nextIngredients[index] = {
+        ...current,
+        productId: type === "product" ? current.productId ?? "" : "",
+        supplyId: type === "supply" ? current.supplyId ?? "" : "",
+      };
+      return { ...prev, recipeIngredients: nextIngredients };
+    });
+    setIngredientSearch((prev) => ({ ...prev, [index]: "" }));
+    setActiveIngredientDropdown(index);
+  }, []);
+
+  const handleIngredientSelect = useCallback(
+    (index: number, type: "product" | "supply", selectedId: string, selectedLabel: string) => {
+      setFormState((prev) => {
+        if (!prev) return prev;
+        if (!prev.recipeIngredients[index]) return prev;
+        const nextIngredients = [...prev.recipeIngredients];
+        const current = nextIngredients[index];
+        nextIngredients[index] = {
+          ...current,
+          productId: type === "product" ? selectedId : "",
+          supplyId: type === "supply" ? selectedId : "",
+        };
+        return { ...prev, recipeIngredients: nextIngredients };
+      });
+      setIngredientSearch((prev) => ({ ...prev, [index]: selectedLabel }));
+      setActiveIngredientDropdown(null);
+    },
+    [],
+  );
+
+  const getIngredientMatches = useCallback(
+    (index: number, ingredient: FormState["recipeIngredients"][number]) => {
+      const currentType: "product" | "supply" = ingredient.supplyId ? "supply" : "product";
+      const search = (ingredientSearch[index] ?? "").trim().toLowerCase();
+      const limit = 8;
+
+      if (currentType === "product") {
+        const options = availableProducts.map((item) => {
+          const label = `${item.id} - ${item.name}${item.unit ? ` (${item.unit})` : ""}`;
+          const haystack = `${item.id} ${item.name} ${item.unit ?? ""}`.toLowerCase();
+          return { id: item.id, label, haystack, type: "product" as const };
+        });
+        return (search ? options.filter((item) => item.haystack.includes(search)) : options).slice(0, limit);
+      }
+
+      const options = availableSupplies.map((item) => {
+        const label = `${item.id} - ${item.name}`;
+        const haystack = `${item.id} ${item.name}`.toLowerCase();
+        return { id: item.id, label, haystack, type: "supply" as const };
+      });
+      return (search ? options.filter((item) => item.haystack.includes(search)) : options).slice(0, limit);
+    },
+    [availableProducts, availableSupplies, ingredientSearch],
   );
 
   const handleAddSupply = useCallback(() => {
@@ -481,16 +748,46 @@ export function ProductEditDrawer({
                 <>
                   {/* SKU - Primary Key */}
                   <div className="glass-panel rounded-2xl p-4 border border-white/60">
-                    <label className="block text-sm font-semibold text-[var(--gd-color-forest)] mb-2">
-                      SKU (Identificador único)
-                    </label>
-                    <input
-                      type="text"
-                      value={formState.sku}
-                      onChange={(e) => setFormState({ ...formState, sku: e.target.value.toUpperCase() })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-white/60 bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[var(--gd-color-leaf)]/30 font-mono text-sm"
-                      placeholder="GD-FRUT-001"
-                    />
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-[var(--gd-color-text-muted)]">
+                        SKU (Identificador único) *
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={formState.sku || ""}
+                          onChange={(e) => handleFieldChange("sku", e.target.value)}
+                          placeholder="GD-VEGE-068"
+                          required
+                          className="flex-1 px-4 py-2.5 rounded-xl border border-white/60 bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[var(--gd-color-leaf)]/30 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!formState.categoryId) {
+                              toast.error("Selecciona una categoría primero");
+                              return;
+                            }
+                            try {
+                              const { generateNextSKU } = await import("@/lib/utils/generate-sku");
+                              const nextSKU = await generateNextSKU(formState.categoryId);
+                              handleFieldChange("sku", nextSKU);
+                              toast.success(`SKU generado: ${nextSKU}`);
+                            } catch (error) {
+                              console.error("Error generating SKU:", error);
+                              toast.error("Error al generar SKU");
+                            }
+                          }}
+                          disabled={!formState.categoryId}
+                          className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Auto-generar
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        El SKU se usará como ID del producto. Ej: GD-VEGE-068
+                      </p>
+                    </div>
                     <p className="mt-1 text-xs text-[var(--gd-color-text-muted)]">
                       La imagen se cargará desde: /assets/images/products/{formState.sku || product.id}.png
                     </p>
@@ -663,6 +960,35 @@ export function ProductEditDrawer({
                       </div>
                     </div>
                     <div className="mt-3">
+                      <label className="block text-xs font-medium text-[var(--gd-color-text-muted)] mb-1">
+                        Tipo de Producto
+                      </label>
+                      <select
+                        value={formState.type || "simple"}
+                        onChange={(e) => {
+                          const nextType = e.target.value as ProductType;
+                          setFormState((prev) => {
+                            if (!prev) return prev;
+                            if (nextType === "prepared") {
+                              return { ...prev, type: nextType };
+                            }
+                            return {
+                              ...prev,
+                              type: nextType,
+                              recipeYields: "1",
+                              recipeIngredients: [],
+                            };
+                          });
+                        }}
+                        className="w-full px-4 py-2.5 rounded-xl border border-white/60 bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[var(--gd-color-leaf)]/30 text-sm"
+                      >
+                        <option value="simple">Simple (producto individual)</option>
+                        <option value="box">Caja (con variantes)</option>
+                        {formState.type === "salad" && <option value="salad">Ensalada (legacy)</option>}
+                        <option value="prepared">Preparado (requiere receta)</option>
+                      </select>
+                    </div>
+                    <div className="mt-3">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
@@ -674,6 +1000,136 @@ export function ProductEditDrawer({
                       </label>
                     </div>
                   </div>
+
+                  {formState.type === "prepared" && (
+                    <div className="space-y-4 p-6 bg-amber-50 border border-amber-200 rounded-2xl">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Receta (Ingredientes Necesarios)
+                      </h3>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          Porciones que produce
+                        </label>
+                        <input
+                          type="number"
+                          value={formState.recipeYields || 1}
+                          onChange={(e) => handleRecipeYieldChange(e.target.value)}
+                          className="w-32 px-3 py-2 border border-gray-300 rounded-lg"
+                          min="1"
+                          step="1"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium text-gray-700">Ingredientes</label>
+
+                        {(formState.recipeIngredients || []).map((ingredient, index) => {
+                          const currentType: "product" | "supply" = ingredient.supplyId ? "supply" : "product";
+                          const matches = getIngredientMatches(index, ingredient);
+                          const selectedValue = ingredient.productId || ingredient.supplyId || "";
+                          const inputValue = ingredientSearch[index] ?? selectedValue;
+
+                          return (
+                          <div key={`ingredient-${index}`} className="grid grid-cols-12 gap-3 items-end">
+                            <div className="col-span-5">
+                              <label className="text-xs text-gray-500">Tipo / ID</label>
+                              <div className="flex gap-2">
+                                <select
+                                  value={currentType}
+                                  onChange={(e) => {
+                                    handleIngredientTypeChange(index, e.target.value as "product" | "supply");
+                                  }}
+                                  className="w-28 px-2 py-2 border border-gray-300 rounded-lg text-xs"
+                                >
+                                  <option value="product">Producto</option>
+                                  <option value="supply">Insumo</option>
+                                </select>
+                                <div className="relative flex-1">
+                                  <input
+                                    type="text"
+                                    value={inputValue}
+                                    placeholder={currentType === "product" ? "Buscar producto (SKU o nombre)" : "Buscar insumo (ID o nombre)"}
+                                    onFocus={() => setActiveIngredientDropdown(index)}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setIngredientSearch((prev) => ({ ...prev, [index]: value }));
+                                      setActiveIngredientDropdown(index);
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                  />
+                                  {activeIngredientDropdown === index && matches.length > 0 && (
+                                    <div className="absolute z-20 mt-1 max-h-52 w-full overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                                      {matches.map((match) => (
+                                        <button
+                                          key={`${match.type}-${match.id}`}
+                                          type="button"
+                                          onMouseDown={(e) => e.preventDefault()}
+                                          onClick={() =>
+                                            handleIngredientSelect(index, match.type, match.id, match.label)
+                                          }
+                                          className="block w-full px-3 py-2 text-left text-sm hover:bg-emerald-50"
+                                        >
+                                          {match.label}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="col-span-3">
+                              <label className="text-xs text-gray-500">Cantidad</label>
+                              <input
+                                type="number"
+                                value={ingredient.quantity}
+                                step="0.1"
+                                onChange={(e) => handleIngredientChange(index, "quantity", e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                              />
+                            </div>
+
+                            <div className="col-span-3">
+                              <label className="text-xs text-gray-500">Unidad</label>
+                              <select
+                                value={ingredient.unit}
+                                onChange={(e) => handleIngredientChange(index, "unit", e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                              >
+                                <option value="kg">kg</option>
+                                <option value="und">und</option>
+                                <option value="lb">lb</option>
+                                <option value="g">g</option>
+                                <option value="L">L</option>
+                                <option value="ml">ml</option>
+                              </select>
+                            </div>
+
+                            <div className="col-span-1">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveIngredient(index)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                          );
+                        })}
+
+                        <button
+                          type="button"
+                          onClick={handleAddIngredient}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg border border-emerald-200"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Agregar Ingrediente
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Descripciones */}
                   <div className="glass-panel rounded-2xl p-4 border border-white/60">
@@ -985,14 +1441,14 @@ export function ProductEditDrawer({
                       <button
                         type="button"
                         onClick={handleAddSupply}
-                        disabled={suppliesLoading}
+                        disabled={recipeSourcesLoading}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--gd-color-leaf)]/40 bg-white/70 px-4 py-2.5 text-sm font-semibold text-[var(--gd-color-forest)] shadow-sm transition hover:bg-white disabled:opacity-50"
                       >
                         <Plus className="h-4 w-4" />
                         Agregar
                       </button>
                     </div>
-                    {suppliesLoading && (
+                    {recipeSourcesLoading && (
                       <p className="mt-2 text-xs text-[var(--gd-color-text-muted)]">Cargando insumos...</p>
                     )}
                   </div>

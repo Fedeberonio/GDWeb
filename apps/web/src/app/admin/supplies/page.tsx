@@ -19,6 +19,7 @@ const CATEGORY_FILTERS = [
   { id: "Packaging", label: "Packaging" },
   { id: "Glass", label: "Botellas/Frascos" },
   { id: "Labels", label: "Etiquetas" },
+  { id: "Ingredients", label: "Ingredientes" },
   { id: "Other", label: "Otros" },
 ];
 
@@ -26,6 +27,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   Packaging: "Packaging",
   Glass: "Botellas/Frascos",
   Labels: "Etiquetas",
+  Ingredients: "Ingredientes",
   Other: "Otros",
 };
 
@@ -759,6 +761,7 @@ function SuppliesContent() {
                     <option value="Packaging">Packaging</option>
                     <option value="Glass">Glass</option>
                     <option value="Labels">Labels</option>
+                    <option value="Ingredients">Ingredientes</option>
                     <option value="Other">Other</option>
                   </select>
                 </label>
@@ -905,6 +908,7 @@ function SuppliesContent() {
                     <option value="Packaging">Packaging</option>
                     <option value="Glass">Glass</option>
                     <option value="Labels">Labels</option>
+                    <option value="Ingredients">Ingredientes</option>
                     <option value="Other">Other</option>
                   </select>
                 </label>

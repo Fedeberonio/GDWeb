@@ -4,7 +4,7 @@ import { ChevronRight, Leaf } from "lucide-react";
 import { useTranslation } from "@/modules/i18n/use-translation";
 
 export function HeroSectionClient() {
-  useTranslation();
+  const { t } = useTranslation();
 
   const handleScrollToBoxes = () => {
     const target = document.getElementById("cajas");
@@ -43,7 +43,7 @@ export function HeroSectionClient() {
           <div className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-sm px-5 py-2.5 rounded-full shadow-lg mb-6 md:mb-8">
             <Leaf className="w-5 h-5 text-green-600" />
             <span className="text-green-700 font-inter font-semibold text-sm md:text-base">
-              Primera empresa 100% sustentable en Juan Dolio
+              {t("hero.badge")}
             </span>
           </div>
           <h1
@@ -54,21 +54,21 @@ export function HeroSectionClient() {
                 "0 2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.2)",
             }}
           >
-            Ordena tu Cajita Fresca
+            {t("hero.title")}
           </h1>
           <p
             className="text-white/95 text-lg md:text-2xl lg:text-3xl font-inter font-medium max-w-xl mb-8 md:mb-10 mx-auto md:mx-0"
             style={{ textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
           >
-            Cajitas frescas, jugos naturales y productos caseros del día.
+            {t("hero.subtitle")}
           </p>
           <button
             type="button"
             onClick={handleScrollToBoxes}
             className="group inline-flex w-full max-w-sm md:w-auto items-center justify-center gap-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-inter font-bold text-lg px-10 py-4 md:px-12 md:py-5 rounded-xl shadow-2xl hover:shadow-yellow-500/50 transform hover:scale-105 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300/70"
-            aria-label="Ver cajas disponibles"
+            aria-label={t("hero.cta")}
           >
-            <span>Ver Cajas Disponibles</span>
+            <span>{t("hero.cta")}</span>
             <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
           </button>
         </div>

@@ -4,11 +4,12 @@ import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useCart } from "@/modules/cart/context";
 import type { Box, BoxRule, Product } from "@/modules/catalog/types";
-import { Check, Star } from "lucide-react";
+import { Check, Info, Star } from "lucide-react";
 
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { ProductCard } from "./product-card";
 import { BoxVariantsDisplay } from "./box-variants-display";
+import { BoxAddModeDialog } from "./box-add-mode-dialog";
 import { BoxPreferencesModal } from "./box-preferences-modal";
 import type { VariantType } from "./box-selector/helpers";
 
@@ -36,7 +37,7 @@ function getBoxImages(boxId: string): { product: string; topdown: string } {
 }
 
 // Helper function para mapear URLs remotas a imágenes locales (fallback)
-function getLocalBoxImage(heroImage: string | undefined, boxId: string, _slug: string): string {
+function getLocalBoxImage(heroImage: string | undefined, boxId: string): string {
   if (heroImage && heroImage.startsWith("/assets/")) {
     return heroImage;
   }
@@ -63,13 +64,19 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
   const { t, tData } = useTranslation();
   const { addItem } = useCart();
   const [editingBox, setEditingBox] = useState<{ box: Box; quantity: number } | null>(null);
+  const [addChoiceBox, setAddChoiceBox] = useState<{ box: Box; quantity: number } | null>(null);
+  void prebuiltBoxes;
 
   // Restore missing state
   const [addedBoxId, setAddedBoxId] = useState<string | null>(null);
   const [boxQuantities, setBoxQuantities] = useState<Record<string, number>>({});
   const [selectedVariants, setSelectedVariants] = useState<Record<string, VariantType>>({});
+  const [flippedBoxes, setFlippedBoxes] = useState<Record<string, boolean>>({});
 
   const rulesById = useMemo(() => new Map(boxRules.map((rule) => [rule.id, rule])), [boxRules]);
+  const ensureDefaultVariant = (boxId: string) => {
+    setSelectedVariants((prev) => (prev[boxId] ? prev : { ...prev, [boxId]: "mix" }));
+  };
   const productMap = useMemo(() => {
     const map = new Map<string, Product>();
     products.forEach((product) => {
@@ -94,20 +101,24 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
   const resetQuantity = (boxId: string) => {
     setBoxQuantities((prev) => ({ ...prev, [boxId]: 1 }));
   };
+  const setBoxFlipped = (boxId: string, flipped: boolean) => {
+    setFlippedBoxes((prev) => ({ ...prev, [boxId]: flipped }));
+  };
 
-  const handleConfirmBox = ({
+  const addBoxToCart = ({
+    box,
+    quantity,
     variant,
     likes,
     dislikes,
   }: {
+    box: Box;
+    quantity: number;
     variant: VariantType;
     likes: string[];
     dislikes: string[];
   }) => {
-    if (!editingBox) return;
-
-    const { box, quantity } = editingBox;
-    const imageSrc = getLocalBoxImage(box.heroImage, box.id, box.slug);
+    const imageSrc = getLocalBoxImage(box.heroImage, box.id);
 
     addItem({
       slug: box.slug,
@@ -137,15 +148,48 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
     setAddedBoxId(box.id);
     toast.success(`${tData(box.name)} ${t("common.added").toLowerCase()}`);
     resetQuantity(box.id);
-    setEditingBox(null);
+    setBoxFlipped(box.id, false);
     setTimeout(() => setAddedBoxId(null), 1000);
+  };
+
+  const handleConfirmBox = ({
+    variant,
+    likes,
+    dislikes,
+  }: {
+    variant: VariantType;
+    likes: string[];
+    dislikes: string[];
+  }) => {
+    if (!editingBox) return;
+
+    addBoxToCart({
+      box: editingBox.box,
+      quantity: editingBox.quantity,
+      variant,
+      likes,
+      dislikes,
+    });
+    setEditingBox(null);
+  };
+
+  const handleAutoModeAdd = ({ box, quantity }: { box: Box; quantity: number }) => {
+    const variant = selectedVariants[box.id] ?? "mix";
+    addBoxToCart({
+      box,
+      quantity,
+      variant,
+      likes: [],
+      dislikes: [],
+    });
+    setAddChoiceBox(null);
   };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto pt-6">
         {boxes.map((box, index) => {
-          const imageSrc = getLocalBoxImage(box.heroImage, box.id, box.slug);
+          const imageSrc = getLocalBoxImage(box.heroImage, box.id);
           const fallbackTopdown = getBoxImages(box.id).topdown;
           const secondaryImage =
             (box as Box & { secondaryImage?: string; hoverImage?: string }).secondaryImage ||
@@ -153,6 +197,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
             fallbackTopdown;
           const quantity = getQuantity(box.id);
           const isAdded = addedBoxId === box.id;
+          const isFlipped = Boolean(flippedBoxes[box.id]);
           const ruleKey = box.ruleId || box.id || box.slug;
           const rule = ruleKey ? rulesById.get(ruleKey) : undefined;
           const baseContents =
@@ -193,40 +238,100 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
           return (
             <ProductCard
               key={box.id}
+              type="box"
               title={tData(box.name)}
               description={box.description ? tData(box.description) : undefined}
               detailsNode={
-                <div className="pt-2">
+                <div className="pt-1">
                   <BoxVariantsDisplay
                     baseContents={baseContents}
                     boxRule={rule}
                     productMap={productMap}
                     boxVariants={box.variants}
                     compact
-                    initialVariant={selectedVariants[box.id]}
-                    onVariantSelect={(variant) =>
-                      setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }))
-                    }
+                    initialVariant={selectedVariants[box.id] ?? "mix"}
+                    onVariantSelect={(variant) => {
+                      setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }));
+                      setBoxFlipped(box.id, true);
+                    }}
                   />
                 </div>
               }
+              backContent={
+                <div className="w-full space-y-3 text-left">
+                  <p className="text-center text-sm text-[var(--gd-color-forest)]/85">
+                    {box.description ? tData(box.description) : t("discover.box_description")}
+                  </p>
+                  <BoxVariantsDisplay
+                    baseContents={baseContents}
+                    boxRule={rule}
+                    productMap={productMap}
+                    boxVariants={box.variants}
+                    initialVariant={selectedVariants[box.id] ?? "mix"}
+                    onVariantSelect={(variant) => {
+                      setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }));
+                      setBoxFlipped(box.id, true);
+                    }}
+                  />
+                </div>
+              }
+              imageAction={
+                <button
+                  type="button"
+                  onClick={() => {
+                    ensureDefaultVariant(box.id);
+                    setBoxFlipped(box.id, true);
+                  }}
+                  aria-label={t("common.view_details")}
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gd-color-orange)] bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[var(--gd-color-orange)] shadow-md ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--gd-color-orange)] hover:text-white active:translate-y-0 md:text-sm"
+                >
+                  <Info className="h-4 w-4" />
+                  <span>{t("common.view_details")}</span>
+                </button>
+              }
               image={{ src: imageSrc, alt: tData(box.name), fit: "cover", priority: index < 3 }}
               secondaryImage={{ src: secondaryImage, alt: `${tData(box.name)} topdown`, fit: "cover" }}
+              imageContainerClassName="bg-gradient-to-b from-[#f6f1e4] via-[#f2ead8] to-[#eaddc3]"
               badges={badges}
               priceLabel={`RD$${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}`}
               unitLabel={unitLabel}
               quantity={quantity}
               onDecrease={() => updateQuantity(box.id, -1)}
               onIncrease={() => updateQuantity(box.id, 1)}
-              onAdd={() => setEditingBox({ box, quantity })}
+              onAdd={() => {
+                ensureDefaultVariant(box.id);
+                setAddChoiceBox({ box, quantity });
+              }}
               addLabel={t("common.add_to_cart")}
-              disableFlip
+              detailsCtaLabel={t("common.view_details")}
               isAdded={isAdded}
               footerNote={t("boxes.disclaimer")}
+              controlsPlacement="both"
+              compactControls
+              isFlipped={isFlipped}
+              onFlipChange={(next) => {
+                if (next) ensureDefaultVariant(box.id);
+                setBoxFlipped(box.id, next);
+              }}
             />
           );
         })}
       </div>
+
+      {addChoiceBox && (
+        <BoxAddModeDialog
+          isOpen={true}
+          boxName={tData(addChoiceBox.box.name)}
+          onClose={() => setAddChoiceBox(null)}
+          onCustomize={() => {
+            ensureDefaultVariant(addChoiceBox.box.id);
+            setBoxFlipped(addChoiceBox.box.id, true);
+            setEditingBox(addChoiceBox);
+            setAddChoiceBox(null);
+          }}
+          onAutoMode={() => handleAutoModeAdd(addChoiceBox)}
+        />
+      )}
 
       {editingBox && (
         <BoxPreferencesModal

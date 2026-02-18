@@ -8,7 +8,7 @@ export type SupplyMeta = {
 export type Supply = {
   id: string;
   name: string;
-  category: "Packaging" | "Glass" | "Labels" | "Other";
+  category: "Packaging" | "Glass" | "Labels" | "Ingredients" | "Other";
   unit?: string;
   supplier?: string;
   imageUrl?: string;
