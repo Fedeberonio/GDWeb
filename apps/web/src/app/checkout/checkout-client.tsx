@@ -11,6 +11,7 @@ import { useAuth } from "@/modules/auth/context";
 import { useUser } from "@/modules/user/context";
 import type { CartItem } from "@/modules/cart/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { DEFAULT_ORDER_SETTINGS, type OrderSettings } from "@/lib/config/order-settings";
 import productMetadata from "@/data/productMetadata.json";
 
 type TranslateFn = ReturnType<typeof useTranslation>["t"];
@@ -47,7 +48,9 @@ const getVariantLabel = (variantKey: string, t: TranslateFn) => {
 };
 
 const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
+const CHECKOUT_LOCAL_KEY = "gd_checkout_form";
 const AUTH_MODE_KEY = "gd-auth-mode";
+const TIP_PRESET_OPTIONS = [10, 15, 20] as const;
 
 type AuthChoice = "undecided" | "guest";
 type PaymentPreference = "Cash" | "Transferencia" | "PayPal";
@@ -73,8 +76,14 @@ type FormState = {
   contactEmail: string;
   direccion: string;
   deliveryDay: string;
-  metodoPago: string;
+  metodoPago: string | null;
+  cashCurrency: "DOP" | "USD";
+  cashNeedsChange: boolean;
+  cashPaidAmount: string;
   notes: string;
+  returnsPackaging: boolean;
+  tipType: "none" | "10" | "15" | "20" | "custom";
+  customTipDop: string;
 };
 
 export function CheckoutClient() {
@@ -93,14 +102,23 @@ export function CheckoutClient() {
     contactEmail: "",
     direccion: "",
     deliveryDay: "",
-    metodoPago: "",
+    metodoPago: null,
+    cashCurrency: "DOP",
+    cashNeedsChange: false,
+    cashPaidAmount: "",
     notes: "",
+    returnsPackaging: false,
+    tipType: "none",
+    customTipDop: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [showSummary, setShowSummary] = useState(false); // Nuevo estado para mostrar resumen
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [authChoice, setAuthChoice] = useState<AuthChoice>("undecided");
   const [showAuthGate, setShowAuthGate] = useState(false);
+  const [orderSettings, setOrderSettings] = useState<OrderSettings>(DEFAULT_ORDER_SETTINGS);
+  const returnDiscountDop = orderSettings.returnDiscountAmount ?? DEFAULT_ORDER_SETTINGS.returnDiscountAmount;
+  const cashExchangeRateDop = orderSettings.usdExchangeRateDop ?? DEFAULT_ORDER_SETTINGS.usdExchangeRateDop;
 
   // Pre-llenar formulario con datos del perfil
   useEffect(() => {
@@ -119,7 +137,7 @@ export function CheckoutClient() {
       contactName: prev.contactName || profile.displayName || "",
       contactPhone: prev.contactPhone || profile.telefono || "",
       direccion: prev.direccion || profile.direccion || "",
-      metodoPago: prev.metodoPago || profile.pagoPreferido || "",
+      metodoPago: prev.metodoPago ?? "",
       notes: prev.notes || buildNotesFromProfile(profile),
     }));
   }, [profile]);
@@ -127,6 +145,11 @@ export function CheckoutClient() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
+      const rawLocalDraft = window.localStorage.getItem(CHECKOUT_LOCAL_KEY);
+      if (rawLocalDraft) {
+        const draft = JSON.parse(rawLocalDraft) as Partial<FormState>;
+        setForm((prev) => ({ ...prev, ...draft }));
+      }
       const rawDraft = window.sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
       if (rawDraft) {
         const draft = JSON.parse(rawDraft) as Partial<FormState>;
@@ -148,6 +171,27 @@ export function CheckoutClient() {
   }, [showAuthGate]);
 
   useEffect(() => {
+    let isActive = true;
+
+    async function loadPublicOrderSettings() {
+      try {
+        const response = await fetch("/api/order-settings", { cache: "no-store" });
+        if (!response.ok) return;
+        const json = await response.json();
+        if (!isActive) return;
+        setOrderSettings((prev) => ({ ...prev, ...(json?.data ?? {}) }));
+      } catch (error) {
+        console.warn("No se pudo cargar configuracion publica de pedidos", error);
+      }
+    }
+
+    loadPublicOrderSettings();
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!draftLoaded) return;
     if (user) return;
     if (authChoice !== "undecided") return;
@@ -167,6 +211,7 @@ export function CheckoutClient() {
     if (!draftLoaded || typeof window === "undefined") return;
     try {
       window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
+      window.localStorage.setItem(CHECKOUT_LOCAL_KEY, JSON.stringify(form));
     } catch {
       // ignore storage errors
     }
@@ -195,15 +240,47 @@ export function CheckoutClient() {
 
   // Calcular valores del pedido
   const orderCalculations = useMemo(() => {
-    const diasConCargo = ["Martes", "Jueves", "Sábado"];
-    const cargoEnvio = diasConCargo.includes(form.deliveryDay) ? 100 : 0;
-    const metodoPago = form.metodoPago || profile?.pagoPreferido || "Cash";
+    const diasConCargo = orderSettings.deliveryFeeDays ?? DEFAULT_ORDER_SETTINGS.deliveryFeeDays;
+    const cargoEnvio =
+      form.deliveryDay && diasConCargo.includes(form.deliveryDay)
+        ? Number(orderSettings.deliveryFeeAmount) || DEFAULT_ORDER_SETTINGS.deliveryFeeAmount
+        : 0;
+    const metodoPago = form.metodoPago || "";
     const subtotalConEnvio = subtotal + cargoEnvio;
     const requierePaypal = metodoPago === "PayPal" || metodoPago === "Tarjeta";
-    const cargoPaypal = requierePaypal ? subtotalConEnvio * 0.1 : 0;
-    const totalFinalDOP = subtotalConEnvio + cargoPaypal;
-    const tasaCambio = 55;
+    const paymentFeePercentage = Number(orderSettings.paymentFeePercentage) || DEFAULT_ORDER_SETTINGS.paymentFeePercentage;
+    const cargoPaypal = requierePaypal ? subtotalConEnvio * (paymentFeePercentage / 100) : 0;
+    const devolucionDescuento = form.returnsPackaging ? returnDiscountDop : 0;
+
+    const tipBaseAmount = subtotalConEnvio + cargoPaypal - devolucionDescuento;
+    const customTipParsed = Number(form.customTipDop);
+    const customTipAmount = Number.isFinite(customTipParsed) && customTipParsed > 0 ? customTipParsed : 0;
+    const tipAmount =
+      form.tipType === "10"
+        ? subtotal * 0.1
+        : form.tipType === "15"
+          ? subtotal * 0.15
+          : form.tipType === "20"
+            ? subtotal * 0.2
+            : form.tipType === "custom"
+              ? customTipAmount
+              : 0;
+
+    const totalFinalDOP = Math.max(0, tipBaseAmount + tipAmount);
+    const tasaCambio = Number(orderSettings.usdExchangeRateDop) || DEFAULT_ORDER_SETTINGS.usdExchangeRateDop;
     const totalFinalUSD = requierePaypal ? (totalFinalDOP / tasaCambio) : 0;
+    const isCash = metodoPago === "Cash";
+    const cashCurrency = isCash ? form.cashCurrency : "DOP";
+    const totalCashCurrency = isCash && cashCurrency === "USD" ? totalFinalDOP / cashExchangeRateDop : totalFinalDOP;
+    const cashPaidRaw = Number(form.cashPaidAmount);
+    const cashPaidAmount = Number.isFinite(cashPaidRaw) && cashPaidRaw > 0 ? cashPaidRaw : 0;
+    const cashNeedsChange = isCash && form.cashNeedsChange;
+    const cashChangeAmount =
+      cashNeedsChange && cashPaidAmount > totalCashCurrency ? cashPaidAmount - totalCashCurrency : 0;
+    const cashRemainingAmount =
+      cashNeedsChange && cashPaidAmount > 0 && cashPaidAmount < totalCashCurrency
+        ? totalCashCurrency - cashPaidAmount
+        : 0;
 
     return {
       cargoEnvio,
@@ -211,15 +288,39 @@ export function CheckoutClient() {
       subtotalConEnvio,
       requierePaypal,
       cargoPaypal,
+      devolucionDescuento,
+      tipAmount,
       totalFinalDOP,
       totalFinalUSD,
+      usdExchangeRateDop: tasaCambio,
+      paymentFeePercentage,
+      isCash,
+      cashCurrency,
+      cashExchangeRateDop,
+      totalCashCurrency,
+      cashNeedsChange,
+      cashPaidAmount,
+      cashChangeAmount,
+      cashRemainingAmount,
     };
-  }, [subtotal, form.deliveryDay, form.metodoPago, profile?.pagoPreferido]);
+  }, [
+    subtotal,
+    form.deliveryDay,
+    form.metodoPago,
+    form.returnsPackaging,
+    form.tipType,
+    form.customTipDop,
+    form.cashCurrency,
+    form.cashNeedsChange,
+    form.cashPaidAmount,
+    orderSettings,
+  ]);
 
   const persistDraft = () => {
     try {
       if (typeof window !== "undefined") {
         window.sessionStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(form));
+        window.localStorage.setItem(CHECKOUT_LOCAL_KEY, JSON.stringify(form));
       }
     } catch {
       // ignore storage errors
@@ -232,7 +333,7 @@ export function CheckoutClient() {
     const updates = {
       telefono: form.contactPhone.trim(),
       direccion: form.direccion.trim(),
-      pagoPreferido: normalizePaymentPreference(form.metodoPago),
+      pagoPreferido: normalizePaymentPreference(form.metodoPago || ""),
       ...(displayName ? { displayName } : {}),
     };
     try {
@@ -299,9 +400,27 @@ export function CheckoutClient() {
       toast.error(t("checkout.delivery_day_required"));
       return;
     }
-    if (!form.metodoPago.trim()) {
+    if (!form.metodoPago) {
       toast.error(t("checkout.payment_required"));
       return;
+    }
+    if (form.tipType === "custom") {
+      const customTip = Number(form.customTipDop);
+      if (!Number.isFinite(customTip) || customTip <= 0) {
+        toast.error(t("checkout.tip_custom_invalid"));
+        return;
+      }
+    }
+    if (form.metodoPago === "Cash" && form.cashNeedsChange) {
+      const cashPaid = Number(form.cashPaidAmount);
+      if (!Number.isFinite(cashPaid) || cashPaid <= 0) {
+        toast.error(t("checkout.cash_paid_amount_invalid"));
+        return;
+      }
+      if (cashPaid < orderCalculations.totalCashCurrency) {
+        toast.error(t("checkout.cash_paid_amount_insufficient"));
+        return;
+      }
     }
 
     if (!ensureCheckoutAccess()) {
@@ -335,8 +454,19 @@ export function CheckoutClient() {
         metodoPago,
         requierePaypal,
         cargoPaypal,
+        devolucionDescuento,
+        tipAmount,
         totalFinalDOP,
         totalFinalUSD,
+        usdExchangeRateDop,
+        isCash,
+        cashCurrency,
+        cashExchangeRateDop,
+        totalCashCurrency,
+        cashNeedsChange,
+        cashPaidAmount,
+        cashChangeAmount,
+        cashRemainingAmount,
       } = orderCalculations;
 
       const deliveryZone = boxItems.find((item) => item.configuration?.deliveryZone)?.configuration?.deliveryZone;
@@ -368,6 +498,22 @@ export function CheckoutClient() {
         deliveryDay: form.deliveryDay || undefined,
         notes: form.notes?.trim() || undefined,
         paymentMethod: mapPaymentMethod(metodoPago),
+        returnsPackaging: form.returnsPackaging,
+        returnDiscountAmount: devolucionDescuento,
+        tipAmount,
+        tipType: form.tipType,
+        cashPayment:
+          isCash
+            ? {
+              currency: cashCurrency,
+              exchangeRateDop: cashExchangeRateDop,
+              amountDue: totalCashCurrency,
+              requiresChange: cashNeedsChange,
+              paidWithAmount: cashNeedsChange ? cashPaidAmount : null,
+              changeAmount: cashNeedsChange ? cashChangeAmount : 0,
+              remainingAmount: cashNeedsChange ? cashRemainingAmount : 0,
+            }
+            : undefined,
         items: checkoutItems,
       };
 
@@ -398,9 +544,10 @@ export function CheckoutClient() {
         // Intentar obtener ID del formato de respuesta { data: { id: ... } } o { id: ... }
         orderId = responseData.data?.id || responseData.id || "N/A";
 
-      } catch (apiError: any) {
+      } catch (apiError: unknown) {
+        const apiMessage = apiError instanceof Error ? apiError.message : "Error de conexión";
         console.error("Error al registrar pedido en API:", apiError);
-        toast.error(`No pudimos procesar tu pedido: ${apiError?.message || "Error de conexión"}. Por favor intenta de nuevo.`);
+        toast.error(`No pudimos procesar tu pedido: ${apiMessage}. Por favor intenta de nuevo.`);
         setSubmitting(false);
         return; // DETENER SI FALLA LA API
       }
@@ -449,10 +596,19 @@ export function CheckoutClient() {
         const metodoTexto = metodoPago === "Tarjeta" ? "PayPal/Tarjeta" : "PayPal";
         desgloseTotal += `\nCargo ${metodoTexto} (10%): DOP ${cargoPaypal.toFixed(2)}`;
       }
+      if (devolucionDescuento > 0) {
+        desgloseTotal += `\n${t("checkout.return_discount_label")}: -DOP ${devolucionDescuento.toFixed(2)}`;
+      }
+      if (tipAmount > 0) {
+        desgloseTotal += `\n${t("checkout.tip_label")}: DOP ${tipAmount.toFixed(2)}`;
+      }
       desgloseTotal += `\n*Total a Pagar: DOP ${totalFinalDOP.toFixed(2)}*`;
 
+      if (isCash && cashCurrency === "USD") {
+        desgloseTotal += `\n${t("checkout.cash_total_usd_label")}: USD ${totalCashCurrency.toFixed(2)} (1 USD = ${cashExchangeRateDop} DOP)`;
+      }
       if (requierePaypal && totalFinalUSD > 0) {
-        desgloseTotal += `\n*Total en USD: $${totalFinalUSD.toFixed(2)}* (Tasa: 1 USD = 55 DOP)`;
+        desgloseTotal += `\n*Total en USD: $${totalFinalUSD.toFixed(2)}* (Tasa: 1 USD = ${usdExchangeRateDop} DOP)`;
       }
 
       let mensajeWhatsApp = `¡Hola Green Dolio! 👋 Nuevo Pedido #${orderId}:
@@ -472,6 +628,27 @@ ${desgloseTotal}
 
 *💳 MÉTODO DE PAGO:*
 ${metodoPago}`;
+
+      if (isCash) {
+        mensajeWhatsApp += `\n- ${t("checkout.cash_currency_label")}: ${cashCurrency}`;
+        if (cashCurrency === "USD") {
+          mensajeWhatsApp += `\n- ${t("checkout.cash_exchange_rate_note")}: 1 USD = ${cashExchangeRateDop} DOP`;
+          mensajeWhatsApp += `\n- ${t("checkout.cash_total_usd_label")}: USD ${totalCashCurrency.toFixed(2)}`;
+        }
+        if (cashNeedsChange && cashPaidAmount > 0) {
+          mensajeWhatsApp += `\n- ${t("checkout.cash_paid_with_label")}: ${cashCurrency} ${cashPaidAmount.toFixed(2)}`;
+          if (cashChangeAmount > 0) {
+            mensajeWhatsApp += `\n- ${t("checkout.cash_change_due_label")}: ${cashCurrency} ${cashChangeAmount.toFixed(2)}`;
+          }
+        }
+      }
+
+      if (form.returnsPackaging) {
+        mensajeWhatsApp += `\n\n♻️ ${t("checkout.returns_packaging_whatsapp")}: Sí (DOP ${devolucionDescuento.toFixed(2)})`;
+      }
+      if (tipAmount > 0) {
+        mensajeWhatsApp += `\n💝 ${t("checkout.tip_label")}: DOP ${tipAmount.toFixed(2)}`;
+      }
 
       mensajeWhatsApp += `\n\n*📝 OBSERVACIONES:*\n${form.notes || "Sin observaciones."}`;
       mensajeWhatsApp += `\n\n*💬 Recibirás los detalles del pago por WhatsApp.*`;
@@ -523,6 +700,7 @@ ${metodoPago}`;
         if (user?.uid) {
           window.localStorage.removeItem(`${STORAGE_KEY}-${user.uid}`);
         }
+        window.localStorage.removeItem(CHECKOUT_LOCAL_KEY);
         window.sessionStorage.removeItem(GUEST_STORAGE_KEY);
         window.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
       }
@@ -727,8 +905,16 @@ ${metodoPago}`;
               <label className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)] block">
                 Método de pago <span className="text-red-500">*</span>
                 <select
-                  value={form.metodoPago}
-                  onChange={(e) => setForm((s) => ({ ...s, metodoPago: e.target.value }))}
+                  value={form.metodoPago ?? ""}
+                  onChange={(e) =>
+                    setForm((s) => ({
+                      ...s,
+                      metodoPago: e.target.value,
+                      ...(e.target.value === "Cash"
+                        ? {}
+                        : { cashCurrency: "DOP", cashNeedsChange: false, cashPaidAmount: "" }),
+                    }))
+                  }
                   required
                   className="mt-2 w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
                 >
@@ -739,6 +925,135 @@ ${metodoPago}`;
                   <option value="Tarjeta">Tarjeta de Crédito / Credit Card</option>
                 </select>
               </label>
+              {form.metodoPago === "Cash" && (
+                <div className="rounded-2xl border border-[var(--color-border)] p-4 space-y-3">
+                  <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">{t("checkout.cash_currency_label")}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setForm((s) => ({ ...s, cashCurrency: "DOP" }))}
+                      className={`rounded-full px-3 py-2 text-sm border ${form.cashCurrency === "DOP" ? "bg-[var(--gd-color-forest)] text-white border-[var(--gd-color-forest)]" : "border-[var(--color-border)] text-[var(--color-foreground)]"}`}
+                    >
+                      {t("checkout.cash_currency_dop")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm((s) => ({ ...s, cashCurrency: "USD" }))}
+                      className={`rounded-full px-3 py-2 text-sm border ${form.cashCurrency === "USD" ? "bg-[var(--gd-color-forest)] text-white border-[var(--gd-color-forest)]" : "border-[var(--color-border)] text-[var(--color-foreground)]"}`}
+                    >
+                      {t("checkout.cash_currency_usd")}
+                    </button>
+                  </div>
+                  <p className="text-xs text-[var(--color-muted)]">
+                    {t("checkout.cash_exchange_rate_note")}: 1 USD = {cashExchangeRateDop} DOP
+                  </p>
+                  <label className="flex items-start gap-3 text-sm text-[var(--color-foreground)]">
+                    <input
+                      type="checkbox"
+                      checked={form.cashNeedsChange}
+                      onChange={(e) =>
+                        setForm((s) => ({
+                          ...s,
+                          cashNeedsChange: e.target.checked,
+                          cashPaidAmount: e.target.checked ? s.cashPaidAmount : "",
+                        }))
+                      }
+                      className="mt-1 h-4 w-4 rounded border-[var(--color-border)]"
+                    />
+                    <span>{t("checkout.cash_needs_change_label")}</span>
+                  </label>
+                  {form.cashNeedsChange && (
+                    <div className="space-y-2">
+                      <label className="text-xs uppercase tracking-[0.2em] text-[var(--color-muted)] block">
+                        {t("checkout.cash_paid_with_label")} ({form.cashCurrency})
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={form.cashPaidAmount}
+                          onChange={(e) => setForm((s) => ({ ...s, cashPaidAmount: e.target.value }))}
+                          placeholder={t("checkout.cash_paid_with_placeholder")}
+                          className="mt-2 w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
+                        />
+                      </label>
+                      {orderCalculations.cashPaidAmount > 0 && (
+                        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)]/70 px-3 py-2 text-xs space-y-1">
+                          <p className="text-[var(--color-muted)]">
+                            {t("checkout.total")}: {form.cashCurrency} {orderCalculations.totalCashCurrency.toFixed(2)}
+                          </p>
+                          {orderCalculations.cashChangeAmount > 0 ? (
+                            <p className="font-semibold text-green-700">
+                              {t("checkout.cash_change_due_label")}: {form.cashCurrency} {orderCalculations.cashChangeAmount.toFixed(2)}
+                            </p>
+                          ) : orderCalculations.cashRemainingAmount > 0 ? (
+                            <p className="font-semibold text-red-600">
+                              {t("checkout.cash_missing_amount_label")}: {form.cashCurrency} {orderCalculations.cashRemainingAmount.toFixed(2)}
+                            </p>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="rounded-2xl border border-[var(--color-border)] p-4 space-y-3">
+                <label className="flex items-start gap-3 text-sm text-[var(--color-foreground)]">
+                  <input
+                    type="checkbox"
+                    checked={form.returnsPackaging}
+                    onChange={(e) => setForm((s) => ({ ...s, returnsPackaging: e.target.checked }))}
+                    className="mt-1 h-4 w-4 rounded border-[var(--color-border)]"
+                  />
+                    <span>
+                    {t("checkout.returns_packaging_label")}
+                    <span className="block text-xs text-green-700 font-semibold mt-1">
+                      {t("checkout.returns_packaging_discount_note")} DOP {returnDiscountDop}
+                    </span>
+                  </span>
+                </label>
+              </div>
+              <div className="rounded-2xl border border-[var(--color-border)] p-4 space-y-3">
+                <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">{t("checkout.tip_optional")}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setForm((s) => ({ ...s, tipType: "none", customTipDop: "" }))}
+                    className={`rounded-full px-3 py-2 text-sm border ${form.tipType === "none" ? "bg-[var(--gd-color-forest)] text-white border-[var(--gd-color-forest)]" : "border-[var(--color-border)] text-[var(--color-foreground)]"}`}
+                  >
+                    {t("checkout.tip_none")}
+                  </button>
+                  {TIP_PRESET_OPTIONS.map((percent) => (
+                    <button
+                      key={percent}
+                      type="button"
+                      onClick={() => setForm((s) => ({ ...s, tipType: String(percent) as FormState["tipType"], customTipDop: "" }))}
+                      className={`rounded-full px-3 py-2 text-sm border ${form.tipType === String(percent) ? "bg-[var(--gd-color-forest)] text-white border-[var(--gd-color-forest)]" : "border-[var(--color-border)] text-[var(--color-foreground)]"}`}
+                    >
+                      {percent}%
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setForm((s) => ({ ...s, tipType: "custom" }))}
+                    className={`rounded-full px-3 py-2 text-sm border ${form.tipType === "custom" ? "bg-[var(--gd-color-forest)] text-white border-[var(--gd-color-forest)]" : "border-[var(--color-border)] text-[var(--color-foreground)]"}`}
+                  >
+                    {t("checkout.tip_custom")}
+                  </button>
+                  {form.tipType === "custom" && (
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={form.customTipDop}
+                      onChange={(e) => setForm((s) => ({ ...s, customTipDop: e.target.value }))}
+                      placeholder={t("checkout.tip_custom_placeholder")}
+                      className="w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
+                    />
+                  )}
+                </div>
+              </div>
               <label className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)] block">
                 {t("checkout.delivery_notes")}
                 <textarea
@@ -763,13 +1078,13 @@ ${metodoPago}`;
                   ) : (
                     <>
                       <span>✅</span>
-                      <span>Confirmar Pedido</span>
+                      <span>{t("checkout.confirm")}</span>
                     </>
                   )}
                 </button>
                 {(!form.deliveryDay || !form.metodoPago) && (
                   <p className="text-xs text-red-600 text-center mt-2">
-                    Por favor completa todos los campos requeridos
+                    {t("checkout.required_fields_error")}
                   </p>
                 )}
               </div>
@@ -793,7 +1108,14 @@ ${metodoPago}`;
             <OrderSummary
               subtotal={subtotal}
               deliveryDay={form.deliveryDay}
-              metodoPago={form.metodoPago}
+              metodoPago={form.metodoPago || ""}
+              orderSettings={orderSettings}
+              cashCurrency={form.cashCurrency}
+              cashNeedsChange={form.cashNeedsChange}
+              cashPaidAmount={form.cashPaidAmount}
+              returnsPackaging={form.returnsPackaging}
+              tipType={form.tipType}
+              customTipDop={form.customTipDop}
             />
           </aside>
         </div>
@@ -868,21 +1190,60 @@ function CartLine({ item, resolvePreferenceLabel }: { item: CartItem; resolvePre
 function OrderSummary({
   subtotal,
   deliveryDay,
-  metodoPago
+  metodoPago,
+  orderSettings,
+  cashCurrency,
+  cashNeedsChange,
+  cashPaidAmount,
+  returnsPackaging,
+  tipType,
+  customTipDop,
 }: {
   subtotal: number;
   deliveryDay: string;
   metodoPago: string;
+  orderSettings: OrderSettings;
+  cashCurrency: FormState["cashCurrency"];
+  cashNeedsChange: boolean;
+  cashPaidAmount: string;
+  returnsPackaging: boolean;
+  tipType: FormState["tipType"];
+  customTipDop: string;
 }) {
   const { t } = useTranslation();
-  const tasaCambio = 55; // 1 USD = 55 DOP
-  const diasConCargo = ["Martes", "Jueves", "Sábado"];
-  const cargoEnvio = diasConCargo.includes(deliveryDay) ? 100 : 0;
+  const tasaCambio = Number(orderSettings.usdExchangeRateDop) || DEFAULT_ORDER_SETTINGS.usdExchangeRateDop;
+  const diasConCargo = orderSettings.deliveryFeeDays ?? DEFAULT_ORDER_SETTINGS.deliveryFeeDays;
+  const cargoEnvio = deliveryDay && diasConCargo.includes(deliveryDay) ? Number(orderSettings.deliveryFeeAmount) || DEFAULT_ORDER_SETTINGS.deliveryFeeAmount : 0;
   const requierePaypal = metodoPago === "PayPal" || metodoPago === "Tarjeta";
   const subtotalConEnvio = subtotal + cargoEnvio;
-  const cargoPaypal = requierePaypal ? subtotalConEnvio * 0.1 : 0;
-  const totalFinalDOP = subtotalConEnvio + cargoPaypal;
+  const paymentFeePercentage = Number(orderSettings.paymentFeePercentage) || DEFAULT_ORDER_SETTINGS.paymentFeePercentage;
+  const cargoPaypal = requierePaypal ? subtotalConEnvio * (paymentFeePercentage / 100) : 0;
+  const devolucionDescuento = returnsPackaging ? returnDiscountDop : 0;
+  const customTip = Number(customTipDop);
+  const tipAmount =
+    tipType === "10"
+      ? subtotal * 0.1
+      : tipType === "15"
+        ? subtotal * 0.15
+        : tipType === "20"
+          ? subtotal * 0.2
+          : tipType === "custom" && Number.isFinite(customTip) && customTip > 0
+            ? customTip
+            : 0;
+  const totalFinalDOP = Math.max(0, subtotalConEnvio + cargoPaypal - devolucionDescuento + tipAmount);
   const totalFinalUSD = requierePaypal ? (totalFinalDOP / tasaCambio) : 0;
+  const isCash = metodoPago === "Cash";
+  const totalCashCurrency = isCash && cashCurrency === "USD" ? totalFinalDOP / cashExchangeRateDop : totalFinalDOP;
+  const cashPaidNumeric = Number(cashPaidAmount);
+  const normalizedCashPaidAmount = Number.isFinite(cashPaidNumeric) && cashPaidNumeric > 0 ? cashPaidNumeric : 0;
+  const cashChangeAmount =
+    isCash && cashNeedsChange && normalizedCashPaidAmount > totalCashCurrency
+      ? normalizedCashPaidAmount - totalCashCurrency
+      : 0;
+  const cashRemainingAmount =
+    isCash && cashNeedsChange && normalizedCashPaidAmount > 0 && normalizedCashPaidAmount < totalCashCurrency
+      ? totalCashCurrency - normalizedCashPaidAmount
+      : 0;
 
   return (
     <div className="space-y-2 pt-4 border-t border-[var(--color-border)]">
@@ -903,9 +1264,52 @@ function OrderSummary({
       ) : null}
       {cargoPaypal > 0 && (
         <div className="flex items-center justify-between text-sm">
-          <span className="text-[var(--color-muted)]">Cargo PayPal (10%)</span>
+          <span className="text-[var(--color-muted)]">Cargo PayPal ({paymentFeePercentage}%)</span>
           <span className="font-semibold text-orange-600">RD${cargoPaypal.toFixed(2)}</span>
         </div>
+      )}
+      {devolucionDescuento > 0 && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-[var(--color-muted)]">{t("checkout.return_discount_label")}</span>
+          <span className="font-semibold text-green-700">-RD${devolucionDescuento.toFixed(2)}</span>
+        </div>
+      )}
+      {tipAmount > 0 && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-[var(--color-muted)]">{t("checkout.tip_label")}</span>
+          <span className="font-semibold text-[var(--color-foreground)]">RD${tipAmount.toFixed(2)}</span>
+        </div>
+      )}
+      {isCash && cashCurrency === "USD" && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-[var(--color-muted)]">{t("checkout.cash_total_usd_label")}</span>
+          <span className="font-semibold text-[var(--color-foreground)]">USD {totalCashCurrency.toFixed(2)}</span>
+        </div>
+      )}
+      {isCash && cashNeedsChange && normalizedCashPaidAmount > 0 && (
+        <>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-[var(--color-muted)]">{t("checkout.cash_paid_with_label")}</span>
+            <span className="font-semibold text-[var(--color-foreground)]">
+              {cashCurrency} {normalizedCashPaidAmount.toFixed(2)}
+            </span>
+          </div>
+          {cashChangeAmount > 0 ? (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[var(--color-muted)]">{t("checkout.cash_change_due_label")}</span>
+              <span className="font-semibold text-green-700">
+                {cashCurrency} {cashChangeAmount.toFixed(2)}
+              </span>
+            </div>
+          ) : cashRemainingAmount > 0 ? (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-[var(--color-muted)]">{t("checkout.cash_missing_amount_label")}</span>
+              <span className="font-semibold text-red-600">
+                {cashCurrency} {cashRemainingAmount.toFixed(2)}
+              </span>
+            </div>
+          ) : null}
+        </>
       )}
       <div className="flex items-center justify-between pt-2 border-t border-[var(--color-border)]">
         <span className="text-sm font-semibold text-[var(--color-foreground)]">{t("checkout.total")}</span>
@@ -913,9 +1317,14 @@ function OrderSummary({
           <span className="font-display text-2xl text-[var(--color-foreground)] block">
             RD${totalFinalDOP.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
           </span>
+          {isCash && cashCurrency === "USD" && (
+            <span className="text-xs text-[var(--color-muted)] block mt-1">
+              USD {totalCashCurrency.toFixed(2)} (1 USD = {cashExchangeRateDop} DOP)
+            </span>
+          )}
           {requierePaypal && totalFinalUSD > 0 && (
             <span className="text-xs text-[var(--color-muted)] block mt-1">
-              ≈ ${totalFinalUSD.toFixed(2)} USD (1 USD = 55 DOP)
+              ≈ ${totalFinalUSD.toFixed(2)} USD (1 USD = {tasaCambio} DOP)
             </span>
           )}
         </div>
@@ -937,13 +1346,44 @@ function OrderSummaryView({
     metodoPago: string;
     requierePaypal: boolean;
     cargoPaypal: number;
+    devolucionDescuento: number;
+    tipAmount: number;
     totalFinalDOP: number;
     totalFinalUSD: number;
+    usdExchangeRateDop: number;
+    paymentFeePercentage: number;
+    isCash: boolean;
+    cashCurrency: FormState["cashCurrency"];
+    cashExchangeRateDop: number;
+    totalCashCurrency: number;
+    cashNeedsChange: boolean;
+    cashPaidAmount: number;
+    cashChangeAmount: number;
+    cashRemainingAmount: number;
   };
   resolvePreferenceLabel: (value: string) => string;
 }) {
   const { t } = useTranslation();
-  const { cargoEnvio, metodoPago, requierePaypal, cargoPaypal, totalFinalDOP, totalFinalUSD } = orderCalculations;
+  const {
+    cargoEnvio,
+    metodoPago,
+    requierePaypal,
+    cargoPaypal,
+    devolucionDescuento,
+    tipAmount,
+    totalFinalDOP,
+    totalFinalUSD,
+    usdExchangeRateDop,
+    paymentFeePercentage,
+    isCash,
+    cashCurrency,
+    cashExchangeRateDop,
+    totalCashCurrency,
+    cashNeedsChange,
+    cashPaidAmount,
+    cashChangeAmount,
+    cashRemainingAmount,
+  } = orderCalculations;
 
   const subtotal = items.reduce(
     (sum, item) => sum + (item.configuration?.price?.final ?? item.price) * item.quantity,
@@ -1039,9 +1479,46 @@ function OrderSummaryView({
           )}
           {cargoPaypal > 0 && (
             <div className="flex justify-between">
-              <span className="text-[var(--color-muted)]">Cargo PayPal (10%):</span>
+              <span className="text-[var(--color-muted)]">Cargo PayPal ({paymentFeePercentage}%):</span>
               <span className="font-semibold text-orange-600">RD${cargoPaypal.toFixed(2)}</span>
             </div>
+          )}
+          {devolucionDescuento > 0 && (
+            <div className="flex justify-between">
+              <span className="text-[var(--color-muted)]">{t("checkout.return_discount_label")}:</span>
+              <span className="font-semibold text-green-700">-RD${devolucionDescuento.toFixed(2)}</span>
+            </div>
+          )}
+          {tipAmount > 0 && (
+            <div className="flex justify-between">
+              <span className="text-[var(--color-muted)]">{t("checkout.tip_label")}:</span>
+              <span className="font-semibold">RD${tipAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {isCash && cashCurrency === "USD" && (
+            <div className="flex justify-between">
+              <span className="text-[var(--color-muted)]">{t("checkout.cash_total_usd_label")}:</span>
+              <span className="font-semibold">USD {totalCashCurrency.toFixed(2)}</span>
+            </div>
+          )}
+          {isCash && cashNeedsChange && cashPaidAmount > 0 && (
+            <>
+              <div className="flex justify-between">
+                <span className="text-[var(--color-muted)]">{t("checkout.cash_paid_with_label")}:</span>
+                <span className="font-semibold">{cashCurrency} {cashPaidAmount.toFixed(2)}</span>
+              </div>
+              {cashChangeAmount > 0 ? (
+                <div className="flex justify-between">
+                  <span className="text-[var(--color-muted)]">{t("checkout.cash_change_due_label")}:</span>
+                  <span className="font-semibold text-green-700">{cashCurrency} {cashChangeAmount.toFixed(2)}</span>
+                </div>
+              ) : cashRemainingAmount > 0 ? (
+                <div className="flex justify-between">
+                  <span className="text-[var(--color-muted)]">{t("checkout.cash_missing_amount_label")}:</span>
+                  <span className="font-semibold text-red-600">{cashCurrency} {cashRemainingAmount.toFixed(2)}</span>
+                </div>
+              ) : null}
+            </>
           )}
           <div className="flex justify-between pt-2 border-t border-[var(--color-border)]">
             <span className="font-semibold text-[var(--color-foreground)]">Total:</span>
@@ -1049,9 +1526,14 @@ function OrderSummaryView({
               <span className="font-display text-xl text-[var(--color-foreground)] block">
                 RD${totalFinalDOP.toLocaleString("es-DO", { minimumFractionDigits: 2 })}
               </span>
+              {isCash && cashCurrency === "USD" && (
+                <span className="text-xs text-[var(--color-muted)] block mt-1">
+                  USD {totalCashCurrency.toFixed(2)} (1 USD = {cashExchangeRateDop} DOP)
+                </span>
+              )}
               {requierePaypal && totalFinalUSD > 0 && (
                 <span className="text-xs text-[var(--color-muted)] block mt-1">
-                  ≈ ${totalFinalUSD.toFixed(2)} USD (1 USD = 55 DOP)
+                  ≈ ${totalFinalUSD.toFixed(2)} USD (1 USD = {usdExchangeRateDop} DOP)
                 </span>
               )}
             </div>
@@ -1061,7 +1543,27 @@ function OrderSummaryView({
 
       <div>
         <h2 className="text-lg font-semibold text-[var(--color-foreground)] mb-4">💳 Método de Pago</h2>
-        <p className="text-sm font-semibold">{metodoPago}</p>
+        <p className="text-sm font-semibold">
+          {metodoPago}
+          {isCash ? ` (${cashCurrency})` : ""}
+        </p>
+        {isCash && (
+          <div className="mt-2 space-y-1 text-xs text-[var(--color-muted)]">
+            {cashCurrency === "USD" && (
+              <p>{t("checkout.cash_exchange_rate_note")}: 1 USD = {cashExchangeRateDop} DOP</p>
+            )}
+            {cashNeedsChange && cashPaidAmount > 0 && (
+              <>
+                <p>{t("checkout.cash_paid_with_label")}: {cashCurrency} {cashPaidAmount.toFixed(2)}</p>
+                {cashChangeAmount > 0 ? (
+                  <p>{t("checkout.cash_change_due_label")}: {cashCurrency} {cashChangeAmount.toFixed(2)}</p>
+                ) : cashRemainingAmount > 0 ? (
+                  <p>{t("checkout.cash_missing_amount_label")}: {cashCurrency} {cashRemainingAmount.toFixed(2)}</p>
+                ) : null}
+              </>
+            )}
+          </div>
+        )}
         <p className="text-xs text-[var(--color-muted)] mt-2">
           Recibirás los detalles del pago por WhatsApp.
         </p>
@@ -1107,5 +1609,3 @@ function buildNotesFromProfile(profile: { likes?: string; dislikes?: string }): 
   }
   return notes.join("\n");
 }
-
-
