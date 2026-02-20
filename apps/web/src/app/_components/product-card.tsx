@@ -133,6 +133,7 @@ export function ProductCard({
     description && description.trim().length > 0
       ? description
       : t("catalog.details_placeholder");
+  const showBackControls = effectiveControlsPlacement === "back" || effectiveControlsPlacement === "both";
 
   const handleFlipChange = (next: boolean) => {
     if (!isControlled) {
@@ -406,7 +407,11 @@ export function ProductCard({
             </button>
 
             <div className={`mt-2 w-full flex-1 min-h-0 ${isBoxCard ? "" : "max-w-md self-center"}`}>
-              <div className="flex-1 overflow-y-auto pr-1">
+              <div
+                className={`flex-1 overflow-y-auto pr-1 ${
+                  showBackControls ? (isBoxCard ? "pb-28" : "pb-3") : ""
+                }`}
+              >
                 <div
                   className={`w-full space-y-3 text-sm leading-relaxed ${
                     isBoxCard ? "" : "flex flex-col items-center text-center"
@@ -425,8 +430,12 @@ export function ProductCard({
               </div>
             </div>
 
-            {(effectiveControlsPlacement === "back" || effectiveControlsPlacement === "both") && (
-              <div className={`w-full shrink-0 pt-3 pb-1 ${isBoxCard ? "max-w-md" : "max-w-md self-center"}`}>
+            {showBackControls && (
+              <div
+                className={`w-full shrink-0 border-t border-[var(--gd-color-forest)]/10 bg-[var(--gd-color-beige)] pt-3 pb-1 ${
+                  isBoxCard ? "max-w-md" : "max-w-md self-center"
+                }`}
+              >
                 {ControlsArea}
               </div>
             )}

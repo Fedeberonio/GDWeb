@@ -78,7 +78,7 @@ export function HomeSections() {
             </section>
 
             {/* Ventanas de entrega */}
-            <section className="py-20 bg-white">
+            <section id="ventanas-entrega" className="py-20 bg-white">
               <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-12">
                   <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full mb-4">

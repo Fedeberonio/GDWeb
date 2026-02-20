@@ -23,9 +23,10 @@ export function WhatsAppFloatButton() {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-4 right-4 z-50 flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#25D366] shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
+      className="fixed right-4 z-50 flex items-center justify-center w-11 h-11 md:w-14 md:h-14 rounded-full bg-[#25D366] shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
       aria-label="Contactar por WhatsApp"
       style={{
+        bottom: "calc(1rem + env(safe-area-inset-bottom))",
         animation: "fadeInUp 0.5s ease-out",
       }}
     >

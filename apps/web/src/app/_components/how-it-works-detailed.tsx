@@ -15,7 +15,7 @@ const steps = [
     textColor: "text-[#2D5016]",
     accentColor: "#D4A574",
     ctaKey: "how_it_works.cta_boxes",
-    ctaHref: "/#boxes",
+    ctaHref: "/#cajas",
     imageSrc: "/assets/images/how-it-works/paso-01-elige-caja.webp",
   },
   {
@@ -26,7 +26,7 @@ const steps = [
     textColor: "text-[#4A3C1A]",
     accentColor: "#F9A825",
     ctaKey: "how_it_works.cta_preferences",
-    ctaHref: "/#boxes",
+    ctaHref: "/#cajas",
     imageSrc: "/assets/images/how-it-works/paso-02-personaliza.webp",
   },
   {
@@ -59,7 +59,7 @@ const steps = [
     textColor: "text-[#1A3A4A]",
     accentColor: "#42A5F5",
     ctaKey: "how_it_works.cta_contact",
-    ctaHref: "https://wa.me/18095555555",
+    ctaHref: "https://wa.me/18097537338",
     imageSrc: "/assets/images/how-it-works/paso-05-confirmamos-preparamos.webp",
   },
   {
@@ -70,7 +70,7 @@ const steps = [
     textColor: "text-[#4A1A4A]",
     accentColor: "#AB47BC",
     ctaKey: "how_it_works.cta_delivery",
-    ctaHref: "/#boxes",
+    ctaHref: "/#ventanas-entrega",
     imageSrc: "/assets/images/how-it-works/paso-06-recibe-en-tu-puerta.webp",
   },
   {
@@ -189,7 +189,7 @@ export function HowItWorksDetailed() {
         <div className="text-center px-6 py-16">
           <h3 className="text-4xl md:text-5xl font-bold mb-6 font-fredoka">¿Listo para empezar?</h3>
           <Link
-            href="/#boxes"
+            href="/#cajas"
             className="inline-flex items-center gap-3 px-10 py-5 bg-white text-[var(--gd-color-forest)] text-xl font-bold rounded-full hover:bg-[var(--gd-color-sprout)] transition-colors"
           >
             Ver Cajas Disponibles

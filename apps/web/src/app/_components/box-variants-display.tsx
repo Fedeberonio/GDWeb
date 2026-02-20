@@ -250,7 +250,7 @@ export function BoxVariantsDisplay({
           </div>
 
           {/* Contenido completo agrupado por categoría */}
-          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 transition-opacity duration-300">
+          <div className="space-y-2 pr-1 transition-opacity duration-300">
             {Object.keys(contentsByCategory).length === 0 ? (
               <p className="text-sm text-[var(--color-muted)] text-center py-4">
                 {t("discover.content_processing")}

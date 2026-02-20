@@ -35,10 +35,11 @@ export function Footer() {
           <div>
             <p className="font-bold text-sm uppercase tracking-wider mb-4">{t("footer.navigation")}</p>
             <ul className="space-y-2 text-sm text-white/80">
-              <li><Link href="#cajas" className="hover:text-white transition">{t("nav.boxes")}</Link></li>
-              <li><Link href="#recien-preparado" className="hover:text-white transition">{t("nav.freshly_prepared")}</Link></li>
-              <li><Link href="#catalogo" className="hover:text-white transition">{t("nav.catalog")}</Link></li>
-              <li><Link href="#confianza" className="hover:text-white transition">{t("nav.about")}</Link></li>
+              <li><Link href="/#cajas" className="hover:text-white transition">{t("nav.boxes")}</Link></li>
+              <li><Link href="/#recien-preparado" className="hover:text-white transition">{t("nav.freshly_prepared")}</Link></li>
+              <li><Link href="/#catalogo" className="hover:text-white transition">{t("nav.catalog")}</Link></li>
+              <li><Link href="/como-funciona" className="hover:text-white transition">{t("nav.how_it_works")}</Link></li>
+              <li><Link href="/#confianza" className="hover:text-white transition">{t("nav.about")}</Link></li>
             </ul>
           </div>
 
@@ -80,6 +81,11 @@ export function Footer() {
           <p className="text-sm text-white/60">
             © {new Date().getFullYear()} Green Dolio. {t("footer.rights")}
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-white/60">
+            <Link href="/politica-de-privacidad" className="hover:text-white transition">{t("footer.privacy_policy")}</Link>
+            <Link href="/terminos-de-uso" className="hover:text-white transition">{t("footer.terms_of_use")}</Link>
+            <Link href="/politica-de-devoluciones" className="hover:text-white transition">{t("footer.returns_policy")}</Link>
+          </div>
           <div className="flex gap-4 text-sm text-white/60">
             <span className="inline-flex items-center gap-2">
               <Leaf className="w-4 h-4" />

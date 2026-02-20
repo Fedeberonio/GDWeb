@@ -113,6 +113,7 @@ export function CheckoutClient() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [showSummary, setShowSummary] = useState(false); // Nuevo estado para mostrar resumen
+  const [showRequiredFieldsHint, setShowRequiredFieldsHint] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [authChoice, setAuthChoice] = useState<AuthChoice>("undecided");
   const [showAuthGate, setShowAuthGate] = useState(false);
@@ -384,6 +385,7 @@ export function CheckoutClient() {
   // Paso 1: Validar formulario y mostrar resumen
   const handleConfirm = (event: React.FormEvent) => {
     event.preventDefault();
+    setShowRequiredFieldsHint(true);
     if (!items.length) {
       toast.error(t("checkout.empty_cart"));
       return;
@@ -436,6 +438,7 @@ export function CheckoutClient() {
     }
 
     // Mostrar resumen del pedido
+    setShowRequiredFieldsHint(false);
     setShowSummary(true);
   };
 
@@ -863,6 +866,9 @@ ${metodoPago}`;
                     className="mt-2 w-full rounded-2xl border border-[var(--color-border)] px-4 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none"
                     required
                   />
+                  <span className="mt-2 block text-[11px] normal-case tracking-normal text-[var(--color-muted)]">
+                    {t("checkout.whatsapp_hint")}
+                  </span>
                 </label>
                 <label className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">
                   {t("checkout.email")}
@@ -1067,7 +1073,7 @@ ${metodoPago}`;
               <div className="pt-6 border-t-2 border-[var(--color-border)]">
                 <button
                   type="submit"
-                  disabled={submitting || !form.deliveryDay || !form.metodoPago}
+                  disabled={submitting}
                   className="w-full rounded-full bg-gradient-to-r from-[var(--gd-color-forest)] to-[var(--gd-color-leaf)] px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:shadow-2xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                 >
                   {submitting ? (
@@ -1082,7 +1088,7 @@ ${metodoPago}`;
                     </>
                   )}
                 </button>
-                {(!form.deliveryDay || !form.metodoPago) && (
+                {showRequiredFieldsHint && (!form.deliveryDay || !form.metodoPago) && (
                   <p className="text-xs text-red-600 text-center mt-2">
                     {t("checkout.required_fields_error")}
                   </p>

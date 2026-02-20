@@ -21,9 +21,10 @@ export function InstagramFloatButton() {
       href={INSTAGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-4 left-4 z-50 flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full text-white shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
+      className="fixed right-4 z-50 hidden md:flex items-center justify-center w-14 h-14 rounded-full text-white shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
       aria-label="Abrir Instagram de Green Dolio"
       style={{
+        bottom: "calc(6rem + env(safe-area-inset-bottom))",
         background: INSTAGRAM_GRADIENT,
         animation: "fadeInUp 0.5s ease-out",
       }}

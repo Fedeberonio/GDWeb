@@ -7,8 +7,9 @@ import { InstagramFloatButton } from "./instagram-float-button";
 export function ConditionalSocialButtons() {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+  const isCheckoutFlow = pathname === "/checkout" || pathname === "/pedido-confirmado";
 
-  if (isAdmin) {
+  if (isAdmin || isCheckoutFlow) {
     return null;
   }
 

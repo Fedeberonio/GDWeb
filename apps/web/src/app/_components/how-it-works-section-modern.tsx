@@ -236,7 +236,7 @@ export function HowItWorksModern() {
             whileTap={{ scale: 0.95 }}
             className="px-12 py-6 bg-white text-[#2D5016] text-xl md:text-2xl font-bold rounded-full hover:bg-[#D4E5B8] transition-colors"
             onClick={() => {
-              window.location.href = "/#boxes";
+              window.location.href = "/#cajas";
             }}
           >
             Ver Cajas Disponibles
