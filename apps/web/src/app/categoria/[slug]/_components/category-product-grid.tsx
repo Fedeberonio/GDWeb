@@ -162,7 +162,7 @@ export function CategoryProductGrid({ category, products, allCategories }: Categ
       {/* Contenido principal */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Filtros */}
-        <div className="sticky top-20 z-30 rounded-2xl border border-[var(--color-border)] bg-white/95 backdrop-blur-md p-4 shadow-md space-y-3">
+        <div className="sticky top-20 z-[var(--z-sticky)] rounded-2xl border border-[var(--color-border)] bg-white/95 backdrop-blur-md p-4 shadow-md space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             <label className="flex flex-1 items-center gap-2 rounded-2xl border-2 border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-muted)] focus-within:border-[var(--color-brand)] transition">
               <span className="text-xs">🔍</span>

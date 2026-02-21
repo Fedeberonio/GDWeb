@@ -54,7 +54,7 @@ export default async function HomePage() {
         <HomePageClient />
 
         {/* SECCIÓN DE CAJAS */}
-        <section id="cajas" className="relative isolate bg-white py-4 md:py-6 overflow-visible">
+        <section id="cajas" className="relative isolate bg-white py-4 md:py-6 overflow-visible scroll-mt-20 md:scroll-mt-24">
           <Container className="relative space-y-3">
             {/* Grid de Cajas */}
             <BoxesGrid boxes={boxes} prebuiltBoxes={prebuiltBoxes} products={products} boxRules={boxRules} />

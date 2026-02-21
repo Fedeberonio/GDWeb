@@ -26,6 +26,16 @@
   --gd-font-sans: "Inter", var(--font-open-sans), sans-serif;
   --gd-font-display: "Fredoka", "Inter", sans-serif;
   --gd-font-caveat: "Caveat Brush", "Inter", cursive;
+  /* Global stacking order */
+  --z-sticky: 30;
+  --z-float: 80;
+  --z-overlay: 90;
+  --z-nav: 100;
+  --z-dropdown: 110;
+  --z-drawer-overlay: 1000;
+  --z-drawer: 1010;
+  --z-modal: 1200;
+  --z-splash: 1400;
 }
 
 * {
@@ -255,7 +265,7 @@ nextjs-portal {
 .logo-splash {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: var(--z-splash);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -276,18 +286,51 @@ nextjs-portal {
 
 .perspective-1000 {
   perspective: 1000px;
+  -webkit-perspective: 1000px;
 }
 
 .preserve-3d {
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 .backface-hidden {
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .rotate-y-180 {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
+}
+
+/* Visible, consistent scrollbars for key UX surfaces */
+.gd-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(45, 80, 22, 0.42) rgba(45, 80, 22, 0.1);
+  scrollbar-gutter: stable both-edges;
+}
+
+.gd-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.gd-scroll::-webkit-scrollbar-track {
+  background: rgba(45, 80, 22, 0.08);
+  border-radius: 999px;
+}
+
+.gd-scroll::-webkit-scrollbar-thumb {
+  background: rgba(45, 80, 22, 0.42);
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+}
+
+.gd-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(45, 80, 22, 0.58);
 }
 
 h1,

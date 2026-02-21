@@ -167,8 +167,18 @@ export function HowItWorksDetailed() {
 
   return (
     <div className="relative">
-      <section className="relative min-h-[40vh] flex items-center justify-center bg-gradient-to-br from-[var(--gd-color-forest)] via-[#3A6B1F] to-[var(--gd-color-forest)] text-white">
-        <div className="relative z-10 text-center px-6 py-20">
+      <section className="relative min-h-[34vh] md:min-h-[42vh] flex items-center justify-center text-white overflow-hidden">
+        <Image
+          src="/assets/images/hero/lifestyle-local-ingredients.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover"
+          priority
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--gd-color-forest)]/85 via-[var(--gd-color-forest)]/70 to-[#3A6B1F]/80" />
+        <div className="relative z-10 text-center px-6 py-14 md:py-16">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
             <p className="text-[var(--gd-color-sprout)] text-sm md:text-base uppercase tracking-[0.3em] mb-4 font-semibold">Green Dolio</p>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight tracking-tight font-fredoka">
@@ -185,8 +195,8 @@ export function HowItWorksDetailed() {
         <DetailedStep key={step.number} step={step} index={index} />
       ))}
 
-      <section className="relative min-h-[40vh] flex items-center justify-center bg-[var(--gd-color-forest)] text-white">
-        <div className="text-center px-6 py-16">
+      <section className="relative min-h-[24vh] md:min-h-[28vh] flex items-center justify-center bg-[var(--gd-color-forest)] text-white">
+        <div className="text-center px-6 py-10 md:py-12">
           <h3 className="text-4xl md:text-5xl font-bold mb-6 font-fredoka">¿Listo para empezar?</h3>
           <Link
             href="/#cajas"

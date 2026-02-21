@@ -60,6 +60,7 @@ export const translations = {
         "common.order_whatsapp": "Pedir por WhatsApp",
         "common.clear_cart": "Vaciar carrito",
         "common.currency": "RD$",
+        "common.currency_notice": "Todos los precios están en DOP (pesos dominicanos).",
         "common.view_details": "Ver detalles",
         "common.back": "Volver",
 
@@ -281,7 +282,7 @@ export const translations = {
 
         "home.about_card_1_badge": "Zonas",
         "home.about_card_1_title": "Juan Dolio · Sto. Dgo.",
-        "home.about_card_1_desc": "Entregas lunes / jueves",
+        "home.about_card_1_desc": "Entregas lunes / miércoles / viernes",
         "home.about_card_2_badge": "Calidad",
         "home.about_card_2_title": "Productores aliados",
         "home.about_card_2_desc": "Sello farm-to-table",
@@ -305,7 +306,7 @@ export const translations = {
         "home.contact_insta_desc": "Historias y lanzamientos",
         "home.contact_schedule_strong": "Horarios de atención:",
         "home.contact_schedule_text": "Lunes a Viernes, 8:00 AM - 6:00 PM",
-        "home.contact_delivery_info": "Entregas: Lunes y Jueves en Juan Dolio",
+        "home.contact_delivery_info": "Entregas: Lunes, Miércoles y Viernes en Juan Dolio",
 
         "home.payment_badge": "Formas de Pago",
         "home.payment_title": "Aceptamos múltiples métodos de pago",
@@ -957,6 +958,7 @@ export const translations = {
         "common.order_whatsapp": "Order via WhatsApp",
         "common.clear_cart": "Clear cart",
         "common.currency": "RD$",
+        "common.currency_notice": "All prices are in DOP (Dominican pesos).",
         "common.view_details": "View details",
         "common.back": "Back",
 
@@ -1178,7 +1180,7 @@ export const translations = {
 
         "home.about_card_1_badge": "Zones",
         "home.about_card_1_title": "Juan Dolio · Sto. Dgo.",
-        "home.about_card_1_desc": "Deliveries Mon / Thu",
+        "home.about_card_1_desc": "Deliveries Mon / Wed / Fri",
         "home.about_card_2_badge": "Quality",
         "home.about_card_2_title": "Allied producers",
         "home.about_card_2_desc": "Farm-to-table seal",
@@ -1202,7 +1204,7 @@ export const translations = {
         "home.contact_insta_desc": "Stories and launches",
         "home.contact_schedule_strong": "Business Hours:",
         "home.contact_schedule_text": "Monday to Friday, 8:00 AM - 6:00 PM",
-        "home.contact_delivery_info": "Deliveries: Mondays and Thursdays in Juan Dolio",
+        "home.contact_delivery_info": "Deliveries: Monday, Wednesday and Friday in Juan Dolio",
 
         "home.payment_badge": "Payment Methods",
         "home.payment_title": "We accept multiple payment methods",

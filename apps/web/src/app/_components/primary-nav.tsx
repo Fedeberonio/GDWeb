@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 import { Container } from "./container";
@@ -10,11 +10,14 @@ import { LanguageToggle } from "./language-toggle";
 import { CartNavButton } from "./cart-nav-button";
 import { UserAuthButton } from "./user-auth-button";
 import { useTranslation } from "@/modules/i18n/use-translation";
+import { acquireBodyScrollLock, releaseBodyScrollLock } from "@/lib/dom/body-scroll-lock";
 
 export function PrimaryNav() {
   const { t } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdownHref, setOpenDropdownHref] = useState<string | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
 
   const NAV_LINKS = [
     { href: "/#cajas", label: t("nav.boxes") },
@@ -51,18 +54,39 @@ export function PrimaryNav() {
   }, []);
 
   useEffect(() => {
-    if (typeof document === "undefined") return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
+    const lockId = "primary-nav-mobile-menu";
+    if (isMobileMenuOpen) {
+      acquireBodyScrollLock(lockId);
+      return () => releaseBodyScrollLock(lockId);
+    }
+    releaseBodyScrollLock(lockId);
+    return undefined;
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!openDropdownHref) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!navRef.current) return;
+      const target = event.target as Node;
+      if (!navRef.current.contains(target)) {
+        setOpenDropdownHref(null);
+      }
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenDropdownHref(null);
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [openDropdownHref]);
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[var(--z-nav)] transition-all duration-300 ${
           isScrolled ? "bg-white/90 backdrop-blur-md shadow-lg" : "bg-white"
         }`}
       >
@@ -89,24 +113,53 @@ export function PrimaryNav() {
           </Link>
 
           <nav
-            className="hidden lg:flex flex-1 items-center justify-center gap-6 xl:gap-8 text-base md:text-lg font-display font-semibold text-gd-forest"
+            ref={navRef}
+            className="hidden lg:flex flex-1 items-center justify-center gap-5 xl:gap-6 text-base md:text-lg font-display font-semibold text-gd-forest"
             aria-label="Primary"
           >
             {NAV_LINKS.map((item) => (
-              <div key={item.href} className="relative group">
+              <div
+                key={item.href}
+                className="relative group"
+                onMouseEnter={() => {
+                  if (item.children?.length) setOpenDropdownHref(item.href);
+                }}
+                onMouseLeave={() => {
+                  if (item.children?.length) setOpenDropdownHref((current) => (current === item.href ? null : current));
+                }}
+              >
                 <Link
                   href={item.href}
-                  className="transition-all hover:text-gd-leaf hover:scale-105 relative inline-flex items-center gap-1"
+                  onClick={(event) => {
+                    if (!item.children?.length) return;
+                    if (openDropdownHref !== item.href) {
+                      event.preventDefault();
+                      setOpenDropdownHref(item.href);
+                      return;
+                    }
+                    setOpenDropdownHref(null);
+                  }}
+                  onFocus={() => {
+                    if (item.children?.length) setOpenDropdownHref(item.href);
+                  }}
+                  className="transition-all hover:text-gd-leaf hover:scale-105 relative inline-flex items-center gap-1 whitespace-nowrap shrink-0"
                 >
                   {item.label}
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gd-leaf transition-all group-hover:w-full" />
                 </Link>
                 {item.children && item.children.length > 0 && (
-                  <div className="invisible absolute left-1/2 top-full z-50 mt-3 w-64 -translate-x-1/2 rounded-2xl border border-gd-leaf/20 bg-white/95 p-2 opacity-0 shadow-2xl backdrop-blur-md transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                  <div
+                    className={`absolute left-1/2 top-full z-[var(--z-dropdown)] mt-3 w-64 -translate-x-1/2 rounded-2xl border border-gd-leaf/20 bg-white/95 p-2 shadow-2xl backdrop-blur-md transition-all duration-200 ${
+                      openDropdownHref === item.href
+                        ? "visible opacity-100"
+                        : "invisible opacity-0 group-hover:visible group-hover:opacity-100"
+                    }`}
+                  >
                     {item.children.map((child) => (
                       <Link
                         key={child.href}
                         href={child.href}
+                        onClick={() => setOpenDropdownHref(null)}
                         className="block rounded-xl px-3 py-2 text-sm font-medium text-gd-forest transition-colors hover:bg-gd-sprout/20"
                       >
                         {child.label}
@@ -141,7 +194,7 @@ export function PrimaryNav() {
       </header>
 
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden pt-16 md:pt-20" aria-hidden={!isMobileMenuOpen}>
+        <div className="fixed inset-0 z-[var(--z-overlay)] lg:hidden pt-16 md:pt-20" aria-hidden={!isMobileMenuOpen}>
           <button
             type="button"
             className="absolute inset-0 bg-black/35"

@@ -187,7 +187,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto pt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto pt-6">
         {boxes.map((box, index) => {
           const imageSrc = getLocalBoxImage(box.heroImage, box.id);
           const fallbackTopdown = getBoxImages(box.id).topdown;
@@ -209,7 +209,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
             ? `${box.durationDays} ${t("boxes.duration_days").toUpperCase()}`
             : t("boxes.flexible").toUpperCase();
 
-          const badges = [
+          const priorityBadge =
             index === 1
               ? {
                   label: (
@@ -220,20 +220,23 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
                   ),
                   tone: "popular" as const,
                 }
-              : null,
-            index === 2
-              ? {
-                  label: (
-                    <>
-                      <Check className="w-3 h-3" />
-                      <span>{t("boxes.badge_best_value")}</span>
-                    </>
-                  ),
-                  tone: "bestValue" as const,
-                }
-              : null,
-            box.isFeatured ? { label: t("category.featured"), tone: "forest" as const } : null,
-          ].filter(Boolean) as Array<{ label: React.ReactNode; tone: "forest" | "leaf" | "neutral" | "popular" | "bestValue" }>;
+              : index === 2
+                ? {
+                    label: (
+                      <>
+                        <Check className="w-3 h-3" />
+                        <span>{t("boxes.badge_best_value")}</span>
+                      </>
+                    ),
+                    tone: "bestValue" as const,
+                  }
+                : box.isFeatured
+                  ? { label: t("category.featured"), tone: "forest" as const }
+                  : null;
+
+          const badges = priorityBadge
+            ? [priorityBadge]
+            : [];
 
           return (
             <ProductCard
@@ -317,6 +320,9 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
           );
         })}
       </div>
+      <p className="pt-3 text-center text-xs font-medium text-[var(--gd-color-text-muted)]">
+        {t("common.currency_notice")}
+      </p>
 
       {addChoiceBox && (
         <BoxAddModeDialog

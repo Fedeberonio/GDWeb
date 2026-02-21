@@ -12,6 +12,7 @@ import { getFirestoreDb } from "@/lib/firebase/client";
 import { createUserProfile, updateUserProfile } from "@/modules/user/firestore";
 import { OnboardingForm, type OnboardingFormData } from "@/modules/user/onboarding-form";
 import { getAdminAllowedEmails } from "@/lib/config/env";
+import { acquireBodyScrollLock, releaseBodyScrollLock } from "@/lib/dom/body-scroll-lock";
 
 const AUTH_MODAL_FLAG = "gd-show-auth-modal";
 const AUTH_MODAL_EVENT = "gd-auth-modal-open";
@@ -74,11 +75,13 @@ export function AuthModal() {
   }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    const lockId = "auth-modal";
+    if (!isOpen) {
+      releaseBodyScrollLock(lockId);
+      return undefined;
+    }
+    acquireBodyScrollLock(lockId);
+    return () => releaseBodyScrollLock(lockId);
   }, [isOpen]);
 
   // Master Effect: Manage flow based on User and Profile state
@@ -307,11 +310,11 @@ export function AuthModal() {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+      className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
       onClick={showOnboarding ? undefined : closeModal}
     >
       <div
-        className={`w-full rounded-3xl bg-white shadow-xl flex flex-col z-[10000] animate-modal-in ${showOnboarding ? "max-w-2xl max-h-[90vh]" : "max-w-xl"
+        className={`w-full rounded-3xl bg-white shadow-xl flex flex-col z-[var(--z-modal)] animate-modal-in ${showOnboarding ? "max-w-2xl max-h-[90vh]" : "max-w-xl"
           }`}
         onClick={(event) => event.stopPropagation()}
       >

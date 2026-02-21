@@ -8,20 +8,37 @@ const INSTAGRAM_GRADIENT =
 
 export function InstagramFloatButton() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isNearBottom, setIsNearBottom] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 650);
     return () => clearTimeout(timer);
   }, []);
 
-  if (!isVisible) return null;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleScroll = () => {
+      const scrollBottom = window.scrollY + window.innerHeight;
+      const pageHeight = document.documentElement.scrollHeight;
+      setIsNearBottom(pageHeight - scrollBottom < 280);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  if (!isVisible || isNearBottom) return null;
 
   return (
     <a
       href={INSTAGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed right-4 z-50 hidden md:flex items-center justify-center w-14 h-14 rounded-full text-white shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
+      className="fixed right-4 z-[var(--z-float)] hidden md:flex items-center justify-center w-14 h-14 rounded-full text-white shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
       aria-label="Abrir Instagram de Green Dolio"
       style={{
         bottom: "calc(6rem + env(safe-area-inset-bottom))",

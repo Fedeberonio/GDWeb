@@ -12,6 +12,7 @@ import { useUser } from "@/modules/user/context";
 import type { CartItem } from "@/modules/cart/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { DEFAULT_ORDER_SETTINGS, type OrderSettings } from "@/lib/config/order-settings";
+import { acquireBodyScrollLock, releaseBodyScrollLock } from "@/lib/dom/body-scroll-lock";
 import productMetadata from "@/data/productMetadata.json";
 
 type TranslateFn = ReturnType<typeof useTranslation>["t"];
@@ -164,11 +165,13 @@ export function CheckoutClient() {
   }, []);
 
   useEffect(() => {
-    if (!showAuthGate) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    const lockId = "checkout-auth-gate";
+    if (!showAuthGate) {
+      releaseBodyScrollLock(lockId);
+      return undefined;
+    }
+    acquireBodyScrollLock(lockId);
+    return () => releaseBodyScrollLock(lockId);
   }, [showAuthGate]);
 
   useEffect(() => {
@@ -725,11 +728,11 @@ ${metodoPago}`;
     showAuthGate && !user && typeof window !== "undefined"
       ? createPortal(
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
           onClick={handleAuthClose}
         >
           <div
-            className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[10000]"
+            className="w-full max-w-xl rounded-3xl bg-white shadow-xl flex flex-col z-[var(--z-modal)]"
             onClick={(event) => {
               event.stopPropagation();
             }}

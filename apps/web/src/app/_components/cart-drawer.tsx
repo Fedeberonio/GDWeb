@@ -10,6 +10,7 @@ import { useTranslation } from "@/modules/i18n/use-translation";
 import { useCatalog } from "@/modules/catalog/context";
 import { ProductImageFallback } from "./product-image-fallback";
 import { Check, Minus, Plus, ShoppingCart, ThumbsDown, ThumbsUp, Trash2, X } from "lucide-react";
+import { acquireBodyScrollLock, releaseBodyScrollLock } from "@/lib/dom/body-scroll-lock";
 
 const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
 
@@ -92,14 +93,13 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   // Prevent scrolling when drawer is open
   useEffect(() => {
+    const lockId = "cart-drawer";
     if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
+      acquireBodyScrollLock(lockId);
+      return () => releaseBodyScrollLock(lockId);
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    releaseBodyScrollLock(lockId);
+    return undefined;
   }, [isOpen]);
 
   // Close on Escape
@@ -194,7 +194,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 z-[11000] bg-black/70 backdrop-blur-md"
+            className="fixed inset-0 z-[var(--z-drawer-overlay)] bg-black/70 backdrop-blur-md"
             onClick={onClose}
           />
           {/* Drawer */}
@@ -203,7 +203,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 z-[11001] h-full w-full md:w-96 bg-white shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 z-[var(--z-drawer)] h-full w-full max-w-full sm:max-w-md md:max-w-lg bg-white shadow-2xl flex flex-col"
           >
             <div className="flex items-center justify-between border-b border-[var(--color-border)] p-6">
               <h2 className="font-display text-2xl text-[var(--color-foreground)]">{t("cart.title")}</h2>
@@ -216,7 +216,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="gd-scroll flex-1 overflow-y-auto p-6 space-y-4">
               {items.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}

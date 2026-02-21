@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 
 export function WhatsAppFloatButton() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isNearBottom, setIsNearBottom] = useState(false);
 
   useEffect(() => {
     // Mostrar el botón después de un pequeño delay para mejor UX
@@ -11,19 +12,35 @@ export function WhatsAppFloatButton() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleScroll = () => {
+      const scrollBottom = window.scrollY + window.innerHeight;
+      const pageHeight = document.documentElement.scrollHeight;
+      setIsNearBottom(pageHeight - scrollBottom < 280);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
   // Número de WhatsApp (formato internacional sin + ni espacios)
   const whatsappNumber = "18097537338"; // +1 (809) 753-7338
   const whatsappMessage = encodeURIComponent("¡Hola! Me interesa conocer más sobre Green Dolio");
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
-  if (!isVisible) return null;
+  if (!isVisible || isNearBottom) return null;
 
   return (
     <a
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed right-4 z-50 flex items-center justify-center w-11 h-11 md:w-14 md:h-14 rounded-full bg-[#25D366] shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
+      className="fixed right-4 z-[var(--z-float)] flex items-center justify-center w-11 h-11 md:w-14 md:h-14 rounded-full bg-[#25D366] shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
       aria-label="Contactar por WhatsApp"
       style={{
         bottom: "calc(1rem + env(safe-area-inset-bottom))",

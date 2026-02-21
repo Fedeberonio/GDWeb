@@ -78,7 +78,7 @@ export function HomeSections() {
             </section>
 
             {/* Ventanas de entrega */}
-            <section id="ventanas-entrega" className="py-20 bg-white">
+            <section id="ventanas-entrega" className="py-20 bg-white scroll-mt-20 md:scroll-mt-24">
               <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-12">
                   <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full mb-4">
@@ -149,7 +149,7 @@ export function HomeSections() {
             </section>
 
             {/* CONFIANZA - Combinada con logística arriba, más compacta */}
-            <section id="confianza" className="relative bg-gradient-to-br from-white via-[var(--gd-color-sprout)]/20 to-white py-16 overflow-hidden">
+            <section id="confianza" className="relative bg-gradient-to-br from-white via-[var(--gd-color-sprout)]/20 to-white py-16 overflow-hidden scroll-mt-20 md:scroll-mt-24">
                 {/* Imagen de fondo decorativa más visible */}
                 <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-[0.2] hidden lg:block">
                     <Image
@@ -182,7 +182,7 @@ export function HomeSections() {
                                 </p>
                             </div>
                             <div className="grid gap-4 md:grid-cols-3">
-                                <div className="rounded-2xl border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-br from-[var(--gd-color-sprout)]/40 via-white to-[var(--gd-color-leaf)]/20 p-6 transition-all duration-300 hover:shadow-xl hover:border-[var(--gd-color-leaf)] hover:-translate-y-1">
+                                <div className="h-full min-h-[250px] rounded-2xl border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-br from-[var(--gd-color-sprout)]/40 via-white to-[var(--gd-color-leaf)]/20 p-6 transition-all duration-300 hover:shadow-xl hover:border-[var(--gd-color-leaf)] hover:-translate-y-1">
                                     <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
                                         <Package className="w-8 h-8 text-green-600" />
                                     </div>
@@ -190,7 +190,7 @@ export function HomeSections() {
                                     <p className="font-caveat text-xl md:text-2xl font-bold text-green-700 mt-2 leading-tight">{t("home.about_card_1_title")}</p>
                                     <p className="font-inter text-sm md:text-base text-[var(--color-muted)] mt-1 font-semibold">{t("home.about_card_1_desc")}</p>
                                 </div>
-                                <div className="rounded-2xl border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-br from-[var(--gd-color-sprout)]/40 via-white to-[var(--gd-color-leaf)]/20 p-6 transition-all duration-300 hover:shadow-xl hover:border-[var(--gd-color-leaf)] hover:-translate-y-1">
+                                <div className="h-full min-h-[250px] rounded-2xl border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-br from-[var(--gd-color-sprout)]/40 via-white to-[var(--gd-color-leaf)]/20 p-6 transition-all duration-300 hover:shadow-xl hover:border-[var(--gd-color-leaf)] hover:-translate-y-1">
                                     <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
                                         <Recycle className="w-8 h-8 text-green-600" />
                                     </div>
@@ -198,7 +198,7 @@ export function HomeSections() {
                                     <p className="font-caveat text-xl md:text-2xl font-bold text-green-700 mt-2 leading-tight">{t("home.about_card_2_title")}</p>
                                     <p className="font-inter text-sm md:text-base text-[var(--color-muted)] mt-1 font-semibold">{t("home.about_card_2_desc")}</p>
                                 </div>
-                                <div className="rounded-2xl border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-br from-[var(--gd-color-sprout)]/40 via-white to-[var(--gd-color-leaf)]/20 p-6 transition-all duration-300 hover:shadow-xl hover:border-[var(--gd-color-leaf)] hover:-translate-y-1">
+                                <div className="h-full min-h-[250px] rounded-2xl border-2 border-[var(--gd-color-leaf)]/40 bg-gradient-to-br from-[var(--gd-color-sprout)]/40 via-white to-[var(--gd-color-leaf)]/20 p-6 transition-all duration-300 hover:shadow-xl hover:border-[var(--gd-color-leaf)] hover:-translate-y-1">
                                     <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
                                         <Truck className="w-8 h-8 text-green-600" />
                                     </div>
@@ -268,7 +268,7 @@ export function HomeSections() {
             </section>
 
             {/* CONTACTO - Más compacto */}
-            <section id="contacto" className="relative bg-gradient-to-br from-[var(--gd-color-forest)] via-[var(--gd-color-avocado)] to-[var(--gd-color-forest)] py-16 text-white overflow-hidden">
+            <section id="contacto" className="relative bg-gradient-to-br from-[var(--gd-color-forest)] via-[var(--gd-color-avocado)] to-[var(--gd-color-forest)] py-16 text-white overflow-hidden scroll-mt-20 md:scroll-mt-24">
                 {/* Efectos decorativos */}
                 <div className="absolute top-0 right-0 h-96 w-96 rounded-full bg-[var(--gd-color-leaf)]/20 blur-3xl" />
                 <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-[var(--gd-color-sky)]/20 blur-3xl" />
@@ -336,17 +336,17 @@ export function HomeSections() {
             </section>
 
             {/* Sección de Formas de Pago */}
-            <section id="pagos" className="py-20 bg-gradient-to-b from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)]/90 to-[var(--gd-color-forest)]">
+            <section id="pagos" className="py-20 bg-gradient-to-b from-[var(--gd-color-forest)] via-[var(--gd-color-leaf)]/90 to-[var(--gd-color-forest)] scroll-mt-20 md:scroll-mt-24">
                 <Container>
                     <div className="text-center mb-12">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 border-2 border-white/30 mb-4">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 border-2 border-white/30 mb-3">
                             <CreditCard className="w-5 h-5 text-white" />
                             <span className="text-xs font-bold uppercase tracking-[0.3em] text-white">{t("home.payment_badge")}</span>
                         </div>
-                        <h2 className="font-display text-3xl md:text-4xl font-bold text-green-800 bg-white/90 inline-block px-4 py-2 rounded-2xl shadow">
+                        <h2 className="mx-auto max-w-3xl font-display text-2xl sm:text-3xl md:text-4xl font-bold leading-tight text-white">
                             {t("home.payment_title")}
                         </h2>
-                        <p className="text-lg text-white/90 max-w-2xl mx-auto">{t("home.payment_desc")}</p>
+                        <p className="mt-3 text-base md:text-lg text-white/90 max-w-2xl mx-auto">{t("home.payment_desc")}</p>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">

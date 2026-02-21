@@ -8,6 +8,7 @@ import { useAuth } from "@/modules/auth/context";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { OnboardingForm, type OnboardingFormData } from "./onboarding-form";
 import { getAdminAllowedEmails } from "@/lib/config/env";
+import { acquireBodyScrollLock, releaseBodyScrollLock } from "@/lib/dom/body-scroll-lock";
 
 const CHECKOUT_DRAFT_KEY = "gd-checkout-draft";
 
@@ -53,11 +54,13 @@ export function ProfileFormModal() {
   const shouldShow = Boolean(user && !isAdminUser && isNewUser && !profileLoading);
 
   useEffect(() => {
-    if (!shouldShow) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    const lockId = "profile-onboarding-modal";
+    if (!shouldShow) {
+      releaseBodyScrollLock(lockId);
+      return undefined;
+    }
+    acquireBodyScrollLock(lockId);
+    return () => releaseBodyScrollLock(lockId);
   }, [shouldShow]);
 
   if (!shouldShow) return null;
@@ -98,11 +101,11 @@ export function ProfileFormModal() {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+      className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
       onClick={(e) => e.stopPropagation()}
       style={{ position: "fixed" }}
     >
-      <div className="w-full max-w-2xl rounded-3xl bg-white shadow-xl flex flex-col max-h-[90vh] z-[10000]">
+      <div className="w-full max-w-2xl rounded-3xl bg-white shadow-xl flex flex-col max-h-[90vh] z-[var(--z-modal)]">
         <div className="p-6 pb-4 border-b border-gray-200 flex-shrink-0 flex items-start justify-between gap-4">
           <div>
             <h2 className="mb-2 font-display text-2xl text-[var(--color-foreground)]">
@@ -126,6 +129,4 @@ export function ProfileFormModal() {
     document.body,
   );
 }
-
-
 

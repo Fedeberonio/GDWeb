@@ -240,7 +240,7 @@ export function BoxPreferencesModal({
     return createPortal(
         <AnimatePresence>
             <div
-                className="fixed inset-0 z-[12000] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
+                className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
                 onClick={onClose}
             >
                 <motion.div
@@ -273,7 +273,7 @@ export function BoxPreferencesModal({
                         </button>
                     </div>
 
-                    <div className="flex-1 space-y-6 overflow-y-auto p-6">
+                    <div className="gd-scroll flex-1 space-y-6 overflow-y-auto p-6">
                         <div className="space-y-2">
                             <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--gd-color-forest)]/75">
                                 {t("box_preferences.step1_title")}

@@ -74,7 +74,7 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
   });
 
   return (
-    <section id="catalogo" className="relative bg-white py-12 md:py-16">
+    <section id="catalogo" className="relative bg-white py-12 md:py-16 scroll-mt-20 md:scroll-mt-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <header className="text-center space-y-4 mb-10">
           <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)]/20 to-[var(--gd-color-sprout)]/30 px-4 py-2 border-2 border-[var(--gd-color-leaf)]/30">
@@ -93,7 +93,7 @@ export function UnifiedCatalogSection({ products, categories }: Props) {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 xl:[&>*:nth-child(5)]:col-span-2 xl:[&>*:nth-child(5)]:col-start-2 2xl:[&>*:nth-child(5)]:col-span-1 2xl:[&>*:nth-child(5)]:col-start-auto">
           {visibleCategories.map((category) => {
             const count = countSellableProducts(products, category.id);
             const colorClasses = CATEGORY_COLORS[category.id] || "from-slate-600/60 to-gray-700/60";

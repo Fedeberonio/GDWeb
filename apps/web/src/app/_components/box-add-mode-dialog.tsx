@@ -30,7 +30,7 @@ export function BoxAddModeDialog({
   return createPortal(
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-[11950] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div

@@ -514,7 +514,7 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
   };
 
   return (
-    <section id="recien-preparado" className="relative isolate mt-4 bg-gd-leaf/10 py-6 md:mt-6 md:py-8 overflow-hidden border-t border-gd-leaf/20">
+    <section id="recien-preparado" className="relative isolate mt-4 bg-gd-leaf/10 py-6 md:mt-6 md:py-8 overflow-hidden border-t border-gd-leaf/20 scroll-mt-20 md:scroll-mt-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-3 mb-8">
           <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)]/30 to-[var(--gd-color-citrus)]/20 px-4 py-1.5 border-2 border-[var(--gd-color-leaf)]/30">
@@ -536,7 +536,7 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
             <section
               key={group.id}
               id={`recien-preparado-${group.id}`}
-              className="rounded-3xl border border-gd-leaf/20 bg-white/80 p-4 shadow-sm backdrop-blur-sm md:p-6"
+              className="rounded-3xl border border-gd-leaf/20 bg-white/80 p-4 shadow-sm backdrop-blur-sm md:p-6 scroll-mt-20 md:scroll-mt-24"
             >
               <header className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-gd-leaf/15 pb-4">
                 <div className="space-y-1">
@@ -617,12 +617,27 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                         : juiceProfile?.glutenFree ?? Boolean(product.nutrition?.glutenFree);
                       const hasReturnableContainer = Boolean(dipProfile?.returnableContainer);
                       const benefit = resolvePreparedBenefit(product);
+                      const localizedDescription = (product.description ? tData(product.description) : "").trim();
+                      const generatedSaladDescription =
+                        safeIngredients.length > 0
+                          ? locale === "en"
+                            ? `Fresh salad with ${safeIngredients.slice(0, 3).join(", ").toLowerCase()}.`
+                            : `Ensalada fresca con ${safeIngredients.slice(0, 3).join(", ").toLowerCase()}.`
+                          : locale === "en"
+                            ? "Fresh salad prepared daily."
+                            : "Ensalada fresca preparada del día.";
                       const fallbackDescription = dipProfile?.description
                         ? dipProfile.description
-                        : product.description
-                        ? tData(product.description)
-                        : t("catalog.details_placeholder");
-                      const frontDescription = dipProfile?.description ?? tData(product.description);
+                        : localizedDescription || t("catalog.details_placeholder");
+                      const frontDescription = (
+                        dipProfile?.description?.trim() ||
+                        localizedDescription ||
+                        (isSaladImage
+                          ? generatedSaladDescription
+                          : isJuiceImage
+                            ? t("prepared.juices_desc")
+                            : t("prepared.dips_desc"))
+                      ).trim();
 	                      const hasStructuredBackContent = isJuiceImage
                         ? ingredients.length > 0 ||
                           benefits.length > 0 ||

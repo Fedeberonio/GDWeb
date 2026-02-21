@@ -407,38 +407,49 @@ export function ProductCard({
             </button>
 
             <div className={`mt-2 w-full flex-1 min-h-0 ${isBoxCard ? "" : "max-w-md self-center"}`}>
-              <div
-                className={`flex-1 overflow-y-auto pr-1 ${
-                  showBackControls ? (isBoxCard ? "pb-28" : "pb-3") : ""
-                }`}
-              >
-                <div
-                  className={`w-full space-y-3 text-sm leading-relaxed ${
-                    isBoxCard ? "" : "flex flex-col items-center text-center"
-                  }`}
-                >
-                  <p className="font-display text-xl font-semibold">{t("catalog.details_title")}</p>
-                  {backContent ? (
-                    <div className="w-full">{backContent}</div>
-                  ) : (
-                    <>
-                      <p className={`max-w-md ${isBoxCard ? "text-center" : ""}`}>{backDescription}</p>
-                      {detailsNode}
-                    </>
-                  )}
+              {showBackControls ? (
+                <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto]">
+                  <div className="gd-scroll overflow-y-auto pr-1 pb-3">
+                    <div
+                      className={`w-full space-y-3 text-sm leading-relaxed ${
+                        isBoxCard ? "" : "flex flex-col items-center text-center"
+                      }`}
+                    >
+                      <p className="font-display text-xl font-semibold">{t("catalog.details_title")}</p>
+                      {backContent ? (
+                        <div className="w-full">{backContent}</div>
+                      ) : (
+                        <>
+                          <p className={`max-w-md ${isBoxCard ? "text-center" : ""}`}>{backDescription}</p>
+                          {detailsNode}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-full shrink-0 border-t border-[var(--gd-color-forest)]/10 bg-[var(--gd-color-beige)] pt-3 pb-1">
+                    {ControlsArea}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="gd-scroll h-full overflow-y-auto pr-1">
+                  <div
+                    className={`w-full space-y-3 text-sm leading-relaxed ${
+                      isBoxCard ? "" : "flex flex-col items-center text-center"
+                    }`}
+                  >
+                    <p className="font-display text-xl font-semibold">{t("catalog.details_title")}</p>
+                    {backContent ? (
+                      <div className="w-full">{backContent}</div>
+                    ) : (
+                      <>
+                        <p className={`max-w-md ${isBoxCard ? "text-center" : ""}`}>{backDescription}</p>
+                        {detailsNode}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-
-            {showBackControls && (
-              <div
-                className={`w-full shrink-0 border-t border-[var(--gd-color-forest)]/10 bg-[var(--gd-color-beige)] pt-3 pb-1 ${
-                  isBoxCard ? "max-w-md" : "max-w-md self-center"
-                }`}
-              >
-                {ControlsArea}
-              </div>
-            )}
 
             {footerNote && !isBoxCard && (
               <p className="shrink-0 pt-2 text-center text-xs uppercase tracking-[0.3em] text-[var(--gd-color-text-muted)]">
