@@ -399,7 +399,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Mandarinas',
         en: 'Tangerines'
       },
-      precio: 45,
+      precio: 85,
       imagen: 'assets/images/products/Mandarinas.jpg',
       categoria: 'frutas'
     },
@@ -419,7 +419,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Platano maduro',
         en: 'Ripe Plantain'
       },
-      precio: 25,
+      precio: 35,
       imagen: 'assets/images/products/Platano maduro.jpg',
       categoria: 'frutas'
     },
@@ -429,7 +429,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Piña',
         en: 'Pineapple'
       },
-      precio: 80,
+      precio: 100,
       imagen: 'assets/images/products/Piña.jpg',
       categoria: 'frutas'
     },
@@ -439,7 +439,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Fresas',
         en: 'Strawberries'
       },
-      precio: 150,
+      precio: 250,
       imagen: 'assets/images/products/Fresas.jpg',
       categoria: 'frutas'
     },
@@ -459,7 +459,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Coco',
         en: 'Coconut'
       },
-      precio: 75,
+      precio: 100,
       imagen: 'assets/images/products/Coco.jpg',
       categoria: 'frutas'
     },
@@ -499,7 +499,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Manzanas',
         en: 'Apples'
       },
-      precio: 85,
+      precio: 110,
       imagen: 'assets/images/products/Manzanas.jpg',
       categoria: 'frutas'
     },
@@ -509,7 +509,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Sandía',
         en: 'Watermelon'
       },
-      precio: 200,
+      precio: 450,
       imagen: 'assets/images/products/Sandía.jpg',
       categoria: 'frutas'
     },
@@ -519,7 +519,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Melón',
         en: 'Melon'
       },
-      precio: 125,
+      precio: 200,
       imagen: 'assets/images/products/Melón.jpg',
       categoria: 'frutas'
     },
@@ -529,7 +529,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Carambola',
         en: 'Star Fruit'
       },
-      precio: 40,
+      precio: 80,
       imagen: 'assets/images/products/Carambola.jpg',
       categoria: 'frutas'
     }
@@ -543,7 +543,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Papas',
         en: 'Potatoes'
       },
-      precio: 25,
+      precio: 40,
       imagen: 'assets/images/products/Papas.jpg',
       categoria: 'vegetales'
     },
@@ -553,7 +553,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Plátano verde',
         en: 'Green Plantain'
       },
-      precio: 20,
+      precio: 35,
       imagen: 'assets/images/products/PlatanoVerde.jpg',
       categoria: 'vegetales'
     },
@@ -583,7 +583,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Batata',
         en: 'Sweet Potato'
       },
-      precio: 25,
+      precio: 40,
       imagen: 'assets/images/products/Batata.jpg',
       categoria: 'vegetales'
     },
@@ -2142,7 +2142,7 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '0.66 lb (300 g aprox.)'
     },
     mandarinas: {
-      precio: 45,
+      precio: 85,
       unidadVenta: 'unidad',
       pesoAproximado: '0.2-0.3 lb (90-135 g)'
     },
@@ -2152,17 +2152,17 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '0.15-0.25 lb (70-115 g)'
     },
     platanoMaduro: {
-      precio: 25,
+      precio: 35,
       unidadVenta: 'unidad',
       pesoAproximado: '0.4-0.5 lb (180-225 g)'
     },
     pina: {
-      precio: 80,
+      precio: 100,
       unidadVenta: 'unidad',
       pesoAproximado: '2-3 lb (0.9-1.4 kg)'
     },
     fresas: {
-      precio: 150,
+      precio: 250,
       unidadVenta: 'paquete (1 lb)',
       pesoAproximado: '1 lb (18-20 unidades)'
     },
@@ -2172,7 +2172,7 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '0.5-0.8 lb (225-360 g)'
     },
     coco: {
-      precio: 75,
+      precio: 100,
       unidadVenta: 'unidad',
       pesoAproximado: '1.5-2.5 lb (0.7-1.1 kg)'
     },
@@ -2192,34 +2192,34 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '1 lb'
     },
     manzanas: {
-      precio: 85,
+      precio: 110,
       unidadVenta: 'unidad',
       pesoAproximado: '0.4-0.55 lb (180-250 g)'
     },
     sandia: {
-      precio: 200,
+      precio: 450,
       unidadVenta: 'unidad',
       pesoAproximado: '8-12 lb (3.5-5.5 kg)'
     },
     melon: {
-      precio: 125,
+      precio: 200,
       unidadVenta: 'unidad',
       pesoAproximado: '2-3 lb (0.9-1.4 kg)'
     },
     carambola: {
-      precio: 40,
+      precio: 80,
       unidadVenta: 'unidad',
       pesoAproximado: '0.2-0.3 lb (90-135 g)'
     }
   },
   vegetales: {
     papas: {
-      precio: 25,
+      precio: 40,
       unidadVenta: 'unidad',
       pesoAproximado: '0.6-0.8 lb (270-360 g)'
     },
     platanoVerde: {
-      precio: 20,
+      precio: 35,
       unidadVenta: 'unidad',
       pesoAproximado: '1 lb'
     },
@@ -2234,7 +2234,7 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '1 lb'
     },
     batata: {
-      precio: 25,
+      precio: 40,
       unidadVenta: 'unidad',
       pesoAproximado: '0.4-0.6 lb (180-270 g)'
     },
