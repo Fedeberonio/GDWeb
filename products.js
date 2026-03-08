@@ -437,7 +437,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Chinola',
         en: 'Passion Fruit'
       },
-      precio: 90,
+      precio: 45,
       imagen: 'assets/images/products/Chinola.jpg',
       categoria: 'frutas'
     },
@@ -477,7 +477,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Mango',
         en: 'Mango'
       },
-      precio: 95,
+      precio: 75,
       imagen: 'assets/images/products/Mango.jpg',
       categoria: 'frutas'
     },
@@ -527,7 +527,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Sandía',
         en: 'Watermelon'
       },
-      precio: 450,
+      precio: 400,
       imagen: 'assets/images/products/Sandía.jpg',
       categoria: 'frutas'
     },
@@ -663,7 +663,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Bróccoli',
         en: 'Broccoli'
       },
-      precio: 125,
+      precio: 150,
       descripcion: {
         es: 'Unidad · 0.75-1 lb aprox.',
         en: 'Unit · 0.75-1 lb approx.'
@@ -2254,7 +2254,7 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '0.2-0.3 lb (90-135 g)'
     },
     chinola: {
-      precio: 90,
+      precio: 45,
       unidadVenta: 'unidad',
       pesoAproximado: '0.15-0.25 lb (70-115 g)'
     },
@@ -2274,7 +2274,7 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '1/2 lb (18-20 unidades)'
     },
     mango: {
-      precio: 95,
+      precio: 75,
       unidadVenta: 'unidad',
       pesoAproximado: '0.5-0.8 lb (225-360 g)'
     },
@@ -2299,7 +2299,7 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '0.4-0.55 lb (180-250 g)'
     },
     sandia: {
-      precio: 450,
+      precio: 400,
       unidadVenta: 'unidad',
       pesoAproximado: '8-12 lb (3.5-5.5 kg)'
     },
@@ -2323,7 +2323,7 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
     platanoVerde: {
       precio: 80,
       unidadVenta: 'unidad',
-      pesoAproximado: '1 lb'
+      pesoAproximado: '0.3 lb'
     },
     rabano: {
       precio: 85,
@@ -2361,7 +2361,7 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: 'aprox. 125 g'
     },
     brocoli: {
-      precio: 125,
+      precio: 150,
       unidadVenta: 'unidad',
       pesoAproximado: '0.75-1 lb aprox.'
     }
