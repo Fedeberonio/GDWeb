@@ -127,10 +127,10 @@ const PRODUCTOS_CONFIG = {
       },
       precio: 175,
       descripcion: {
-        es: 'Pepino, apio y limón · 473 ml',
-        en: 'Cucumber, celery and lemon · 473 ml'
+        es: 'Pepino, apio y limón · 750 ml',
+        en: 'Cucumber, celery and lemon · 750 ml'
       },
-      imagen: 'assets/images/products/PepinadaOKLow.jpg',
+      imagen: 'assets/images/products/MuckUpBotellaPepinada.png',
       categoria: 'jugos'
     },
     tropicalote: {
@@ -141,10 +141,10 @@ const PRODUCTOS_CONFIG = {
       },
       precio: 175,
       descripcion: {
-        es: 'Piña, fresas y un toque de ají morrón · 473 ml',
-        en: 'Pineapple, strawberries and a touch of bell pepper · 473 ml'
+        es: 'Piña, fresas y un toque de ají morrón · 750 ml',
+        en: 'Pineapple, strawberries and a touch of bell pepper · 750 ml'
       },
-      imagen: 'assets/images/products/TropicalotOKlow.jpg',
+      imagen: 'assets/images/products/MockUpTropicalote.png',
       categoria: 'jugos'
     },
     rosaMaravillosa: {
@@ -155,10 +155,10 @@ const PRODUCTOS_CONFIG = {
       },
       precio: 175,
       descripcion: {
-        es: 'Rosa de jamaica, canela, piña y esencia de vainilla · 473 ml',
-        en: 'Hibiscus, cinnamon, pineapple and vanilla essence · 473 ml'
+        es: 'Rosa de jamaica, canela, piña y esencia de vainilla · 750 ml',
+        en: 'Hibiscus, cinnamon, pineapple and vanilla essence · 750 ml'
       },
-      imagen: 'assets/images/products/RosaOKlow.jpg',
+      imagen: 'assets/images/products/MockUpRosa.png',
       categoria: 'jugos'
     },
     chinaChinola: {
@@ -169,10 +169,38 @@ const PRODUCTOS_CONFIG = {
       },
       precio: 175,
       descripcion: {
-        es: 'Naranja (china), chinola (maracuyá) y un toque de jengibre · 473 ml',
-        en: 'Orange, passion fruit and a touch of ginger · 473 ml'
+        es: 'Naranja (china), chinola (maracuyá) y un toque de jengibre · 750 ml',
+        en: 'Orange, passion fruit and a touch of ginger · 750 ml'
       },
-      imagen: 'assets/images/products/ChinaOKweb.jpg',
+      imagen: 'assets/images/products/MockUpChinaChinola.png',
+      categoria: 'jugos'
+    },
+    melomania: {
+      id: 'melomania',
+      nombre: {
+        es: 'Melomania',
+        en: 'Melon Mania'
+      },
+      precio: 250,
+      descripcion: {
+        es: 'Melón y pepino · 750 ml',
+        en: 'Cantaloupe and cucumber · 750 ml'
+      },
+      imagen: 'assets/images/products/MockUpMelomania.png',
+      categoria: 'jugos'
+    },
+    sandiaMania: {
+      id: 'sandiaMania',
+      nombre: {
+        es: 'Sandia mania',
+        en: 'Watermelon Mania'
+      },
+      precio: 250,
+      descripcion: {
+        es: 'Sandía y manzana · 750 ml',
+        en: 'Watermelon and apple · 750 ml'
+      },
+      imagen: 'assets/images/products/MoCkUpSandiamania.png',
       categoria: 'jugos'
     }
   },
@@ -301,7 +329,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Arroz blanco',
         en: 'White Rice'
       },
-      precio: 100,
+      precio: 125,
       descripcion: {
         es: 'Porción · 400 g',
         en: 'Portion · 400 g'
@@ -315,7 +343,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Arroz integral',
         en: 'Brown Rice'
       },
-      precio: 100,
+      precio: 125,
       descripcion: {
         es: 'Porción · 400 g',
         en: 'Portion · 400 g'
@@ -409,7 +437,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Chinola',
         en: 'Passion Fruit'
       },
-      precio: 35,
+      precio: 90,
       imagen: 'assets/images/products/Chinola.jpg',
       categoria: 'frutas'
     },
@@ -419,7 +447,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Platano maduro',
         en: 'Ripe Plantain'
       },
-      precio: 35,
+      precio: 60,
       imagen: 'assets/images/products/Platano maduro.jpg',
       categoria: 'frutas'
     },
@@ -429,7 +457,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Piña',
         en: 'Pineapple'
       },
-      precio: 100,
+      precio: 120,
       imagen: 'assets/images/products/Piña.jpg',
       categoria: 'frutas'
     },
@@ -449,7 +477,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Mango',
         en: 'Mango'
       },
-      precio: 50,
+      precio: 95,
       imagen: 'assets/images/products/Mango.jpg',
       categoria: 'frutas'
     },
@@ -459,7 +487,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Coco',
         en: 'Coconut'
       },
-      precio: 100,
+      precio: 120,
       imagen: 'assets/images/products/Coco.jpg',
       categoria: 'frutas'
     },
@@ -469,7 +497,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Lechosa',
         en: 'Papaya'
       },
-      precio: 85,
+      precio: 120,
       imagen: 'assets/images/products/Lechosa.jpg',
       categoria: 'frutas'
     },
@@ -479,18 +507,8 @@ const PRODUCTOS_CONFIG = {
         es: 'Banana',
         en: 'Banana'
       },
-      precio: 15,
+      precio: 35,
       imagen: 'assets/images/products/Banana.jpg',
-      categoria: 'frutas'
-    },
-    cerezas: {
-      id: 'cerezas',
-      nombre: {
-        es: 'Cerezas',
-        en: 'Cherries'
-      },
-      precio: 125,
-      imagen: 'assets/images/products/Cerezas.jpg',
       categoria: 'frutas'
     },
     manzanas: {
@@ -553,7 +571,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Plátano verde',
         en: 'Green Plantain'
       },
-      precio: 35,
+      precio: 80,
       imagen: 'assets/images/products/PlatanoVerde.jpg',
       categoria: 'vegetales'
     },
@@ -583,7 +601,7 @@ const PRODUCTOS_CONFIG = {
         es: 'Batata',
         en: 'Sweet Potato'
       },
-      precio: 40,
+      precio: 75,
       imagen: 'assets/images/products/Batata.jpg',
       categoria: 'vegetales'
     },
@@ -595,6 +613,62 @@ const PRODUCTOS_CONFIG = {
       },
       precio: 100,
       imagen: 'assets/images/products/Ñame.jpg',
+      categoria: 'vegetales'
+    },
+    cilantro: {
+      id: 'cilantro',
+      nombre: {
+        es: 'Cilantro',
+        en: 'Cilantro'
+      },
+      precio: 150,
+      descripcion: {
+        es: 'Manojo · 50 g',
+        en: 'Bundle · 50 g'
+      },
+      imagen: 'assets/images/products/Cilantro.jpg',
+      categoria: 'vegetales'
+    },
+    perejil: {
+      id: 'perejil',
+      nombre: {
+        es: 'Perejil',
+        en: 'Parsley'
+      },
+      precio: 150,
+      descripcion: {
+        es: 'Manojo · 50 g',
+        en: 'Bundle · 50 g'
+      },
+      imagen: 'assets/images/products/Perejil.jpg',
+      categoria: 'vegetales'
+    },
+    genjibre: {
+      id: 'genjibre',
+      nombre: {
+        es: 'Genjibre',
+        en: 'Ginger'
+      },
+      precio: 65,
+      descripcion: {
+        es: 'Unidad · aprox. 125 g',
+        en: 'Unit · approx. 125 g'
+      },
+      imagen: 'assets/images/products/Genjibre.jpg',
+      categoria: 'vegetales'
+    },
+    brocoli: {
+      id: 'brocoli',
+      nombre: {
+        es: 'Bróccoli',
+        en: 'Broccoli'
+      },
+      precio: 125,
+      descripcion: {
+        es: 'Unidad · 0.75-1 lb aprox.',
+        en: 'Unit · 0.75-1 lb approx.'
+      },
+      imagen: 'assets/images/products/Brocoli.jpg',
       categoria: 'vegetales'
     }
   }
@@ -842,7 +916,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       "detalles": {
         "sku": "GD-JUGO-008",
         "unidadVenta": "porción",
-        "pesoAproximado": "473ml",
+        "pesoAproximado": "750 ml",
         "descripcionCorta": "Pepinada (1 porción) frescos de alta calidad.",
         "valorNutricional": "Por porción: 45 cal, 0g grasa, vitaminas C, K, antioxidantes",
         "vidaUtil": "15-30 días",
@@ -875,7 +949,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       "detalles": {
         "sku": "GD-JUGO-009",
         "unidadVenta": "porción",
-        "pesoAproximado": "473ml",
+        "pesoAproximado": "750 ml",
         "descripcionCorta": "Tropicalote (1 porción) frescos de alta calidad.",
         "valorNutricional": "Por porción: 120 cal, 0.5g grasa, vitaminas C, A, fibra",
         "vidaUtil": "15-30 días",
@@ -908,7 +982,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       "detalles": {
         "sku": "GD-JUGO-010",
         "unidadVenta": "porción",
-        "pesoAproximado": "473ml",
+        "pesoAproximado": "750 ml",
         "descripcionCorta": "Rosa Maravillosa (1 porción) frescos de alta calidad.",
         "valorNutricional": "Por porción: 90 cal, 0g grasa, vitaminas C, antocianinas",
         "vidaUtil": "15-30 días",
@@ -941,7 +1015,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       "detalles": {
         "sku": "GD-JUGO-011",
         "unidadVenta": "porción",
-        "pesoAproximado": "473ml",
+        "pesoAproximado": "750 ml",
         "descripcionCorta": "China Chinola (1 porción) frescos de alta calidad.",
         "valorNutricional": "Por porción: 110 cal, 0g grasa, vitaminas C, A, fibra",
         "vidaUtil": "15-30 días",
@@ -967,6 +1041,72 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
         "activo": true,
         "fechaActualizacion": "2025-10-29",
         "ingredientes": "China Chinola (1 porción)"
+      }
+    },
+    "melomania": {
+      "precio": 250,
+      "detalles": {
+        "sku": "GD-JUGO-012",
+        "unidadVenta": "porción",
+        "pesoAproximado": "750 ml",
+        "descripcionCorta": "Melomania (1 porción) frescos de alta calidad.",
+        "valorNutricional": "Por porción: 120 cal, 0g grasa, vitaminas A, C e hidratación",
+        "vidaUtil": "15-30 días",
+        "almacenamiento": "Refrigerado",
+        "empaque": "Según producto",
+        "origen": "Elaboración propia",
+        "proveedorPrincipal": "Producción interna",
+        "proveedorAlternativo": "Por definir",
+        "precioCompra": 162.5,
+        "margenGanancia": 35.0,
+        "frecuenciaCompra": "Semanal",
+        "contactoProveedor": "Por completar",
+        "organico": true,
+        "temporada": "Todo el año",
+        "stockDisponible": "Disponible",
+        "aptoVegano": true,
+        "libreGluten": true,
+        "urlImagen": "https://greendolio.shop/images/gd-jugo-012.jpg",
+        "destacadoWeb": true,
+        "ordenPrioridad": 12,
+        "tags": "jugos naturales, melomania, fresco",
+        "notasInternas": "Nuevo jugo premium",
+        "activo": true,
+        "fechaActualizacion": "2026-03-07",
+        "ingredientes": "Melón y pepino"
+      }
+    },
+    "sandiaMania": {
+      "precio": 250,
+      "detalles": {
+        "sku": "GD-JUGO-013",
+        "unidadVenta": "porción",
+        "pesoAproximado": "750 ml",
+        "descripcionCorta": "Sandia mania (1 porción) frescos de alta calidad.",
+        "valorNutricional": "Por porción: 130 cal, 0g grasa, vitaminas A, C y antioxidantes",
+        "vidaUtil": "15-30 días",
+        "almacenamiento": "Refrigerado",
+        "empaque": "Según producto",
+        "origen": "Elaboración propia",
+        "proveedorPrincipal": "Producción interna",
+        "proveedorAlternativo": "Por definir",
+        "precioCompra": 162.5,
+        "margenGanancia": 35.0,
+        "frecuenciaCompra": "Semanal",
+        "contactoProveedor": "Por completar",
+        "organico": true,
+        "temporada": "Todo el año",
+        "stockDisponible": "Disponible",
+        "aptoVegano": true,
+        "libreGluten": true,
+        "urlImagen": "https://greendolio.shop/images/gd-jugo-013.jpg",
+        "destacadoWeb": true,
+        "ordenPrioridad": 13,
+        "tags": "jugos naturales, sandia mania, fresco",
+        "notasInternas": "Nuevo jugo premium",
+        "activo": true,
+        "fechaActualizacion": "2026-03-07",
+        "ingredientes": "Sandía y manzana"
       }
     }
   },
@@ -1306,7 +1446,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       "precio": 175,
       "detalles": {
         "sku": "GD-OTRO-022",
-        "unidadVenta": "libra",
+        "unidadVenta": "unidad",
         "pesoAproximado": "400g",
         "descripcionCorta": "Lentejas (400 gr) frescos de alta calidad.",
         "valorNutricional": "Proteína, fibra, hierro, folato",
@@ -1503,7 +1643,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       }
     },
     "chinola": {
-      "precio": 25,
+      "precio": 90,
       "detalles": {
         "sku": "GD-FRUT-026",
         "unidadVenta": "unidad",
@@ -1536,7 +1676,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       }
     },
     "platanoMaduro": {
-      "precio": 20,
+      "precio": 85,
       "detalles": {
         "sku": "GD-FRUT-027",
         "unidadVenta": "unidad",
@@ -1635,7 +1775,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       }
     },
     "mango": {
-      "precio": 40,
+      "precio": 95,
       "detalles": {
         "sku": "GD-FRUT-030",
         "unidadVenta": "unidad",
@@ -1701,7 +1841,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       }
     },
     "lechosa": {
-      "precio": 60,
+      "precio": 120,
       "detalles": {
         "sku": "GD-FRUT-032",
         "unidadVenta": "unidad",
@@ -1734,7 +1874,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       }
     },
     "banana": {
-      "precio": 10,
+      "precio": 35,
       "detalles": {
         "sku": "GD-FRUT-033",
         "unidadVenta": "unidad",
@@ -1764,39 +1904,6 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
         "activo": true,
         "fechaActualizacion": "2025-10-29",
         "ingredientes": "Banana"
-      }
-    },
-    "cerezas": {
-      "precio": 63,
-      "detalles": {
-        "sku": "GD-FRUT-034",
-        "unidadVenta": "unidad",
-        "pesoAproximado": "Variable",
-        "descripcionCorta": "Cerezas fresco de alta calidad.",
-        "valorNutricional": "Vitamina C, antocianinas, antioxidantes",
-        "vidaUtil": "3-5 días",
-        "almacenamiento": "Refrigerado",
-        "empaque": "Bolsa biodegradable retornable",
-        "origen": "Local",
-        "proveedorPrincipal": "Mercado Central San Pedro de Macorís",
-        "proveedorAlternativo": "Por definir",
-        "precioCompra": 40.95,
-        "margenGanancia": 35.0,
-        "frecuenciaCompra": "Diaria",
-        "contactoProveedor": "Por completar",
-        "organico": false,
-        "temporada": "May-Jul (importadas)",
-        "stockDisponible": "Disponible",
-        "aptoVegano": true,
-        "libreGluten": true,
-        "urlImagen": "https://greendolio.shop/images/gd-frut-034.jpg",
-        "destacadoWeb": false,
-        "ordenPrioridad": 34,
-        "tags": "frutas, cerezas, fresco",
-        "notasInternas": "Revisar información nutricional y completar datos",
-        "activo": true,
-        "fechaActualizacion": "2025-10-29",
-        "ingredientes": "Cerezas"
       }
     },
     "manzanas": {
@@ -1967,7 +2074,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       }
     },
     "platanoVerde": {
-      "precio": 26,
+      "precio": 80,
       "detalles": {
         "sku": "GD-VEGE-046",
         "unidadVenta": "libra",
@@ -2036,7 +2143,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       "precio": 40,
       "detalles": {
         "sku": "GD-VEGE-058",
-        "unidadVenta": "libra",
+        "unidadVenta": "unidad",
         "pesoAproximado": "1 lb",
         "descripcionCorta": "Tomate redondo frescos de alta calidad.",
         "valorNutricional": "Vitamina C, licopeno, potasio",
@@ -2066,7 +2173,7 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
       }
     },
     "batata": {
-      "precio": 31,
+      "precio": 75,
       "detalles": {
         "sku": "GD-VEGE-064",
         "unidadVenta": "libra",
@@ -2147,49 +2254,44 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '0.2-0.3 lb (90-135 g)'
     },
     chinola: {
-      precio: 35,
+      precio: 90,
       unidadVenta: 'unidad',
       pesoAproximado: '0.15-0.25 lb (70-115 g)'
     },
     platanoMaduro: {
-      precio: 35,
+      precio: 60,
       unidadVenta: 'unidad',
       pesoAproximado: '0.4-0.5 lb (180-225 g)'
     },
     pina: {
-      precio: 100,
+      precio: 120,
       unidadVenta: 'unidad',
       pesoAproximado: '2-3 lb (0.9-1.4 kg)'
     },
     fresas: {
       precio: 250,
-      unidadVenta: 'paquete (1 lb)',
-      pesoAproximado: '1 lb (18-20 unidades)'
+      unidadVenta: 'paquete 1/2 lb',
+      pesoAproximado: '1/2 lb (18-20 unidades)'
     },
     mango: {
-      precio: 50,
+      precio: 95,
       unidadVenta: 'unidad',
       pesoAproximado: '0.5-0.8 lb (225-360 g)'
     },
     coco: {
-      precio: 100,
+      precio: 120,
       unidadVenta: 'unidad',
       pesoAproximado: '1.5-2.5 lb (0.7-1.1 kg)'
     },
     lechosa: {
-      precio: 85,
+      precio: 120,
       unidadVenta: 'unidad',
       pesoAproximado: '2-4 lb (0.9-1.8 kg)'
     },
     banana: {
-      precio: 15,
+      precio: 35,
       unidadVenta: 'unidad',
       pesoAproximado: '0.3-0.4 lb (135-180 g)'
-    },
-    cerezas: {
-      precio: 125,
-      unidadVenta: 'libra',
-      pesoAproximado: '1 lb'
     },
     manzanas: {
       precio: 110,
@@ -2219,22 +2321,22 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       pesoAproximado: '0.6-0.8 lb (270-360 g)'
     },
     platanoVerde: {
-      precio: 35,
+      precio: 80,
       unidadVenta: 'unidad',
       pesoAproximado: '1 lb'
     },
     rabano: {
       precio: 85,
-      unidadVenta: 'libra',
+      unidadVenta: 'unidad',
       pesoAproximado: '1 lb'
     },
     tomateRedondo: {
       precio: 50,
-      unidadVenta: 'libra',
+      unidadVenta: 'unidad',
       pesoAproximado: '1 lb'
     },
     batata: {
-      precio: 40,
+      precio: 75,
       unidadVenta: 'unidad',
       pesoAproximado: '0.4-0.6 lb (180-270 g)'
     },
@@ -2242,6 +2344,38 @@ const PRODUCTOS_ACTUALIZADOS_05NOV = {
       precio: 100,
       unidadVenta: 'unidad',
       pesoAproximado: '1-2 lb (455-910 g)'
+    },
+    cilantro: {
+      precio: 150,
+      unidadVenta: 'manojo',
+      pesoAproximado: '50 g'
+    },
+    perejil: {
+      precio: 150,
+      unidadVenta: 'manojo',
+      pesoAproximado: '50 g'
+    },
+    genjibre: {
+      precio: 65,
+      unidadVenta: 'unidad',
+      pesoAproximado: 'aprox. 125 g'
+    },
+    brocoli: {
+      precio: 125,
+      unidadVenta: 'unidad',
+      pesoAproximado: '0.75-1 lb aprox.'
+    }
+  },
+  otros: {
+    arrozBlanco: {
+      precio: 125,
+      unidadVenta: 'porción',
+      pesoAproximado: '400 g'
+    },
+    arrozIntegral: {
+      precio: 125,
+      unidadVenta: 'porción',
+      pesoAproximado: '400 g'
     }
   }
 };
@@ -2254,7 +2388,7 @@ const UNIDAD_DESCRIPCION_MAP = {
   unidad: { es: 'Unidad', en: 'Unit' },
   paquete: { es: 'Paquete', en: 'Pack' },
   '3 litros': { es: 'Botella 3 litros', en: '3-liter bottle' },
-  'paquete (1 lb)': { es: 'Paquete 1 lb', en: 'Pack (1 lb)' },
+  'paquete 1/2 lb': { es: 'Paquete 1/2 lb - aprox. 18-20 unid.', en: 'Pack 1/2 lb - approx. 18-20 units' },
   manojo: { es: 'Manojo', en: 'Bundle' },
   gramos: { es: 'Gramos', en: 'Grams' },
   '30 gr': { es: 'Paquete 30 g', en: '30 g pack' },

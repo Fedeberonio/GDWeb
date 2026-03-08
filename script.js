@@ -976,7 +976,6 @@ const PRODUCTOS_TRADUCCIONES = {
   'Piña': 'Pineapple',
   'Fresas': 'Strawberries',
   'Lechosa': 'Papaya',
-  'Cerezas': 'Cherries',
   'Manzanas': 'Apples',
   'Sandía': 'Watermelon',
   'Melón': 'Melon',
@@ -1000,7 +999,8 @@ const PRODUCTOS_TRADUCCIONES = {
   'Cebolla amarilla': 'Yellow Onion',
   'Zanahoria': 'Carrot',
   'Batata': 'Sweet Potato',
-  'Aji morrones': 'Bell Pepper',
+  'Ají morrón': 'Bell Pepper',
+  'Aji morrón': 'Bell Pepper',
   'Maíz': 'Corn',
   'Limón': 'Lemon',
   'Cebolla morada': 'Red Onion',
@@ -1022,7 +1022,7 @@ function clonarProductosSiHaceFalta() {
     // Frutas cítricas
     'Naranjas', 'Limón', 'Mandarinas',
     // Frutas de temporada
-    'Fresas', 'Cerezas', 'Manzanas', 'Sandía', 'Melón', 'Melón Francés',
+    'Fresas', 'Manzanas', 'Sandía', 'Melón', 'Melón Francés',
     // Frutas secas
     'Uvas blancas', 'Uvas moradas',
     // Otras frutas
@@ -1983,15 +1983,14 @@ function sanitizeNombreProducto(nombre) {
 const TARJETAS_REFERENCIA_05NOV = {
   "aguacate": { precio: 100, unidadVenta: 'unidad', pesoAproximado: '0.66 lb (300 g aprox.)' },
   "mandarina": { precio: 85, unidadVenta: 'unidad', pesoAproximado: '0.2-0.3 lb (90-135 g)' },
-  "chinola": { precio: 35, unidadVenta: 'unidad', pesoAproximado: '0.15-0.25 lb (70-115 g)' },
-  "platano maduro": { precio: 35, unidadVenta: 'unidad', pesoAproximado: '0.4-0.5 lb (180-225 g)' },
+  "chinola": { precio: 90, unidadVenta: 'unidad', pesoAproximado: '0.15-0.25 lb (70-115 g)' },
+  "platano maduro": { precio: 85, unidadVenta: 'unidad', pesoAproximado: '0.4-0.5 lb (180-225 g)' },
   "pina pequena": { precio: 100, unidadVenta: 'unidad', pesoAproximado: '2-3 lb (0.9-1.4 kg)' },
   "fresas": { precio: 250, unidadVenta: 'paquete (1 lb)', pesoAproximado: '1 lb (18-20 unidades)' },
-  "mango": { precio: 50, unidadVenta: 'unidad', pesoAproximado: '0.5-0.8 lb (225-360 g)' },
+  "mango": { precio: 95, unidadVenta: 'unidad', pesoAproximado: '0.5-0.8 lb (225-360 g)' },
   "coco": { precio: 100, unidadVenta: 'unidad', pesoAproximado: '1.5-2.5 lb (0.7-1.1 kg)' },
-  "lechosa": { precio: 85, unidadVenta: 'unidad', pesoAproximado: '2-4 lb (0.9-1.8 kg)' },
-  "banana": { precio: 15, unidadVenta: 'unidad', pesoAproximado: '0.3-0.4 lb (135-180 g)' },
-  "cerezas": { precio: 125, unidadVenta: 'libra', pesoAproximado: '1 lb' },
+  "lechosa": { precio: 120, unidadVenta: 'unidad', pesoAproximado: '2-4 lb (0.9-1.8 kg)' },
+  "banana": { precio: 35, unidadVenta: 'unidad', pesoAproximado: '0.3-0.4 lb (135-180 g)' },
   "manzana": { precio: 110, unidadVenta: 'unidad', pesoAproximado: '0.4-0.55 lb (180-250 g)' },
   "sandia": { precio: 450, unidadVenta: 'unidad', pesoAproximado: '8-12 lb (3.5-5.5 kg)' },
   "melon": { precio: 200, unidadVenta: 'unidad', pesoAproximado: '3-5 lb (1.4-2.3 kg)' },
@@ -2004,41 +2003,40 @@ const TARJETAS_REFERENCIA_05NOV = {
   "carambola": { precio: 80, unidadVenta: 'unidad', pesoAproximado: '0.2-0.3 lb (90-135 g)' },
   "tomate bugalu": { precio: 35, unidadVenta: 'unidad', pesoAproximado: '0.2 lb' },
   "papas": { precio: 40, unidadVenta: 'unidad', pesoAproximado: '0.6-0.8 lb (270-360 g)' },
-  "platano verde": { precio: 35, unidadVenta: 'unidad', pesoAproximado: '1 lb' },
+  "platano verde": { precio: 80, unidadVenta: 'unidad', pesoAproximado: '1 lb' },
   "lechuga rizada": { precio: 50, unidadVenta: 'unidad', pesoAproximado: '0.8-1.2 lb (360-545 g)' },
   "calabaza": { precio: 300, unidadVenta: 'unidad', pesoAproximado: '2-5 lb (unidad típica)' },
   "berenjena": { precio: 40, unidadVenta: 'unidad', pesoAproximado: '0.5-0.8 lb (225-360 g)' },
   "lechuga repollada": { precio: 75, unidadVenta: 'unidad', pesoAproximado: '1-1.5 lb (455-680 g)' },
   "lechuga romana": { precio: 85, unidadVenta: 'unidad', pesoAproximado: '1-1.5 lb (455-680 g)' },
   "rabano": { precio: 85, unidadVenta: 'libra', pesoAproximado: '1 lb' },
-  "pepino": { precio: 35, unidadVenta: 'unidad', pesoAproximado: '1 lb' },
+  "pepino": { precio: 70, unidadVenta: 'unidad', pesoAproximado: '1 lb' },
   "guineo verde": { precio: 15, unidadVenta: 'unidad', pesoAproximado: '0.5-0.75 lb (225-340 g)' },
   "yuca": { precio: 45, unidadVenta: 'libra', pesoAproximado: '1 lb' },
   "repollo blanco": { precio: 150, unidadVenta: 'unidad', pesoAproximado: '2-3 lb (0.9-1.4 kg)' },
   "repollo morado": { precio: 140, unidadVenta: 'unidad', pesoAproximado: '2-3 lb (0.9-1.4 kg)' },
-  "tomate redondo": { precio: 50, unidadVenta: 'libra', pesoAproximado: '0.3 lb' },
+  "tomate redondo": { precio: 50, unidadVenta: 'unidad', pesoAproximado: '0.3 lb' },
   "coliflor": { precio: 275, unidadVenta: 'unidad', pesoAproximado: '1.5-2.5 lb (680 g-1.1 kg)' },
   "brocoli": { precio: 125, unidadVenta: 'unidad', pesoAproximado: '0.8-1.2 lb (360-545 g)' },
   "ajo": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.3-0.4 lb (135-180 g)' },
-  "cebolla morada amarilla": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
-  "cebolla amarilla": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
-  "cebolla morada": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
-  "zanahoria": { precio: 25, unidadVenta: 'unidad', pesoAproximado: '0.15-0.25 lb (70-115 g)' },
-  "batata": { precio: 40, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
-  "aji morron": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.3-0.5 lb (135-225 g)' },
-  "aji morrones": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.3-0.5 lb (135-225 g)' },
+  "cebolla morada amarilla": { precio: 85, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
+  "cebolla amarilla": { precio: 85, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
+  "cebolla morada": { precio: 85, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
+  "zanahoria": { precio: 75, unidadVenta: 'unidad', pesoAproximado: '0.15-0.25 lb (70-115 g)' },
+  "batata": { precio: 75, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
+  "aji morron": { precio: 130, unidadVenta: 'unidad', pesoAproximado: '0.3-0.5 lb (135-225 g)' },
   "maiz": { precio: 50, unidadVenta: 'unidad', pesoAproximado: '0.6-0.8 lb (270-360 g)' },
   "limon": { precio: 35, unidadVenta: 'unidad', pesoAproximado: '0.12-0.18 lb (55-80 g)' },
   "name": { precio: 100, unidadVenta: 'unidad', pesoAproximado: '1-2 lb (455-910 g)' },
   "zucchini": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
   "zuccini": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
   "zuchini": { precio: 45, unidadVenta: 'unidad', pesoAproximado: '0.4-0.6 lb (180-270 g)' },
-  "cilantro": { precio: 50, unidadVenta: 'manojo', pesoAproximado: '125 g' },
+  "cilantro": { precio: 95, unidadVenta: 'manojo', pesoAproximado: '125 g' },
   "jengibre": { precio: 65, unidadVenta: 'manojo', pesoAproximado: '125 g' },
   "genjibre": { precio: 65, unidadVenta: 'manojo', pesoAproximado: '125 g' },
-  "oregano": { precio: 75, unidadVenta: 'manojo', pesoAproximado: '125 g' },
-  "perejil": { precio: 50, unidadVenta: 'manojo', pesoAproximado: '125 g' },
-  "romero": { precio: 100, unidadVenta: 'manojo', pesoAproximado: '125 g' },
+  "oregano": { precio: 75, unidadVenta: 'manojo', pesoAproximado: '50 g' },
+  "perejil": { precio: 95, unidadVenta: 'manojo', pesoAproximado: '125 g' },
+  "romero": { precio: 100, unidadVenta: 'manojo', pesoAproximado: '50 g' },
   "apio": { precio: 90, unidadVenta: 'manojo', pesoAproximado: '125 g' },
   "anis estrellado": { precio: 40, unidadVenta: '30 gr', pesoAproximado: '30 g' },
   "laurel": { precio: 35, unidadVenta: '15 gr', pesoAproximado: '15 g' },
@@ -2161,7 +2159,7 @@ function actualizarTarjetasProductos() {
     const boton = card.querySelector('.agregar-carrito');
     if (!boton) return;
 
-    const nombreEsNode = card.querySelector('.lang-es');
+    const nombreEsNode = card.querySelector('.font-bold.text-lg.lang-es') || card.querySelector('.lang-es');
     if (!nombreEsNode) return;
 
     const claveNombre = sanitizeNombreProducto(nombreEsNode.textContent);
@@ -2177,6 +2175,13 @@ function actualizarTarjetasProductos() {
     }
     if (precioEnNode && typeof precio !== 'undefined') {
       precioEnNode.textContent = formatearPrecioDOP(precio);
+    }
+
+    // En jugos ya mostramos la descripción completa en HTML.
+    // Evitamos añadir una segunda línea automática (ej: "• 473 ml").
+    if (registro?.categoria === 'jugos') {
+      card.querySelectorAll('.detalle-producto.lang-es, .detalle-producto.lang-en').forEach(nodo => nodo.remove());
+      return;
     }
 
     const descripcion = producto?.descripcion || {};
