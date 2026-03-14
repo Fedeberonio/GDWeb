@@ -97,6 +97,13 @@ a {
   box-shadow: 0 30px 60px -15px rgba(45, 80, 22, 0.3);
 }
 
+/* Hero: en móvil, centrar la caja de la imagen de fondo */
+@media (max-width: 767px) {
+  .hero-bg-mobile {
+    background-position: 62% 50%;
+  }
+}
+
 .glass-panel {
   background: rgba(255, 255, 255, 0.78);
   backdrop-filter: saturate(180%) blur(18px);

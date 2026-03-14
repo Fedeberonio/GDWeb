@@ -11,7 +11,9 @@
     "build": "./build.sh",
     "start": "next start",
     "lint": "eslint",
-    "migrate:combos-to-salads": "tsx scripts/migrate-combos-to-salads.ts"
+    "migrate:combos-to-salads": "npx --yes tsx scripts/migrate-combos-to-salads.ts",
+    "sanitize:catalog": "npx --yes tsx scripts/sanitize-catalog-data.ts",
+    "canonicalize:catalog": "npx --yes tsx scripts/canonicalize-catalog-duplicates.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",

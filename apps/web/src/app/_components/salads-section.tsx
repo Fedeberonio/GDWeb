@@ -31,6 +31,7 @@ const isEnsaladaProduct = (product: Product) =>
 
 const mapProductToSalad = (product: Product): SaladProduct => {
   const metadata = (product as Product & { metadata?: Record<string, unknown> }).metadata ?? {};
+  const presentation = product.presentation;
   const recipeIngredients = Array.isArray(product.recipe?.ingredients) ? product.recipe?.ingredients : [];
   const ingredients = recipeIngredients
     .map((ingredient) => {
@@ -57,15 +58,25 @@ const mapProductToSalad = (product: Product): SaladProduct => {
     calories: toNumber(product.nutrition?.calories, 0),
     protein: toNumber(product.nutrition?.protein, 0),
     glutenFree: Boolean(product.nutrition?.glutenFree),
-    benefit: toLocalizedString(metadata.benefit),
-    benefitDetail: toLocalizedString(metadata.benefitDetail),
-    recommendedFor: toLocalizedString(metadata.recommendedFor),
+    benefit: toLocalizedString(presentation?.benefit ?? metadata.benefit),
+    benefitDetail: toLocalizedString(presentation?.benefitDetail ?? metadata.benefitDetail),
+    recommendedFor: toLocalizedString(product.nutrition?.detailPerfectFor ?? metadata.recommendedFor),
     carbs: toNumber(product.nutrition?.carbs, 0),
     fats: toNumber(product.nutrition?.fats, 0),
     fiber: toNumber(product.nutrition?.fiber, 0),
     sugars: toNumber(product.nutrition?.sugars, 0),
-    vitaminA: typeof metadata.vitaminA === "string" ? metadata.vitaminA : "",
-    vitaminC: typeof metadata.vitaminC === "string" ? metadata.vitaminC : "",
+    vitaminA:
+      typeof presentation?.vitamins?.vitaminA === "string"
+        ? presentation.vitamins.vitaminA
+        : typeof metadata.vitaminA === "string"
+          ? metadata.vitaminA
+          : "",
+    vitaminC:
+      typeof presentation?.vitamins?.vitaminC === "string"
+        ? presentation.vitamins.vitaminC
+        : typeof metadata.vitaminC === "string"
+          ? metadata.vitaminC
+          : "",
     image,
     ingredients,
     status: product.status === "inactive" || product.status === "coming_soon" ? product.status : "active",

@@ -68,7 +68,7 @@ const badgeStyles: Record<NonNullable<ProductBadge["tone"]>, string> = {
 
 const minHeightByType: Record<ProductCardType, string> = {
   catalog: "min-h-[520px]",
-  prepared: "min-h-[520px]",
+  prepared: "min-h-[620px]",
   box: "min-h-[780px]",
   salad: "min-h-[620px]",
 };
@@ -362,7 +362,9 @@ export function ProductCard({
       )}
 
       {footerNote && (
-        <p className={`font-inter text-xs text-gray-400 italic ${isBoxCard ? "mt-0.5" : ""}`}>{footerNote}</p>
+        <p className={`font-inter text-xs text-gray-400 italic whitespace-pre-line ${isBoxCard ? "mt-0.5" : ""}`}>
+          {footerNote}
+        </p>
       )}
 
       {(effectiveControlsPlacement === "front" || effectiveControlsPlacement === "both") && (

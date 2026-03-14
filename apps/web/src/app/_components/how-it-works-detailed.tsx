@@ -30,6 +30,17 @@ const steps = [
     imageSrc: "/assets/images/how-it-works/paso-02-personaliza.webp",
   },
   {
+    number: "02b",
+    titleKey: "how_it_works.variability_title",
+    descKey: "how_it_works.variability_desc",
+    bgColor: "bg-[#FFF3E0]",
+    textColor: "text-[#4A2E00]",
+    accentColor: "#FB8C00",
+    ctaKey: "how_it_works.cta_preferences",
+    ctaHref: "/#cajas",
+    imageSrc: "/assets/images/how-it-works/paso-02-personaliza.webp",
+  },
+  {
     number: "03",
     titleKey: "how_it_works.step3_title",
     descKey: "how_it_works.step3_desc",

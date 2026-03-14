@@ -75,6 +75,14 @@ export type Product = {
       quantity: number;
     }>;
   };
+  presentation?: {
+    benefit?: Partial<LocalizedString>;
+    benefitDetail?: Partial<LocalizedString>;
+    vitamins?: {
+      vitaminA?: string;
+      vitaminC?: string;
+    };
+  };
   nutrition?: {
     vegan?: boolean;
     glutenFree?: boolean;
@@ -85,6 +93,11 @@ export type Product = {
     fats?: number;
     fiber?: number;
     sugars?: number;
+    detailDescription?: Partial<LocalizedString>;
+    detailIngredients?: string[];
+    detailBenefits?: string[];
+    detailPerfectFor?: Partial<LocalizedString>;
+    detailNote?: Partial<LocalizedString>;
   };
   logistics?: {
     weightKg?: number;

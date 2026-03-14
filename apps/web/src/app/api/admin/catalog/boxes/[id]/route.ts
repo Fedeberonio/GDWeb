@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-session";
+import { parseAdminBoxPayload } from "@/modules/catalog/admin-schemas";
+import { assertValidBoxReferenceProducts } from "@/modules/catalog/box-admin-validation";
 
 const BOXES_COLLECTION = "catalog_products";
 const CATALOG_BOXES_COLLECTION = "catalog_boxes";
@@ -26,7 +28,7 @@ function normalizeVariantKey(value?: string) {
   if (!value) return null;
   const normalized = value.toLowerCase();
   if (normalized.includes("mix")) return "mix";
-  if (normalized.includes("frut")) return "fruity";
+  if (normalized.includes("frut") || normalized.includes("frui") || normalized.includes("fruit")) return "fruity";
   if (normalized.includes("veggie") || normalized.includes("veg")) return "veggie";
   return null;
 }
@@ -42,7 +44,7 @@ function mapReferenceContents(referenceContents: Array<{ productId?: string; qua
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const body = await request.json();
+  const body = parseAdminBoxPayload(await request.json()) as Record<string, unknown>;
 
   try {
     await requireAdminSession(request);
@@ -53,8 +55,20 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const catalogBoxRef = db.collection(CATALOG_BOXES_COLLECTION).doc(boxId);
     const definitionRef = db.collection(BOX_DEFINITIONS_COLLECTION).doc(boxId);
 
-    const priceAmount = Number(body?.price?.amount ?? body?.price ?? 0);
+    const rawPrice = body.price;
+    const priceAmount =
+      rawPrice && typeof rawPrice === "object"
+        ? Number((rawPrice as { amount?: unknown }).amount ?? 0)
+        : Number(rawPrice ?? 0);
+    const priceCurrency =
+      rawPrice && typeof rawPrice === "object"
+        ? String((rawPrice as { currency?: unknown }).currency ?? "DOP")
+        : "DOP";
     const durationDays = typeof body?.durationDays === "number" ? body.durationDays : Number(body?.durationDays || 0);
+    const variants = Array.isArray(body?.variants) ? body.variants : [];
+
+    await assertValidBoxReferenceProducts(db, variants as Array<Record<string, unknown>>);
+
     const productPayload = stripUndefined({
       name: body?.name,
       description: body?.description,
@@ -71,7 +85,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       productPayload.attributes = { duration: `${durationDays} dias` };
     }
 
-    const variants = Array.isArray(body?.variants) ? body.variants : [];
     const definitionPayload = stripUndefined({
       variants: variants.map((variant: any) => ({
         name: variant?.name?.es ?? variant?.name?.en ?? variant?.slug ?? variant?.id ?? "MIX",
@@ -93,9 +106,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       description: body?.description,
       price: {
         amount: priceAmount,
-        currency: body?.price?.currency ?? "DOP",
+        currency: priceCurrency,
       },
       durationDays: durationDays || undefined,
+      dimensionsLabel: body?.dimensionsLabel ?? undefined,
+      weightLabel: body?.weightLabel ?? undefined,
       heroImage: body?.heroImage ?? body?.image ?? undefined,
       isFeatured: body?.isFeatured ?? false,
       status: body?.status ?? "active",
@@ -157,7 +172,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   } catch (error) {
     console.error("Admin Box Update Error:", error);
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+    const status =
+      message === "Unauthorized"
+        ? 401
+        : message === "Forbidden"
+          ? 403
+          : message.startsWith("Datos de caja inválidos:")
+            ? 400
+            : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

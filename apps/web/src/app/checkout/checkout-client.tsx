@@ -13,19 +13,16 @@ import type { CartItem } from "@/modules/cart/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { DEFAULT_ORDER_SETTINGS, type OrderSettings } from "@/lib/config/order-settings";
 import { acquireBodyScrollLock, releaseBodyScrollLock } from "@/lib/dom/body-scroll-lock";
-import productMetadata from "@/data/productMetadata.json";
 
 type TranslateFn = ReturnType<typeof useTranslation>["t"];
 type TDataFn = ReturnType<typeof useTranslation>["tData"];
 
-const productNameMap = new Map(productMetadata.map((item: { slug: string; name: string }) => [item.slug, item.name]));
-
-/** Resolve product/preference label: catalog (SKU/slug → name_es|name_en) first, then productMetadata, then raw value. */
+/** Resolve product/preference label directly from live catalog data. */
 function makeResolvePreferenceLabel(productMap: Map<string, { name: { es?: string; en?: string } }>, tData: TDataFn) {
   return (value: string): string => {
-    const product = productMap.get(value);
+    const product = productMap.get(value) || productMap.get(value.toLowerCase()) || productMap.get(value.toUpperCase());
     if (product?.name) return tData(product.name);
-    return productNameMap.get(value) ?? value;
+    return value;
   };
 }
 
@@ -1227,7 +1224,9 @@ function OrderSummary({
   const subtotalConEnvio = subtotal + cargoEnvio;
   const paymentFeePercentage = Number(orderSettings.paymentFeePercentage) || DEFAULT_ORDER_SETTINGS.paymentFeePercentage;
   const cargoPaypal = requierePaypal ? subtotalConEnvio * (paymentFeePercentage / 100) : 0;
-  const devolucionDescuento = returnsPackaging ? returnDiscountDop : 0;
+  const returnDiscountAmount =
+    Number(orderSettings.returnDiscountAmount) || DEFAULT_ORDER_SETTINGS.returnDiscountAmount;
+  const devolucionDescuento = returnsPackaging ? returnDiscountAmount : 0;
   const customTip = Number(customTipDop);
   const tipAmount =
     tipType === "10"
@@ -1242,7 +1241,7 @@ function OrderSummary({
   const totalFinalDOP = Math.max(0, subtotalConEnvio + cargoPaypal - devolucionDescuento + tipAmount);
   const totalFinalUSD = requierePaypal ? (totalFinalDOP / tasaCambio) : 0;
   const isCash = metodoPago === "Cash";
-  const totalCashCurrency = isCash && cashCurrency === "USD" ? totalFinalDOP / cashExchangeRateDop : totalFinalDOP;
+  const totalCashCurrency = isCash && cashCurrency === "USD" ? totalFinalDOP / tasaCambio : totalFinalDOP;
   const cashPaidNumeric = Number(cashPaidAmount);
   const normalizedCashPaidAmount = Number.isFinite(cashPaidNumeric) && cashPaidNumeric > 0 ? cashPaidNumeric : 0;
   const cashChangeAmount =
@@ -1328,7 +1327,7 @@ function OrderSummary({
           </span>
           {isCash && cashCurrency === "USD" && (
             <span className="text-xs text-[var(--color-muted)] block mt-1">
-              USD {totalCashCurrency.toFixed(2)} (1 USD = {cashExchangeRateDop} DOP)
+              USD {totalCashCurrency.toFixed(2)} (1 USD = {tasaCambio} DOP)
             </span>
           )}
           {requierePaypal && totalFinalUSD > 0 && (

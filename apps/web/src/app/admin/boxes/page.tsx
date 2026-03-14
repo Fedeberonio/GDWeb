@@ -21,37 +21,29 @@ function BoxesContent() {
       setStatus("loading");
       setError(null);
 
-      const [boxesRes, simpleProductsRes, legacyProductsRes] = await Promise.all([
-        adminFetch("/api/admin/catalog/products?type=box", { cache: "no-store" }),
-        adminFetch("/api/admin/catalog/products?type=simple", { cache: "no-store" }),
-        adminFetch("/api/admin/catalog/products?type=product", { cache: "no-store" }),
+      const [boxesRes, productsRes] = await Promise.all([
+        adminFetch("/api/admin/catalog/boxes", { cache: "no-store" }),
+        adminFetch("/api/admin/catalog/products", { cache: "no-store" }),
       ]);
 
-      if (!boxesRes.ok || (!simpleProductsRes.ok && !legacyProductsRes.ok)) {
+      if (!boxesRes.ok || !productsRes.ok) {
         throw new Error("No se pudo cargar la lista de cajas y productos");
       }
 
-      const [boxesJson, simpleProductsJson, legacyProductsJson] = await Promise.all([
+      const [boxesJson, productsJson] = await Promise.all([
         boxesRes.json(),
-        simpleProductsRes.ok ? simpleProductsRes.json() : Promise.resolve({ data: [] }),
-        legacyProductsRes.ok ? legacyProductsRes.json() : Promise.resolve({ data: [] }),
+        productsRes.json(),
       ]);
 
       const rawBoxes = Array.isArray(boxesJson.data) ? boxesJson.data : [];
-      const filteredBoxes = rawBoxes.filter((box: Box) => (box as any).type === "box");
-      const rawProducts = [
-        ...(Array.isArray(simpleProductsJson.data) ? simpleProductsJson.data : []),
-        ...(Array.isArray(legacyProductsJson.data) ? legacyProductsJson.data : []),
-      ];
-      const dedupedProducts = Array.from(
-        new Map(rawProducts.map((product: Product) => [product.id, product])).values(),
-      );
-      const filteredProducts = dedupedProducts.filter(
-        (product: Product) =>
-          product.type === "simple" || (product as any).type === "product" || !product.type,
-      );
+      const rawProducts = Array.isArray(productsJson.data) ? productsJson.data : [];
+      const filteredProducts = rawProducts.filter((product: Product) => {
+        const productKey = (product.sku ?? product.id ?? "").toUpperCase();
+        const categoryId = (product.categoryId ?? "").toLowerCase();
+        return categoryId !== "cajas" && !productKey.startsWith("GD-CAJA-");
+      });
 
-      setBoxes(filteredBoxes);
+      setBoxes(rawBoxes);
       setProducts(filteredProducts);
       setStatus("ready");
     } catch (err) {

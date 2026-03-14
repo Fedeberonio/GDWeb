@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-session";
+import { normalizeCatalogProduct } from "@/modules/catalog/product-normalization";
+import { parseAdminProductPayload } from "@/modules/catalog/admin-schemas";
 
 const PRODUCT_COLLECTION = "catalog_products";
 
@@ -23,33 +25,49 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   try {
     await requireAdminSession(request);
-    const body = stripUndefined(await request.json());
+    const body = parseAdminProductPayload(stripUndefined(await request.json()));
     const db = getAdminFirestore();
 
     const productId = decodeURIComponent(id);
     const docRef = db.collection(PRODUCT_COLLECTION).doc(productId);
+    const currentDoc = await docRef.get();
 
-    const payload =
-      body && typeof body === "object" && !Array.isArray(body)
-        ? (body as Record<string, unknown>)
-        : {};
+    const payload = body as Record<string, unknown>;
+    const mergedPayload = {
+      ...(currentDoc.data() ?? {}),
+      ...payload,
+      sku: typeof payload.sku === "string" && payload.sku.trim() ? payload.sku.trim() : productId,
+      id: productId,
+    };
+    const normalized = normalizeCatalogProduct(productId, mergedPayload);
     await docRef.set(
-      {
-        ...payload,
+      stripUndefined({
+        ...mergedPayload,
+        sku: normalized.sku,
+        id: productId,
+        type: normalized.type,
+        status: normalized.status,
+        isActive: normalized.isActive,
         updatedAt: new Date().toISOString(),
-      },
-      { merge: true },
+      }) as Record<string, unknown>,
     );
 
     const updated = await docRef.get();
     return NextResponse.json(
-      { data: { id: updated.id, ...(updated.data() ?? {}) } },
+      { data: normalizeCatalogProduct(updated.id, (updated.data() ?? {}) as Record<string, unknown>) },
       { status: 200 },
     );
   } catch (error) {
     console.error("Admin Product Update Error:", error);
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+    const status =
+      message === "Unauthorized"
+        ? 401
+        : message === "Forbidden"
+          ? 403
+          : message.startsWith("Datos de producto inválidos:")
+            ? 400
+            : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

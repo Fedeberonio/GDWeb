@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Edit2, Search, Plus } from "lucide-react";
 import toast from "react-hot-toast";
@@ -8,6 +8,13 @@ import toast from "react-hot-toast";
 import { adminFetch } from "@/modules/admin/api/client";
 import { ProductImageFallback } from "@/app/_components/product-image-fallback";
 import type { Box, LocalizedString, Product, ProductCategory } from "@/modules/catalog/types";
+import {
+  computeMarginPercent,
+  formatCatalogCurrency,
+  formatCatalogPercent,
+  resolveCatalogPurchasePrice,
+  resolveCatalogRegularPrice,
+} from "@/modules/catalog/pricing";
 import { ProductEditDrawer } from "./product-edit-drawer";
 import { BoxEditDrawer } from "./box-edit-drawer";
 
@@ -31,6 +38,16 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
   const [newProductCategoryId, setNewProductCategoryId] = useState("");
   const [newProductSku, setNewProductSku] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  const normalizedCategories = useMemo(() => {
+    const seen = new Set<string>();
+    return categories.filter((category) => {
+      const key = (category.id ?? "").trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [categories]);
 
   const createSlug = (value: string) =>
     value
@@ -210,6 +227,30 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
     setIsDrawerOpen(true);
   }, [isBoxProduct, openBoxEditor]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || products.length === 0) return;
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const requestedEdit = searchParams.get("edit")?.trim().toUpperCase();
+    if (!requestedEdit) return;
+
+    const matchedProduct = products.find((product) => {
+      const sku = (product.sku ?? "").trim().toUpperCase();
+      const id = (product.id ?? "").trim().toUpperCase();
+      return sku === requestedEdit || id === requestedEdit;
+    });
+
+    if (!matchedProduct) return;
+
+    setSearchQuery(matchedProduct.sku ?? matchedProduct.name.es ?? "");
+    handleProductClick(matchedProduct);
+
+    searchParams.delete("edit");
+    const nextQuery = searchParams.toString();
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
+    window.history.replaceState({}, "", nextUrl);
+  }, [products, handleProductClick]);
+
   const handleProductUpdated = useCallback((updatedProduct: Product) => {
     setProducts((prev) => prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)));
     setIsDrawerOpen(false);
@@ -339,9 +380,7 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
                 className="px-4 py-2.5 rounded-2xl border border-white/60 bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[var(--gd-color-leaf)]/30 text-sm"
               >
                 <option value="all">Todas las categorías</option>
-                <option value="cajas">Cajas</option>
-                <option value="ensaladas">Ensaladas</option>
-                {categories.map((cat) => (
+                {normalizedCategories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name.es}
                   </option>
@@ -369,12 +408,20 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
                   : "/assets/images/products";
             const imageKey = product.sku ?? product.id;
             const imageUrl = product.image || (imageKey ? `${imageBase}/${imageKey}.png` : "");
-            const priceText =
-              typeof product.price === "number" ? `${product.price.toLocaleString("es-DO")} DOP` : "Precio N/D";
-            const salePriceText =
-              typeof product.salePrice === "number"
-                ? `${product.salePrice.toLocaleString("es-DO")} DOP`
-                : null;
+            const regularSalePrice = resolveCatalogRegularPrice(product);
+            const regularPrice =
+              typeof product.price === "number" && Number.isFinite(product.price) ? product.price : null;
+            const promotionalPrice =
+              typeof product.salePrice === "number" && Number.isFinite(product.salePrice) ? product.salePrice : null;
+            const purchaseUnitPrice = resolveCatalogPurchasePrice(product);
+            const marginAmount =
+              regularSalePrice === null || purchaseUnitPrice === null ? null : regularSalePrice - purchaseUnitPrice;
+            const marginPercent = computeMarginPercent(marginAmount, regularSalePrice);
+            const showPromotionalPrice =
+              promotionalPrice !== null &&
+              regularPrice !== null &&
+              promotionalPrice > 0 &&
+              promotionalPrice < regularPrice;
 
             return (
               <motion.div
@@ -433,9 +480,13 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-lg font-bold text-[var(--gd-color-forest)]">{priceText}</p>
-                      {salePriceText && (
-                        <p className="text-xs text-[var(--gd-color-text-muted)] line-through">{salePriceText}</p>
+                      <p className="text-lg font-bold text-[var(--gd-color-forest)]">
+                        {formatCatalogCurrency(regularSalePrice)}
+                      </p>
+                      {showPromotionalPrice && (
+                        <p className="text-xs text-[var(--gd-color-text-muted)]">
+                          Oferta: {formatCatalogCurrency(promotionalPrice)}
+                        </p>
                       )}
                     </div>
                     <span
@@ -445,6 +496,32 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
                     >
                       {getStatusLabel(product.status || "inactive")}
                     </span>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/60 bg-white/55 px-3 py-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[0.65rem] font-medium uppercase tracking-[0.08em] text-[var(--gd-color-text-muted)]">
+                          Margen
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-[var(--gd-color-forest)]">
+                          {formatCatalogCurrency(marginAmount)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[0.65rem] font-medium uppercase tracking-[0.08em] text-[var(--gd-color-text-muted)]">
+                          %
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-[var(--gd-color-forest)]">
+                          {formatCatalogPercent(marginPercent)}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-1 text-[0.7rem] text-[var(--gd-color-text-muted)]">
+                      {purchaseUnitPrice === null
+                        ? "Falta costo de compra para calcular."
+                        : `Costo fuente: ${formatCatalogCurrency(purchaseUnitPrice)}`}
+                    </p>
                   </div>
 
                   <button
@@ -506,7 +583,7 @@ export function ProductGridManager({ initialProducts, categories, onProductCreat
                     disabled={isCreating}
                   >
                     <option value="">Selecciona una categoría</option>
-                    {categories.map((cat) => (
+                    {normalizedCategories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name.es}
                       </option>

@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import { requireAdminSession } from "@/app/api/admin/_utils/require-admin-session";
+import { parseAdminBoxRulePayload } from "@/modules/catalog/admin-schemas";
 
 const BOX_RULES_COLLECTION = "catalog_box_rules";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const body = await request.json();
+  const body = parseAdminBoxRulePayload(await request.json());
 
   try {
     await requireAdminSession(request);
@@ -28,7 +29,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   } catch (error) {
     console.error("Admin Box Rule Update Error:", error);
     const message = error instanceof Error ? error.message : "Internal Server Error";
-    const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 500;
+    const status =
+      message === "Unauthorized"
+        ? 401
+        : message === "Forbidden"
+          ? 403
+          : message.startsWith("Datos de reglas inválidos:")
+            ? 400
+            : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

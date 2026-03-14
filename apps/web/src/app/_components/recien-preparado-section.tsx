@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Citrus, Info, Salad, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
+import { motion, useInView } from "framer-motion";
 
 import type { Product } from "@/modules/catalog/types";
 import { useTranslation } from "@/modules/i18n/use-translation";
@@ -36,42 +37,8 @@ type PreparedHighlightLabelKey =
   | "catalog.vegan"
   | "catalog.gluten_free";
 
-type PreparedJuiceProfile = {
-  ingredients: string[];
-  benefits: string[];
-  calories: number;
-  sugars: number;
-  note: string;
-  vegan: boolean;
-  glutenFree: boolean;
-};
-
-type PreparedDipProfile = {
-  description: string;
-  ingredients: string[];
-  benefits: string[];
-  calories: number;
-  protein: string;
-  fats: string;
-  fiber: string;
-  note: string;
-  perfectFor: string;
-  vegan: boolean;
-  glutenFree: boolean;
-  returnableContainer: boolean;
-};
-
-const DIP_SKUS = new Set([
-  "GD-CASE-004",
-  "GD-CASE-005",
-  "GD-CASE-006",
-]);
-const DIP_SLUGS = new Set(["guacamole-16-oz", "hummus-16-oz", "baba-ganoush-16-oz"]);
-const DIP_SLUG_TO_SKU: Record<string, string> = {
-  "guacamole-16-oz": "GD-CASE-006",
-  "hummus-16-oz": "GD-CASE-005",
-  "baba-ganoush-16-oz": "GD-CASE-004",
-};
+type JuiceNutritionLocalizedField = "detailDescription" | "detailPerfectFor" | "detailNote";
+type JuiceNutritionListField = "detailIngredients" | "detailBenefits";
 
 function resolveStatus(product: Product): string {
   return String(product.status ?? (product.isActive ? "active" : "inactive")).toLowerCase();
@@ -87,155 +54,41 @@ function resolveProductKey(product: Product): string {
   return String(product.sku ?? product.id ?? "").trim();
 }
 
-const JUICE_SKUS = new Set(["GD-JUGO-008", "GD-JUGO-009", "GD-JUGO-010", "GD-JUGO-011"]);
-const JUICE_SLUG_TO_SKU: Record<string, string> = {
-  "pepinada-1-porcion": "GD-JUGO-008",
-  "tropicalote-1-porcion": "GD-JUGO-009",
-  "rosa-maravillosa-1-porcion": "GD-JUGO-010",
-  "china-chinola-1-porcion": "GD-JUGO-011",
-};
-
-const PREPARED_JUICE_PROFILES: Record<string, PreparedJuiceProfile> = {
-  "GD-JUGO-008": {
-    ingredients: ["Pepino", "Limón", "Menta", "Jengibre"],
-    benefits: ["Hidratación profunda", "Depuración natural", "Diurético"],
-    calories: 45,
-    sugars: 6,
-    note: "Muy bajo en calorías, perfecto para detox",
-    vegan: true,
-    glutenFree: true,
-  },
-  "GD-JUGO-009": {
-    ingredients: ["Piña", "Mango", "Maracuyá", "Naranja"],
-    benefits: ["Alto en vitamina C", "Mejora digestión", "Bromelina natural"],
-    calories: 120,
-    sugars: 24,
-    note: "Enzimas digestivas de la piña",
-    vegan: true,
-    glutenFree: true,
-  },
-  "GD-JUGO-010": {
-    ingredients: ["Rosa de Jamaica", "Piña", "Vainilla", "Canela"],
-    benefits: ["Antioxidante potente", "Energizante natural", "Rico en hierro y vitamina C"],
-    calories: 95,
-    sugars: 18,
-    note: "Perfecto para recuperación y energía",
-    vegan: true,
-    glutenFree: true,
-  },
-  "GD-JUGO-011": {
-    ingredients: ["Chinola (Maracuyá)", "Naranja", "Miel"],
-    benefits: ["Vitamina C", "Propiedades relajantes", "Refrescante"],
-    calories: 105,
-    sugars: 22,
-    note: "La chinola tiene efecto calmante natural",
-    vegan: true,
-    glutenFree: true,
-  },
-};
-
-const PREPARED_DIP_PROFILES: Record<string, PreparedDipProfile> = {
-  "GD-CASE-006": {
-    description: "Guacamole fresco con aguacate dominicano, preparado el mismo día.",
-    ingredients: ["Aguacate Hass", "Limón", "Cilantro", "Cebolla morada", "Tomate", "Ajo", "Sal", "Pimienta negra"],
-    benefits: [
-      "Grasas saludables para el corazón",
-      "Rico en fibra (7g)",
-      "Alto en vitamina E y folato",
-    ],
-    calories: 160,
-    protein: "2g",
-    fats: "14g",
-    fiber: "7g",
-    note: "Preparado minutos antes de entregar",
-    perfectFor: "Nachos, tacos, tostadas, hamburguesas",
-    vegan: true,
-    glutenFree: true,
-    returnableContainer: true,
-  },
-  "GD-CASE-005": {
-    description: "Hummus cremoso de garbanzos con tahini, hecho en casa sin conservantes.",
-    ingredients: ["Garbanzos cocidos", "Tahini", "Aceite de oliva", "Ajo", "Limón", "Comino", "Sal", "Pimentón"],
-    benefits: [
-      "Proteína vegetal completa (5g)",
-      "Rico en fibra (4g)",
-      "Bajo índice glucémico",
-    ],
-    calories: 140,
-    protein: "5g",
-    fats: "8g",
-    fiber: "4g",
-    note: "Textura sedosa y cremosa",
-    perfectFor: "Pan pita, vegetales crudos, wraps, pizzas",
-    vegan: true,
-    glutenFree: true,
-    returnableContainer: true,
-  },
-  "GD-CASE-004": {
-    description: "Dip de berenjena asada al fuego con sabor ahumado auténtico.",
-    ingredients: ["Berenjena asada", "Tahini", "Aceite de oliva", "Ajo", "Limón", "Comino", "Sal", "Perejil"],
-    benefits: [
-      "Bajo en calorías (110 cal)",
-      "Rico en fibra (5g)",
-      "Antioxidantes potentes",
-    ],
-    calories: 110,
-    protein: "3g",
-    fats: "7g",
-    fiber: "5g",
-    note: "Berenjenas asadas sobre fuego real",
-    perfectFor: "Pan árabe, bowls mediterráneos, wraps",
-    vegan: true,
-    glutenFree: true,
-    returnableContainer: true,
-  },
-};
-
-function resolveCanonicalJuiceSku(product: Product): string | null {
-  const normalizedKey = resolveProductKey(product).toUpperCase();
-  if (JUICE_SKUS.has(normalizedKey)) return normalizedKey;
-
-  const slug = String(product.slug ?? "").trim().toLowerCase();
-  return JUICE_SLUG_TO_SKU[slug] ?? null;
+function normalizeSearch(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
-function resolveCanonicalDipSku(product: Product): string | null {
-  const normalizedKey = resolveProductKey(product).toUpperCase();
-  if (DIP_SKUS.has(normalizedKey) && PREPARED_DIP_PROFILES[normalizedKey]) return normalizedKey;
-
-  const slug = String(product.slug ?? "").trim().toLowerCase();
-  return DIP_SLUG_TO_SKU[slug] ?? null;
+function resolvePreparedTags(product: Product): string[] {
+  return Array.isArray(product.tags)
+    ? product.tags.map((tag) => normalizeSearch(tag)).filter(Boolean)
+    : [];
 }
 
-function resolvePreparedDipProfile(product: Product): PreparedDipProfile | null {
-  const canonicalSku = resolveCanonicalDipSku(product);
-  if (canonicalSku && PREPARED_DIP_PROFILES[canonicalSku]) {
-    return PREPARED_DIP_PROFILES[canonicalSku];
-  }
-
-  const nameText = [product.name?.es ?? "", product.name?.en ?? "", product.slug ?? ""].join(" ").toLowerCase();
-  if (nameText.includes("guacamole")) return PREPARED_DIP_PROFILES["GD-CASE-006"];
-  if (nameText.includes("hummus")) return PREPARED_DIP_PROFILES["GD-CASE-005"];
-  if (nameText.includes("baba")) return PREPARED_DIP_PROFILES["GD-CASE-004"];
-  return null;
+function isJuiceProduct(product: Product): boolean {
+  const categoryId = String(product.categoryId ?? "").toLowerCase();
+  if (categoryId === "jugos" || categoryId === "jugos-naturales") return true;
+  return resolvePreparedTags(product).some((tag) => tag === "jugo" || tag === "jugos" || tag === "juice");
 }
 
 function isDipProduct(product: Product): boolean {
-  const normalizedKey = resolveProductKey(product).toUpperCase();
-  if (DIP_SKUS.has(normalizedKey)) return true;
-  const slug = String(product.slug ?? "").trim().toLowerCase();
-  return DIP_SLUGS.has(slug);
+  const categoryId = String(product.categoryId ?? "").toLowerCase();
+  const tags = resolvePreparedTags(product);
+  return categoryId === "dips" || tags.includes("dip") || tags.includes("dips");
+}
+
+function byPreparedDisplayOrder(left: Product, right: Product): number {
+  const featuredDelta = Number(Boolean(right.isFeatured)) - Number(Boolean(left.isFeatured));
+  if (featuredDelta !== 0) return featuredDelta;
+  return byLocalizedNameAsc(left, right);
 }
 
 function resolveImageForGroup(product: Product, groupId: PreparedGroup["id"]): string {
-  const key = resolveProductKey(product);
-  if (groupId === "jugos") {
-    const canonicalSku = resolveCanonicalJuiceSku(product);
-    if (canonicalSku) {
-      return `/assets/images/products/${canonicalSku}.png`;
-    }
-  }
   if (typeof product.image === "string" && product.image.trim().length > 0) return product.image;
+  const key = resolveProductKey(product);
   if (groupId === "ensaladas") return `/assets/images/salads/${key}.png`;
   return `/assets/images/products/${key}.png`;
 }
@@ -282,23 +135,124 @@ function resolveMetadata(product: Product): Record<string, unknown> | null {
   return product.metadata as unknown as Record<string, unknown>;
 }
 
-function resolvePreparedIngredients(product: Product): string[] {
+function resolvePresentation(product: Product) {
+  if (!product.presentation || typeof product.presentation !== "object") return null;
+  return product.presentation;
+}
+
+function resolveJuiceNutritionLocalized(
+  product: Product,
+  field: JuiceNutritionLocalizedField,
+  locale: "es" | "en",
+): string | null {
+  const rawValue = product.nutrition?.[field] as unknown;
+  if (typeof rawValue === "string") {
+    const normalized = rawValue.trim();
+    return normalized.length > 0 ? normalized : null;
+  }
+
+  if (!rawValue || typeof rawValue !== "object") return null;
+  const record = rawValue as Record<string, unknown>;
+  const es = typeof record.es === "string" ? record.es.trim() : "";
+  const en = typeof record.en === "string" ? record.en.trim() : "";
+  return locale === "en" ? en || es || null : es || en || null;
+}
+
+function resolveJuiceNutritionList(product: Product, field: JuiceNutritionListField): string[] {
+  const rawValue = product.nutrition?.[field] as unknown;
+  const values: string[] =
+    Array.isArray(rawValue)
+      ? rawValue.filter((entry): entry is string => typeof entry === "string")
+      : typeof rawValue === "string"
+        ? rawValue.split("\n")
+        : [];
+
+  return Array.from(
+    new Set(
+      values
+        .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+        .filter(Boolean),
+    ),
+  );
+}
+
+function dedupePreparedValues(values: Array<string | null | undefined>): string[] {
+  const result: string[] = [];
+  const seen = new Set<string>();
+
+  values.forEach((value) => {
+    const normalizedValue = typeof value === "string" ? value.trim() : "";
+    const key = normalizeSearch(normalizedValue.replace(/\s*\([^)]*\)\s*/g, " "));
+    if (!normalizedValue || !key || seen.has(key)) return;
+    seen.add(key);
+    result.push(normalizedValue);
+  });
+
+  return result;
+}
+
+function buildPreparedProductLookup(products: Product[]) {
+  const lookup = new Map<string, Product>();
+
+  products.forEach((product) => {
+    [product.id, product.sku, product.slug].forEach((value) => {
+      const normalizedValue = typeof value === "string" ? value.trim().toUpperCase() : "";
+      if (normalizedValue) {
+        lookup.set(normalizedValue, product);
+      }
+    });
+  });
+
+  return lookup;
+}
+
+function resolveCatalogIngredientName(
+  productLookup: Map<string, Product>,
+  ingredientId?: string,
+) {
+  const normalizedId = typeof ingredientId === "string" ? ingredientId.trim().toUpperCase() : "";
+  if (!normalizedId) return null;
+  const product = productLookup.get(normalizedId);
+  if (!product) return null;
+  return product.name?.es ?? product.name?.en ?? null;
+}
+
+function resolvePreparedDescriptionIngredients(product: Product): string[] {
+  const descriptions = [product.description?.es, product.description?.en]
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .filter(Boolean);
+
+  const values = descriptions.flatMap((description) => {
+    const match = description.match(/(?:ingredientes?|ingredients?)\s*:\s*([^\n]+)/i);
+    if (!match?.[1]) return [];
+
+    return match[1]
+      .split(/,|•|\u2022|\//)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  });
+
+  return dedupePreparedValues(values);
+}
+
+function resolvePreparedIngredients(product: Product, productLookup: Map<string, Product>): string[] {
   const recipeIngredients = Array.isArray(product.recipe?.ingredients) ? product.recipe.ingredients : [];
   const fromRecipe = recipeIngredients
     .map((ingredient) => {
-      const localizedName = resolveLocalizedValue(ingredient.name);
+      const localizedName =
+        resolveLocalizedValue(ingredient.name) ??
+        resolveCatalogIngredientName(productLookup, ingredient.productId) ??
+        resolveCatalogIngredientName(productLookup, ingredient.supplyId);
       const fallbackName = String(ingredient.productId ?? ingredient.supplyId ?? "").trim();
       const displayName = localizedName || fallbackName;
-      if (!displayName) return null;
-      const quantity = toFiniteNumber(ingredient.quantity);
-      const unit = String(ingredient.unit ?? "").trim();
-      if (quantity <= 0) return displayName;
-      return unit ? `${displayName} (${quantity} ${unit})` : `${displayName} (${quantity})`;
+      return displayName || null;
     })
     .filter((value): value is string => Boolean(value));
 
-  if (fromRecipe.length > 0) {
-    return Array.from(new Set(fromRecipe));
+  const fromDescription = resolvePreparedDescriptionIngredients(product);
+
+  if (fromRecipe.length > 0 || fromDescription.length > 0) {
+    return dedupePreparedValues([...fromRecipe, ...fromDescription]);
   }
 
   const metadata = resolveMetadata(product);
@@ -325,7 +279,7 @@ function resolvePreparedIngredients(product: Product): string[] {
     })
     .filter((value): value is string => Boolean(value));
 
-  return Array.from(new Set(fromMetadata));
+  return dedupePreparedValues(fromMetadata);
 }
 
 function resolvePreparedNutritionHighlights(
@@ -355,6 +309,9 @@ function resolvePreparedNutritionHighlights(
 }
 
 function resolvePreparedPerfectFor(product: Product): string | null {
+  const nutritionPerfectFor = resolveLocalizedValue(product.nutrition?.detailPerfectFor);
+  if (nutritionPerfectFor) return nutritionPerfectFor;
+
   const metadata = resolveMetadata(product);
   if (!metadata) return null;
 
@@ -375,6 +332,11 @@ function resolvePreparedPerfectFor(product: Product): string | null {
 }
 
 function resolvePreparedBenefit(product: Product): string | null {
+  const presentation = resolvePresentation(product);
+  const structuredBenefit =
+    resolveLocalizedValue(presentation?.benefit) ?? resolveLocalizedValue(presentation?.benefitDetail);
+  if (structuredBenefit) return structuredBenefit;
+
   const metadata = resolveMetadata(product);
   if (!metadata) return null;
 
@@ -388,6 +350,11 @@ function resolvePreparedBenefit(product: Product): string | null {
 }
 
 function resolvePreparedBenefits(product: Product): string[] {
+  const nutritionBenefits = resolveJuiceNutritionList(product, "detailBenefits");
+  if (nutritionBenefits.length > 0) {
+    return nutritionBenefits;
+  }
+
   const metadata = resolveMetadata(product);
   if (!metadata) return [];
 
@@ -407,27 +374,27 @@ function resolvePreparedBenefits(product: Product): string[] {
 export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps) {
   const { t, tData, locale } = useTranslation();
   const { addItem } = useCart();
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const isSectionInView = useInView(sectionRef, { once: true, margin: "-12%" });
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [excludedIngredientsByProduct, setExcludedIngredientsByProduct] = useState<Record<string, number[]>>({});
   const [flippedProducts, setFlippedProducts] = useState<Record<string, boolean>>({});
   const [nutritionExpandedByProduct, setNutritionExpandedByProduct] = useState<Record<string, boolean>>({});
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
+  const preparedProductLookup = useMemo(() => buildPreparedProductLookup(products), [products]);
 
   const groups = useMemo<PreparedGroup[]>(() => {
     const sellable = products.filter(isSellable);
 
     const ensaladas = sellable
       .filter((product) => String(product.categoryId ?? "").toLowerCase() === "ensaladas")
-      .sort(byLocalizedNameAsc);
+      .sort(byPreparedDisplayOrder);
 
     const jugos = sellable
-      .filter((product) => {
-        const categoryId = String(product.categoryId ?? "").toLowerCase();
-        return categoryId === "jugos" || categoryId === "jugos-naturales";
-      })
-      .sort(byLocalizedNameAsc);
+      .filter(isJuiceProduct)
+      .sort(byPreparedDisplayOrder);
 
-    const dips = sellable.filter(isDipProduct).sort(byLocalizedNameAsc);
+    const dips = sellable.filter(isDipProduct).sort(byPreparedDisplayOrder);
 
     return [
       {
@@ -514,9 +481,18 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
   };
 
   return (
-    <section id="recien-preparado" className="relative isolate mt-4 bg-gd-leaf/10 py-6 md:mt-6 md:py-8 overflow-hidden border-t border-gd-leaf/20 scroll-mt-20 md:scroll-mt-24">
+    <section
+      ref={sectionRef}
+      id="recien-preparado"
+      className="relative isolate mt-4 bg-gd-leaf/10 py-6 md:mt-6 md:py-8 overflow-hidden border-t border-gd-leaf/20 scroll-mt-20 md:scroll-mt-24"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-3 mb-8">
+        <motion.div
+          className="text-center space-y-3 mb-8"
+          initial={{ opacity: 0, x: -70 }}
+          animate={isSectionInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -70 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+        >
           <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)]/30 to-[var(--gd-color-citrus)]/20 px-4 py-1.5 border-2 border-[var(--gd-color-leaf)]/30">
             <Sparkles className="w-4 h-4 text-[var(--gd-color-forest)]" />
             <span className="text-xs font-bold uppercase tracking-[0.3em] text-[var(--gd-color-forest)]">
@@ -529,14 +505,22 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
           <p className="font-display max-w-2xl mx-auto text-base md:text-lg text-[var(--gd-color-forest)] leading-relaxed font-medium">
             {t("prepared.subtitle")}
           </p>
-        </div>
+        </motion.div>
 
         <div className="space-y-10">
-          {groups.map((group) => (
-            <section
+          {groups.map((group, groupIndex) => (
+            <motion.section
               key={group.id}
               id={`recien-preparado-${group.id}`}
               className="rounded-3xl border border-gd-leaf/20 bg-white/80 p-4 shadow-sm backdrop-blur-sm md:p-6 scroll-mt-20 md:scroll-mt-24"
+              custom={groupIndex}
+              variants={{
+                hidden: (idx: number) => ({ opacity: 0, x: idx % 2 === 0 ? -86 : 86 }),
+                visible: { opacity: 1, x: 0, transition: { duration: 0.95, ease: "easeOut" } },
+              }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-18%" }}
             >
               <header className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-gd-leaf/15 pb-4">
                 <div className="space-y-1">
@@ -556,7 +540,13 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                   {t("prepared.empty")}
                 </p>
               ) : (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                <motion.div
+                  className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
+                  variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12, delayChildren: 0.04 } } }}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-12%" }}
+                >
 		                  {group.products.map((product, index) => {
 		                    const productId = product.id;
 		                    const quantity = getQuantity(productId);
@@ -567,55 +557,62 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                       const isDipImage = group.id === "dips";
                       const isFlipped = Boolean(flippedProducts[productId]);
                       const isNutritionExpanded = Boolean(nutritionExpandedByProduct[productId]);
-                      const canonicalJuiceSku = isJuiceImage ? resolveCanonicalJuiceSku(product) : null;
-                      const juiceProfile = canonicalJuiceSku ? PREPARED_JUICE_PROFILES[canonicalJuiceSku] : null;
-                      const dipProfile = isDipImage ? resolvePreparedDipProfile(product) : null;
-		                      const allIngredients = resolvePreparedIngredients(product);
+                      const juiceDescription = isJuiceImage
+                        ? resolveJuiceNutritionLocalized(product, "detailDescription", locale)
+                        : null;
+                      const juiceIngredients = isJuiceImage
+                        ? resolveJuiceNutritionList(product, "detailIngredients")
+                        : [];
+                      const juiceBenefits = isJuiceImage
+                        ? resolveJuiceNutritionList(product, "detailBenefits")
+                        : [];
+                      const juicePerfectFor = isJuiceImage
+                        ? resolveJuiceNutritionLocalized(product, "detailPerfectFor", locale)
+                        : null;
+                      const juiceNote = isJuiceImage
+                        ? resolveJuiceNutritionLocalized(product, "detailNote", locale)
+                        : null;
+		                      const allIngredients = resolvePreparedIngredients(product, preparedProductLookup);
                       const defaultIngredients = isSaladImage ? allIngredients : allIngredients.slice(0, 6);
 	                      const ingredients =
-                        isJuiceImage && juiceProfile?.ingredients?.length
-                          ? juiceProfile.ingredients
-                          : isDipImage && dipProfile?.ingredients?.length
-                            ? dipProfile.ingredients
+                        isJuiceImage && juiceIngredients.length > 0
+                          ? juiceIngredients
                           : defaultIngredients;
-                      const safeIngredients =
-                        isDipImage && !dipProfile
-                          ? ingredients.filter((item) => !/^GD-[A-Z]+-\d+/i.test(item.trim()))
-                          : ingredients;
+                      const safeIngredients = ingredients.filter((item) => !/^GD-[A-Z]+-\d+/i.test(item.trim()));
 	                      const excludedIngredientIndexes = excludedIngredientsByProduct[productId] ?? [];
 	                      const excludedIngredientSet = new Set(excludedIngredientIndexes);
 	                      const excludedIngredientLabels = excludedIngredientIndexes
 	                        .map((ingredientIndex) => safeIngredients[ingredientIndex])
 	                        .filter((value): value is string => Boolean(value));
-		                      const nutritionHighlights = resolvePreparedNutritionHighlights(product, t);
+                      const nutritionHighlights = resolvePreparedNutritionHighlights(product, t);
                       const metadataBenefits = resolvePreparedBenefits(product);
                       const benefits = (
-                        isJuiceImage && juiceProfile?.benefits?.length
-                          ? juiceProfile.benefits
-                          : isDipImage && dipProfile?.benefits?.length
-                            ? dipProfile.benefits
-                            : metadataBenefits
+                        isJuiceImage && juiceBenefits.length > 0
+                          ? juiceBenefits
+                          : metadataBenefits
                       ).slice(0, 3);
 	                      const nutritionValues = {
-	                        calories: toFiniteNumber(juiceProfile?.calories ?? dipProfile?.calories ?? product.nutrition?.calories),
-	                        protein: toNumberFromText(dipProfile?.protein ?? product.nutrition?.protein),
+	                        calories: toFiniteNumber(product.nutrition?.calories),
+	                        protein: toNumberFromText(product.nutrition?.protein),
 	                        carbs: toFiniteNumber(product.nutrition?.carbs),
-	                        fats: toNumberFromText(dipProfile?.fats ?? product.nutrition?.fats),
-	                        fiber: toNumberFromText(dipProfile?.fiber ?? product.nutrition?.fiber),
-	                        sugars: toFiniteNumber(juiceProfile?.sugars ?? product.nutrition?.sugars),
+	                        fats: toNumberFromText(product.nutrition?.fats),
+	                        fiber: toNumberFromText(product.nutrition?.fiber),
+	                        sugars: toFiniteNumber(product.nutrition?.sugars),
 	                      };
-                      const vitaminA = resolveLocalizedValue(resolveMetadata(product)?.vitaminA);
-                      const vitaminC = resolveLocalizedValue(resolveMetadata(product)?.vitaminC);
-	                      const perfectFor =
-                        isDipImage ? dipProfile?.perfectFor : juiceProfile?.note ?? resolvePreparedPerfectFor(product);
-                      const note = isDipImage ? dipProfile?.note ?? null : null;
-                      const isVegan = isDipImage
-                        ? dipProfile?.vegan ?? Boolean(product.nutrition?.vegan)
-                        : juiceProfile?.vegan ?? Boolean(product.nutrition?.vegan);
-                      const isGlutenFree = isDipImage
-                        ? dipProfile?.glutenFree ?? Boolean(product.nutrition?.glutenFree)
-                        : juiceProfile?.glutenFree ?? Boolean(product.nutrition?.glutenFree);
-                      const hasReturnableContainer = Boolean(dipProfile?.returnableContainer);
+                      const vitaminA =
+                        resolveLocalizedValue(resolvePresentation(product)?.vitamins?.vitaminA) ??
+                        resolveLocalizedValue(resolveMetadata(product)?.vitaminA);
+                      const vitaminC =
+                        resolveLocalizedValue(resolvePresentation(product)?.vitamins?.vitaminC) ??
+                        resolveLocalizedValue(resolveMetadata(product)?.vitaminC);
+	                      const perfectFor = isJuiceImage
+                        ? juicePerfectFor ?? resolvePreparedPerfectFor(product)
+                        : resolvePreparedPerfectFor(product);
+                      const note = isJuiceImage ? juiceNote : null;
+                      const isVegan = Boolean(product.nutrition?.vegan);
+                      const isGlutenFree = Boolean(product.nutrition?.glutenFree);
+                      const isOrganic = Boolean(product.nutrition?.organic);
+                      const hasReturnableContainer = Boolean(resolveMetadata(product)?.returnableContainer);
                       const benefit = resolvePreparedBenefit(product);
                       const localizedDescription = (product.description ? tData(product.description) : "").trim();
                       const generatedSaladDescription =
@@ -626,12 +623,11 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                           : locale === "en"
                             ? "Fresh salad prepared daily."
                             : "Ensalada fresca preparada del día.";
-                      const fallbackDescription = dipProfile?.description
-                        ? dipProfile.description
-                        : localizedDescription || t("catalog.details_placeholder");
+                      const fallbackDescription =
+                        localizedDescription || juiceDescription || t("catalog.details_placeholder");
                       const frontDescription = (
-                        dipProfile?.description?.trim() ||
                         localizedDescription ||
+                        juiceDescription ||
                         (isSaladImage
                           ? generatedSaladDescription
                           : isJuiceImage
@@ -639,12 +635,19 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                             : t("prepared.dips_desc"))
                       ).trim();
 	                      const hasStructuredBackContent = isJuiceImage
-                        ? ingredients.length > 0 ||
+                        ? Boolean(juiceDescription) ||
+                          ingredients.length > 0 ||
                           benefits.length > 0 ||
                           nutritionValues.calories > 0 ||
+                          nutritionValues.protein > 0 ||
+                          nutritionValues.carbs > 0 ||
+                          nutritionValues.fats > 0 ||
+                          nutritionValues.fiber > 0 ||
                           nutritionValues.sugars > 0 ||
                           isVegan ||
                           isGlutenFree ||
+                          isOrganic ||
+                          Boolean(note) ||
                           Boolean(perfectFor)
                         : isDipImage
                           ? safeIngredients.length > 0 ||
@@ -663,14 +666,38 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                       const benefitsLabel = locale === "en" ? "Benefits" : "Beneficios";
                       const perfectForLabel = locale === "en" ? "Perfect for" : "Perfecto para";
                       const sugarUnitLabel = locale === "en" ? "sugars" : "azúcares";
+                      const proteinUnitLabel = locale === "en" ? "protein" : "proteína";
+                      const carbsUnitLabel = locale === "en" ? "carbs" : "carbohidratos";
+                      const fatsUnitLabel = locale === "en" ? "fats" : "grasas";
+                      const fiberUnitLabel = locale === "en" ? "fiber" : "fibra";
+                      const descriptionLabel = locale === "en" ? "Description" : "Descripción";
                       const noteLabel = locale === "en" ? "Note" : "Nota";
                       const returnableLabel = locale === "en" ? "Returnable Container" : "Envase Retornable";
+                      const juiceNutritionSummary = [
+                        nutritionValues.calories > 0 ? `🔥 ${nutritionValues.calories} cal` : null,
+                        nutritionValues.protein > 0 ? `💪 ${nutritionValues.protein}g ${proteinUnitLabel}` : null,
+                        nutritionValues.carbs > 0 ? `⚡ ${nutritionValues.carbs}g ${carbsUnitLabel}` : null,
+                        nutritionValues.fats > 0 ? `🥑 ${nutritionValues.fats}g ${fatsUnitLabel}` : null,
+                        nutritionValues.fiber > 0 ? `🌿 ${nutritionValues.fiber}g ${fiberUnitLabel}` : null,
+                        nutritionValues.sugars > 0 ? `🍯 ${nutritionValues.sugars}g ${sugarUnitLabel}` : null,
+                      ].filter((value): value is string => Boolean(value));
+                      const badges = product.isFeatured
+                        ? [{ label: t("category.featured"), tone: "forest" as const }]
+                        : [];
 	                    return (
+                        <motion.div
+                          key={product.id}
+                          custom={index}
+                          variants={{
+                            hidden: (idx: number) => ({ opacity: 0, x: idx % 2 === 0 ? -68 : 68 }),
+                            visible: { opacity: 1, x: 0, transition: { duration: 0.82, ease: "easeOut" } },
+                          }}
+                        >
 	                      <ProductCard
-	                        key={product.id}
 	                        type={isSaladImage ? "salad" : "prepared"}
 	                        title={tData(product.name)}
 	                        description={frontDescription}
+                        badges={badges}
                         image={
                           {
                             src: image,
@@ -734,6 +761,15 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
 	                          backContent={
 	                            isJuiceImage ? (
                                 <div className="mx-auto w-full max-w-md space-y-4 text-left">
+                                  {juiceDescription && (
+                                    <div className="rounded-lg border border-[var(--gd-color-leaf)]/25 bg-white/75 px-3 py-2.5">
+                                      <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gd-color-text-muted)]">
+                                        {descriptionLabel}
+                                      </p>
+                                      <p className="text-sm leading-relaxed text-[var(--gd-color-forest)]">{juiceDescription}</p>
+                                    </div>
+                                  )}
+
                                   {ingredients.length > 0 && (
                                     <div className="space-y-2">
                                       <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gd-color-text-muted)]">
@@ -772,19 +808,17 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                                     </div>
                                   )}
 
-                                  {(nutritionValues.calories > 0 ||
-                                    nutritionValues.sugars > 0 ||
+                                  {(juiceNutritionSummary.length > 0 ||
                                     isVegan ||
-                                    isGlutenFree) && (
+                                    isGlutenFree ||
+                                    isOrganic) && (
                                     <div className="space-y-2">
                                       <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gd-color-text-muted)]">
                                         {t("salads.nutrition")}
                                       </p>
-                                      {(nutritionValues.calories > 0 || nutritionValues.sugars > 0) && (
+                                      {juiceNutritionSummary.length > 0 && (
                                         <div className="rounded-lg border border-[var(--gd-color-leaf)]/20 bg-white/80 px-3 py-2 text-sm font-semibold text-[var(--gd-color-forest)]">
-                                          {nutritionValues.calories > 0 ? `🔥 ${nutritionValues.calories} cal` : ""}
-                                          {nutritionValues.calories > 0 && nutritionValues.sugars > 0 ? " | " : ""}
-                                          {nutritionValues.sugars > 0 ? `🍯 ${nutritionValues.sugars}g ${sugarUnitLabel}` : ""}
+                                          {juiceNutritionSummary.join(" | ")}
                                         </div>
                                       )}
                                       <div className="flex flex-wrap gap-2">
@@ -798,7 +832,21 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                                             ✓ {t("catalog.gluten_free")}
                                           </span>
                                         )}
+                                        {isOrganic && (
+                                          <span className="inline-flex items-center rounded-full bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-700">
+                                            🍃 {t("catalog.organic")}
+                                          </span>
+                                        )}
                                       </div>
+                                    </div>
+                                  )}
+
+                                  {note && (
+                                    <div className="rounded-lg border border-[var(--gd-color-leaf)]/25 bg-white/75 px-3 py-2.5">
+                                      <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--gd-color-text-muted)]">
+                                        {noteLabel}
+                                      </p>
+                                      <p className="text-sm leading-relaxed text-[var(--gd-color-forest)]">{note}</p>
                                     </div>
                                   )}
 
@@ -957,9 +1005,11 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                                                 : "bg-white/70 text-[var(--gd-color-forest)]"
                                             }`}
                                           >
-                                            <span className="text-base">
-                                              {ingredientIcons[ingredientIndex % ingredientIcons.length]}
-                                            </span>
+                                            {!isSaladImage && (
+                                              <span className="text-base">
+                                                {ingredientIcons[ingredientIndex % ingredientIcons.length]}
+                                              </span>
+                                            )}
                                             <span
                                               className={`leading-snug ${
                                                 isSaladImage && excludedIngredientSet.has(ingredientIndex)
@@ -1137,11 +1187,12 @@ export function RecienPreparadoSection({ products }: RecienPreparadoSectionProps
                               )
 	                          }
 	                      />
+                        </motion.div>
 	                    );
 	                  })}
-	                </div>
+	                </motion.div>
 	              )}
-            </section>
+	            </motion.section>
           ))}
         </div>
       </div>

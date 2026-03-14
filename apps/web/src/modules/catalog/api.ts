@@ -4,6 +4,8 @@ import { getFirestoreDb } from "@/lib/firebase/client";
 
 import type { Box, BoxRule, Product, ProductCategory } from "./types";
 import { resolveLocalizedField } from "./localization";
+import { normalizeCatalogProduct } from "./product-normalization";
+import { dedupeCatalogProducts } from "./product-canonical";
 
 const COLLECTIONS = {
   categories: "catalog_categories",
@@ -113,41 +115,11 @@ export async function fetchProducts() {
 
     const snapshot = await getDocs(collection(db, COLLECTIONS.products));
 
-    return snapshot.docs
-      .map((doc) => {
-        const data = doc.data() as Record<string, unknown>;
-        const sku = doc.id;
-        const productBase = data as Product;
-        const name = resolveLocalizedField(data, "name");
-        const description = data.description ? resolveLocalizedField(data, "description") : undefined;
-        const rawUnit = data.unit as Record<string, string> | string | undefined;
-        const unitEs = (data as { unit_es?: string; unitEs?: string }).unit_es ?? (data as { unitEs?: string }).unitEs;
-        const unitEn = (data as { unit_en?: string; unitEn?: string }).unit_en ?? (data as { unitEn?: string }).unitEn;
-        const unit =
-          typeof rawUnit === "object" || unitEs || unitEn
-            ? resolveLocalizedField(data, "unit")
-            : (rawUnit as string | undefined);
-
-        // Silently handle missing localizations
-        if (!name.es || !name.en) {
-          // just ensure fallbacks exist in resolveLocalizedField or here if critical
-        }
-
-        return {
-          ...productBase,
-          id: sku,
-          slug: productBase.slug || sku,
-          sku,
-          name,
-          description,
-          unit: unit as Product["unit"],
-          image:
-            productBase.image ||
-            (data as { image_url?: string }).image_url ||
-            `/assets/images/products/${sku}.png`,
-        } as Product;
-      })
-      .filter((product) => product.status !== "hidden");
+    return dedupeCatalogProducts(
+      snapshot.docs
+      .map((doc) => normalizeCatalogProduct(doc.id, doc.data() as Record<string, unknown>))
+      .filter((product) => product.status !== "hidden"),
+    );
   } catch (error) {
     console.error("Error fetching products from Firestore:", error);
     return [];

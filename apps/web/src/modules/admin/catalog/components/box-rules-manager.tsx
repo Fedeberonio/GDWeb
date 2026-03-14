@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 
 import { adminFetch } from "@/modules/admin/api/client";
 import { useTranslation } from "@/modules/i18n/use-translation";
-import type { BoxRule, ProductCategory, Product } from "@/modules/catalog/types";
+import type { BoxRule, ProductCategory } from "@/modules/catalog/types";
 
 type BoxRulesManagerProps = {
   initialRules: BoxRule[];
   categories: ProductCategory[];
-  products: Product[];
 };
 
 type FormState = {
@@ -47,7 +46,7 @@ function buildInitialForm(rule: BoxRule, categories: ProductCategory[]): FormSta
   };
 }
 
-export function BoxRulesManager({ initialRules, categories, products }: BoxRulesManagerProps) {
+export function BoxRulesManager({ initialRules, categories }: BoxRulesManagerProps) {
   const { t } = useTranslation();
   const [rules, setRules] = useState<BoxRule[]>(initialRules);
   const [selectedId, setSelectedId] = useState<string | null>(initialRules[0]?.id ?? null);
@@ -91,11 +90,6 @@ export function BoxRulesManager({ initialRules, categories, products }: BoxRules
 
     try {
       const categoryBudget = formState.categoryBudget;
-      const variantContents = {
-        mix: formState.variantContents.mix.length > 0 ? formState.variantContents.mix : undefined,
-        fruity: formState.variantContents.fruity.length > 0 ? formState.variantContents.fruity : undefined,
-        veggie: formState.variantContents.veggie.length > 0 ? formState.variantContents.veggie : undefined,
-      };
 
       const payload: Partial<BoxRule> = {
         displayName: formState.displayName.trim(),
@@ -103,8 +97,6 @@ export function BoxRulesManager({ initialRules, categories, products }: BoxRules
         targetWeightKg: Number(formState.targetWeightKg),
         minMargin: formState.minMargin ? Number(formState.minMargin) : undefined,
         categoryBudget,
-        baseContents: formState.baseContents,
-        variantContents: Object.values(variantContents).some((v) => v !== undefined) ? variantContents : undefined,
       };
 
       const response = await adminFetch(`/api/admin/catalog/box-rules/${selectedRule.id}`, {
@@ -127,64 +119,6 @@ export function BoxRulesManager({ initialRules, categories, products }: BoxRules
       setSaving(false);
     }
   };
-
-  const renderContentEditor = (
-    contents: Array<{ productSku: string; quantity: number }>,
-    onChange: (newContents: Array<{ productSku: string; quantity: number }>) => void,
-    label: string
-  ) => (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</label>
-        <button
-          type="button"
-          onClick={() => onChange([...contents, { productSku: "", quantity: 1 }])}
-          className="text-xs text-green-600 hover:text-green-700 font-semibold"
-        >
-          {t("admin.box_manager.add")}
-        </button>
-      </div>
-      {contents.map((item, idx) => (
-        <div key={idx} className="flex items-center gap-2">
-          <select
-            value={item.productSku}
-            onChange={(e) => {
-              const newContents = [...contents];
-              newContents[idx] = { ...item, productSku: e.target.value };
-              onChange(newContents);
-            }}
-            className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-          >
-            <option value="">{t("admin.box_manager.select_box")}</option>
-            {products.map((p) => (
-              <option key={p.id} value={p.sku ?? p.slug}>
-                {p.name.es} ({p.sku ?? p.slug})
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            min="1"
-            value={item.quantity}
-            onChange={(e) => {
-              const newContents = [...contents];
-              newContents[idx] = { ...item, quantity: Number(e.target.value) };
-              onChange(newContents);
-            }}
-            className="w-20 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={() => onChange(contents.filter((_, i) => i !== idx))}
-            className="text-red-500 hover:text-red-700 font-bold px-2"
-          >
-            ×
-          </button>
-        </div>
-      ))}
-      {contents.length === 0 && <p className="text-xs text-slate-400 italic">{t("admin.box_manager.no_reference_content")}</p>}
-    </div>
-  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-[260px,1fr]">
@@ -347,35 +281,11 @@ export function BoxRulesManager({ initialRules, categories, products }: BoxRules
               </div>
             </div>
 
-            {/* Contenido Base */}
             <div className="space-y-3 border-b border-slate-200 pb-4">
-              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">{t("admin.rules.base_content")}</h4>
-              {renderContentEditor(
-                formState.baseContents,
-                (newContents) => setFormState({ ...formState, baseContents: newContents }),
-                t("admin.rules.base_products")
-              )}
-            </div>
-
-            {/* Contenido por Variante */}
-            <div className="space-y-3 border-b border-slate-200 pb-4">
-              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">{t("admin.rules.variant_content")}</h4>
-              <div className="space-y-6">
-                {renderContentEditor(
-                  formState.variantContents.mix,
-                  (newContents) => setFormState({ ...formState, variantContents: { ...formState.variantContents, mix: newContents } }),
-                  t("admin.rules.mix_variant_content")
-                )}
-                {renderContentEditor(
-                  formState.variantContents.fruity,
-                  (newContents) => setFormState({ ...formState, variantContents: { ...formState.variantContents, fruity: newContents } }),
-                  t("admin.rules.fruity_variant_content")
-                )}
-                {renderContentEditor(
-                  formState.variantContents.veggie,
-                  (newContents) => setFormState({ ...formState, variantContents: { ...formState.variantContents, veggie: newContents } }),
-                  t("admin.rules.veggie_variant_content")
-                )}
+              <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Fuente de verdad</h4>
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                El contenido y las variantes de las cajas se administran solo desde <span className="font-semibold">Admin &gt; Boxes</span>.
+                Aqui solo quedan las reglas operativas para budgets, peso objetivo y margen minimo.
               </div>
             </div>
           </form>

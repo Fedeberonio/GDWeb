@@ -67,20 +67,35 @@ export function BoxVariantsDisplay({
     return undefined;
   }, [initialVariant]);
 
-  const getPlaceholderContents = (variant: VariantType) => {
-    const placeholderItems =
-      variant === "fruity"
-        ? ["Piña", "Lechoza", "Guineos", "Mango", "Chinola", "Limones"]
-        : ["Berenjena", "Zuccini", "Tomates", "Ajíes", "Verduras", "Rúcula"];
-    return placeholderItems.map((name, index) => ({
-      productSku: `${variant}-placeholder-${index + 1}`,
-      quantity: 1,
-      name,
-    }));
+  const normalizedBaseContents = baseContents.map((item) => ({
+    ...item,
+    name: resolveProductLabel(item.productSku, item.name),
+  }));
+
+  const getVariantContentsFromBox = (variant: VariantType) => {
+    const variantData = resolveVariantData(variant);
+    if (!variantData?.referenceContents?.length) return [];
+
+    return variantData.referenceContents
+      .map((item) => {
+        const productSku = String(item.productId ?? "").trim();
+        const fallbackName = item.name?.[locale] ?? item.name?.es ?? item.name?.en ?? productSku;
+        return {
+          productSku,
+          quantity: Number(item.quantity) || 1,
+          name: productSku ? resolveProductLabel(productSku, fallbackName) : fallbackName,
+        };
+      })
+      .filter((item) => item.productSku || item.name);
   };
 
   // Filtrar contenido según la variante
   const getFilteredContents = (variant: VariantType) => {
+    const boxContents = getVariantContentsFromBox(variant);
+    if (boxContents.length) {
+      return boxContents;
+    }
+
     // Si hay contenido específico para la variante, usarlo
     if (boxRule?.variantContents?.[variant]?.length) {
       return boxRule.variantContents[variant]!.map((item) => ({
@@ -92,10 +107,10 @@ export function BoxVariantsDisplay({
     // Fallback: filtrar baseContents como antes
     if (variant === "mix") {
       // Mix: muestra todo el contenido base (balanceado)
-      return baseContents;
+      return normalizedBaseContents;
     } else if (variant === "fruity") {
       // Fruity: solo frutas tropicales y cítricos, SIN aromáticas de cocina (ajo, cebolla, etc.)
-      const filtered = baseContents.filter((item) => {
+      return normalizedBaseContents.filter((item) => {
         const product = resolveProduct(item.productSku);
         const localizedName = item.name || resolveProductLabel(item.productSku);
         const category = getVisualCategory(item.productSku, localizedName, product?.categoryId);
@@ -123,13 +138,9 @@ export function BoxVariantsDisplay({
           !isCookingAromatic
         );
       });
-      if (filtered.length === 0 || filtered.length === baseContents.length) {
-        return getPlaceholderContents("fruity");
-      }
-      return filtered;
     } else {
       // Veggie: solo vegetales (hojas, raíces, aromáticas), sin frutas ni cítricos
-      const filtered = baseContents.filter((item) => {
+      return normalizedBaseContents.filter((item) => {
         const product = resolveProduct(item.productSku);
         const localizedName = item.name || resolveProductLabel(item.productSku);
         const category = getVisualCategory(item.productSku, localizedName, product?.categoryId);
@@ -140,10 +151,6 @@ export function BoxVariantsDisplay({
           (category !== "fruit_large" && category !== "fruit_small" && category !== "citrus")
         );
       });
-      if (filtered.length === 0 || filtered.length === baseContents.length) {
-        return getPlaceholderContents("veggie");
-      }
-      return filtered;
     }
   };
 
@@ -274,7 +281,9 @@ export function BoxVariantsDisplay({
                           className="flex items-center justify-between text-sm bg-white/60 rounded px-2 py-1.5"
                         >
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className="text-[var(--color-foreground)] font-medium truncate">{item.name}</span>
+                            <span className="text-[var(--color-foreground)] font-medium truncate">
+                              {resolveProductLabel(item.productSku, item.name)}
+                            </span>
                           </div>
                           <span className="font-bold text-[var(--gd-color-forest)] whitespace-nowrap ml-2">
                             x{item.quantity}

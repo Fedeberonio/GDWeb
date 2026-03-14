@@ -49,6 +49,12 @@ export function BoxGridManager({ initialBoxes, products, onBoxUpdated }: BoxGrid
     [],
   );
 
+  const isInternalIngredient = useCallback((product: Product) => {
+    const productKey = (product.sku ?? product.id ?? "").toUpperCase();
+    const categoryId = (product.categoryId ?? "").toLowerCase();
+    return categoryId === "ingredientes" || productKey.startsWith("GD-ING-") || productKey.startsWith("GD-INGR-");
+  }, []);
+
   // Validar baseContents de una caja
   const validateBoxContents = useCallback(
     (box: Box): { isValid: boolean; issues: string[] } => {
@@ -78,6 +84,13 @@ export function BoxGridManager({ initialBoxes, products, onBoxUpdated }: BoxGrid
           if (!product) {
             const missingLabel = contentId || contentName || "sin identificar";
             issues.push(`Variante ${variant.name.es}: Producto "${missingLabel}" no encontrado`);
+            return;
+          }
+
+          if (isInternalIngredient(product)) {
+            issues.push(
+              `Variante ${variant.name.es}: Producto interno "${product.name.es}" no debe usarse en cajas`
+            );
             return;
           }
 
@@ -111,7 +124,7 @@ export function BoxGridManager({ initialBoxes, products, onBoxUpdated }: BoxGrid
         issues,
       };
     },
-    [products, productMap]
+    [isInternalIngredient, products, productMap]
   );
 
   const filteredBoxes = useMemo(() => {

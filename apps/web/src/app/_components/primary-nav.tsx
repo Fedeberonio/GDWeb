@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { Menu, X } from "lucide-react";
 
 import { Container } from "./container";
@@ -130,7 +130,7 @@ export function PrimaryNav() {
               >
                 <Link
                   href={item.href}
-                  onClick={(event) => {
+                  onClick={(event: MouseEvent<HTMLAnchorElement>) => {
                     if (!item.children?.length) return;
                     if (openDropdownHref !== item.href) {
                       event.preventDefault();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, type MouseEvent } from "react";
+import Image from "next/image";
 import { Apple, Check, CircleX, Citrus, Heart, Salad, Sparkles, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
@@ -23,21 +24,6 @@ type BoxPreferencesModalProps = {
         dislikes: string[];
     }) => void;
 };
-
-function resolveIngredientEmoji(name: string): string {
-    const value = name.toLowerCase();
-    if (value.includes("mango") || value.includes("papaya") || value.includes("chinola")) return "🥭";
-    if (value.includes("piña") || value.includes("pineapple")) return "🍍";
-    if (value.includes("limón") || value.includes("naranja") || value.includes("citr")) return "🍋";
-    if (value.includes("lechuga") || value.includes("rúcula") || value.includes("kale")) return "🥬";
-    if (value.includes("brócoli") || value.includes("broccoli")) return "🥦";
-    if (value.includes("tomate")) return "🍅";
-    if (value.includes("zanahoria") || value.includes("carrot")) return "🥕";
-    if (value.includes("cebolla") || value.includes("onion")) return "🧅";
-    if (value.includes("papa") || value.includes("potato")) return "🥔";
-    if (value.includes("pepino") || value.includes("cucumber")) return "🥒";
-    return "🌿";
-}
 
 export function BoxPreferencesModal({
     isOpen,
@@ -73,33 +59,27 @@ export function BoxPreferencesModal({
             return localized || fallback || sku;
         };
 
-        const variantContent: Record<VariantType, Array<{ sku: string; name: string; quantity: number }>> = {
-            mix: [
-                { sku: "mix-garlic", name: "Garlic", quantity: 2 },
-                { sku: "mix-onion", name: "Red/Yellow Onion", quantity: 2 },
-                { sku: "mix-potatoes", name: "Potatoes", quantity: 2 },
-                { sku: "mix-broccoli", name: "Broccoli", quantity: 2 },
-                { sku: "mix-mango", name: "Mango", quantity: 2 },
-            ],
-            fruity: [
-                { sku: "fruit-pineapple", name: "Pineapple", quantity: 2 },
-                { sku: "fruit-mango", name: "Mango", quantity: 3 },
-                { sku: "fruit-passion", name: "Passion Fruit", quantity: 6 },
-                { sku: "fruit-bananas", name: "Bananas", quantity: 5 },
-                { sku: "fruit-papaya", name: "Papaya", quantity: 1 },
-                { sku: "fruit-oranges", name: "Seasonal Oranges", quantity: 4 },
-            ],
-            veggie: [
-                { sku: "veg-broccoli", name: "Broccoli", quantity: 2 },
-                { sku: "veg-lettuce", name: "Lettuce", quantity: 2 },
-                { sku: "veg-tomatoes", name: "Tomatoes", quantity: 4 },
-                { sku: "veg-eggplant", name: "Eggplant", quantity: 2 },
-                { sku: "veg-carrots", name: "Carrots", quantity: 3 },
-                { sku: "veg-zucchini", name: "Zucchini", quantity: 2 },
-            ],
+        const contentsFromBoxVariant = (variant: VariantType) => {
+            const variantData = box.variants.find((item) => item.id === variant || item.slug === variant);
+            if (!variantData?.referenceContents?.length) return [];
+
+            return variantData.referenceContents
+                .map((item) => {
+                    const sku = String(item.productId ?? "").trim();
+                    const fallbackName = item.name?.es ?? item.name?.en ?? sku;
+                    return {
+                        sku,
+                        name: resolveProductLabel(sku, fallbackName),
+                        quantity: Number(item.quantity) || 1,
+                    };
+                })
+                .filter((item) => item.sku || item.name);
         };
 
-        if (!boxRule) return variantContent[selectedVariant] ?? [];
+        const directContents = contentsFromBoxVariant(selectedVariant);
+        if (directContents.length > 0) return directContents;
+
+        if (!boxRule) return [];
 
         const base = boxRule.baseContents || [];
         const variantSpecific = boxRule.variantContents?.[selectedVariant] || [];
@@ -169,18 +149,54 @@ export function BoxPreferencesModal({
 
         const filtered = filterByVariant(resolved);
 
-        if (filtered.length === 0) {
-            return variantContent[selectedVariant] ?? [];
-        }
-
         return filtered;
-    }, [boxRule, selectedVariant, productMap, tData]);
+    }, [box, boxRule, selectedVariant, productMap, tData]);
+
+    const productImageBySku = useMemo(() => {
+        const bySku = new Map<string, string>();
+        const byName = new Map<string, string>();
+        const seenIds = new Set<string>();
+
+        productMap.forEach((product) => {
+            if (!product?.id || seenIds.has(product.id)) return;
+            seenIds.add(product.id);
+
+            const imageSrc = product.image || `/assets/images/products/${product.sku}.png`;
+            if (!imageSrc) return;
+
+            if (product.sku) {
+                bySku.set(product.sku.toLowerCase(), imageSrc);
+            }
+            if (product.name) {
+                const localizedName = tData(product.name).trim().toLowerCase();
+                if (localizedName) {
+                    byName.set(localizedName, imageSrc);
+                }
+            }
+        });
+
+        return { bySku, byName };
+    }, [productMap, tData]);
+
+    const resolveItemThumbnail = (sku: string, name: string) => {
+        const normalizedSku = sku.toLowerCase();
+        const normalizedName = name.trim().toLowerCase();
+        const bySku = productImageBySku.bySku.get(normalizedSku);
+        if (bySku) return bySku;
+
+        const byNameExact = productImageBySku.byName.get(normalizedName);
+        if (byNameExact) return byNameExact;
+
+        const looseMatch = Array.from(productImageBySku.byName.entries()).find(([productName]) => {
+            return productName.includes(normalizedName) || normalizedName.includes(productName);
+        });
+        if (looseMatch) return looseMatch[1];
+
+        return "/assets/images/products/placeholder.png";
+    };
 
     const likesInView = contents.filter((item) => likes.has(item.sku)).length;
     const dislikesInView = contents.filter((item) => dislikes.has(item.sku)).length;
-    const markedInView = likesInView + dislikesInView;
-    const progressPercent = contents.length > 0 ? Math.round((markedInView / contents.length) * 100) : 0;
-    const hasCelebrationState = markedInView >= Math.min(contents.length, 4) && markedInView > 0;
 
     const triggerSelectionBurst = (sku: string, kind: "like" | "dislike") => {
         burstCounterRef.current += 1;
@@ -256,10 +272,7 @@ export function BoxPreferencesModal({
                             <Sparkles className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gd-color-orange)]">
-                                {t("box_preferences.modal_badge")}
-                            </p>
-                            <h2 className="mt-1 text-xl font-bold text-[var(--gd-color-forest)]">{tData(box.name)}</h2>
+                            <h2 className="text-xl font-bold text-[var(--gd-color-forest)]">{tData(box.name)}</h2>
                             <p className="text-base font-extrabold text-[var(--gd-color-leaf)]">
                                 RD${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}
                             </p>
@@ -322,7 +335,7 @@ export function BoxPreferencesModal({
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 <div className="rounded-xl border border-emerald-300/40 bg-emerald-100/60 px-2 py-2 text-center">
                                     <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-800">❤️ {t("box_preferences.count_likes")}</p>
                                     <p className="text-lg font-black text-emerald-700">{likesInView}</p>
@@ -331,29 +344,6 @@ export function BoxPreferencesModal({
                                     <p className="text-[10px] font-bold uppercase tracking-wide text-rose-800">❌ {t("box_preferences.count_dislikes")}</p>
                                     <p className="text-lg font-black text-rose-700">{dislikesInView}</p>
                                 </div>
-                                <div className="rounded-xl border border-[var(--gd-color-leaf)]/30 bg-[var(--gd-color-sprout)]/40 px-2 py-2 text-center">
-                                    <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--gd-color-forest)]">{t("box_preferences.count_progress")}</p>
-                                    <p className="text-lg font-black text-[var(--gd-color-forest)]">{progressPercent}%</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-1">
-                                <div className="h-2 overflow-hidden rounded-full bg-[var(--gd-color-leaf)]/15">
-                                    <motion.div
-                                        animate={{ width: `${progressPercent}%` }}
-                                        transition={{ duration: 0.28, ease: "easeOut" }}
-                                        className="h-full rounded-full bg-gradient-to-r from-[var(--gd-color-leaf)] via-[#5ac56e] to-[var(--gd-color-citrus)]"
-                                    />
-                                </div>
-                                {hasCelebrationState && (
-                                    <motion.p
-                                        initial={{ opacity: 0, y: 4 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-center text-xs font-bold text-[var(--gd-color-forest)]"
-                                    >
-                                        ✨ {t("box_preferences.ready_state")}
-                                    </motion.p>
-                                )}
                             </div>
                         </div>
 
@@ -366,7 +356,7 @@ export function BoxPreferencesModal({
                                 contents.map((item) => {
                                     const isLiked = likes.has(item.sku);
                                     const isDisliked = dislikes.has(item.sku);
-                                    const rowEmoji = resolveIngredientEmoji(item.name);
+                                    const thumbnailSrc = resolveItemThumbnail(item.sku, item.name);
                                     const rowTone = isLiked
                                         ? "border-emerald-300/70 bg-gradient-to-r from-emerald-100/90 to-white"
                                         : isDisliked
@@ -393,10 +383,15 @@ export function BoxPreferencesModal({
                                             )}
 
                                             <div className="flex min-w-0 items-center gap-3">
-                                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[var(--gd-color-sprout)] to-white text-xs font-black text-[var(--gd-color-forest)] shadow-sm">
-                                                    {item.quantity}
+                                                <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-md border border-[var(--gd-color-leaf)]/25 bg-white">
+                                                    <Image
+                                                        src={thumbnailSrc}
+                                                        alt={item.name}
+                                                        fill
+                                                        sizes="24px"
+                                                        className="object-cover object-center"
+                                                    />
                                                 </div>
-                                                <span className="text-lg">{rowEmoji}</span>
                                                 <span className="truncate text-sm font-semibold text-[var(--gd-color-forest)]">{item.name}</span>
                                             </div>
                                             <div className="flex items-center gap-2">

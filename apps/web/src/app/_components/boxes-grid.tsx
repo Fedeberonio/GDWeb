@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { motion, useInView } from "framer-motion";
 import { useCart } from "@/modules/cart/context";
 import type { Box, BoxRule, Product } from "@/modules/catalog/types";
-import { Check, Info, Star } from "lucide-react";
+import { Info } from "lucide-react";
 
 import { useTranslation } from "@/modules/i18n/use-translation";
 import { ProductCard } from "./product-card";
@@ -13,36 +14,9 @@ import { BoxAddModeDialog } from "./box-add-mode-dialog";
 import { BoxPreferencesModal } from "./box-preferences-modal";
 import type { VariantType } from "./box-selector/helpers";
 
-// Helper function para obtener imágenes de cajas (product y topdown)
-function getBoxImages(boxId: string): { product: string; topdown: string } {
-  const boxImageMap: Record<string, { product: string; topdown: string }> = {
-    "GD-CAJA-001": {
-      product: "/assets/images/boxes/GD-CAJA-001.png",
-      topdown: "/assets/images/boxes/GD-CAJA-001-topdown.png",
-    },
-    "GD-CAJA-002": {
-      product: "/assets/images/boxes/GD-CAJA-002.png",
-      topdown: "/assets/images/boxes/GD-CAJA-002-topdown.png",
-    },
-    "GD-CAJA-003": {
-      product: "/assets/images/boxes/GD-CAJA-003.png",
-      topdown: "/assets/images/boxes/GD-CAJA-003-topdown.png",
-    },
-  };
-
-  return boxImageMap[boxId] || {
-    product: "/assets/images/boxes/placeholder.png",
-    topdown: "/assets/images/boxes/placeholder.png",
-  };
-}
-
-// Helper function para mapear URLs remotas a imágenes locales (fallback)
-function getLocalBoxImage(heroImage: string | undefined, boxId: string): string {
-  if (heroImage && heroImage.startsWith("/assets/")) {
-    return heroImage;
-  }
-  const boxImages = getBoxImages(boxId);
-  return boxImages.product;
+function resolveBoxImage(heroImage: string | undefined, boxId: string): string {
+  const normalizedHeroImage = typeof heroImage === "string" ? heroImage.trim() : "";
+  return normalizedHeroImage || `/assets/images/boxes/${boxId}.png`;
 }
 
 type BoxesGridProps = {
@@ -63,6 +37,8 @@ type BoxesGridProps = {
 export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGridProps) {
   const { t, tData } = useTranslation();
   const { addItem } = useCart();
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const isGridInView = useInView(gridRef, { once: true, margin: "-15%" });
   const [editingBox, setEditingBox] = useState<{ box: Box; quantity: number } | null>(null);
   const [addChoiceBox, setAddChoiceBox] = useState<{ box: Box; quantity: number } | null>(null);
   void prebuiltBoxes;
@@ -89,6 +65,38 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
     });
     return map;
   }, [products]);
+
+  const resolveBoxContents = useCallback(
+    (box: Box, variant: VariantType) => {
+      const variantData =
+        box.variants.find((item) => item.id === variant || item.slug === variant) ??
+        (variant === "mix" ? box.variants[0] : undefined);
+
+      if (variantData?.referenceContents?.length) {
+        return variantData.referenceContents
+          .map((content) => {
+            const productSku = String(content.productId ?? "").trim();
+            const fallbackName = content.name?.es ?? content.name?.en ?? productSku;
+            return {
+              productSku,
+              quantity: Number(content.quantity) || 1,
+              name: tData(productMap.get(productSku)?.name) || fallbackName || productSku,
+            };
+          })
+          .filter((content) => content.productSku || content.name);
+      }
+
+      const ruleKey = box.ruleId || box.id || box.slug;
+      const rule = ruleKey ? rulesById.get(ruleKey) : undefined;
+      return (
+        rule?.baseContents?.map((content) => ({
+          ...content,
+          name: tData(productMap.get(content.productSku)?.name) || content.productSku,
+        })) ?? []
+      );
+    },
+    [productMap, rulesById, tData],
+  );
 
   const getQuantity = (boxId: string) => Math.max(1, boxQuantities[boxId] ?? 1);
   const updateQuantity = (boxId: string, delta: number) => {
@@ -118,7 +126,7 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
     likes: string[];
     dislikes: string[];
   }) => {
-    const imageSrc = getLocalBoxImage(box.heroImage, box.id);
+    const imageSrc = resolveBoxImage(box.heroImage, box.id);
 
     addItem({
       slug: box.slug,
@@ -187,139 +195,127 @@ export function BoxesGrid({ boxes, prebuiltBoxes, products, boxRules }: BoxesGri
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto pt-6">
+      <motion.div
+        ref={gridRef}
+        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto pt-6"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.14, delayChildren: 0.08 } },
+        }}
+        initial="hidden"
+        animate={isGridInView ? "visible" : "hidden"}
+      >
         {boxes.map((box, index) => {
-          const imageSrc = getLocalBoxImage(box.heroImage, box.id);
-          const fallbackTopdown = getBoxImages(box.id).topdown;
+          const imageSrc = resolveBoxImage(box.heroImage, box.id);
           const secondaryImage =
             (box as Box & { secondaryImage?: string; hoverImage?: string }).secondaryImage ||
             (box as Box & { hoverImage?: string }).hoverImage ||
-            fallbackTopdown;
+            imageSrc;
           const quantity = getQuantity(box.id);
           const isAdded = addedBoxId === box.id;
           const isFlipped = Boolean(flippedBoxes[box.id]);
           const ruleKey = box.ruleId || box.id || box.slug;
           const rule = ruleKey ? rulesById.get(ruleKey) : undefined;
-          const baseContents =
-            rule?.baseContents?.map((content) => ({
-              ...content,
-              name: tData(productMap.get(content.productSku)?.name) || content.productSku,
-            })) ?? [];
+          const baseContents = resolveBoxContents(box, "mix");
           const unitLabel = box.durationDays
             ? `${box.durationDays} ${t("boxes.duration_days").toUpperCase()}`
             : t("boxes.flexible").toUpperCase();
+          const approxWeight = typeof box.weightLabel === "string" ? box.weightLabel.trim() : "";
 
-          const priorityBadge =
-            index === 1
-              ? {
-                  label: (
-                    <>
-                      <Star className="w-3 h-3 fill-current" />
-                      <span>{t("boxes.badge_popular")}</span>
-                    </>
-                  ),
-                  tone: "popular" as const,
-                }
-              : index === 2
-                ? {
-                    label: (
-                      <>
-                        <Check className="w-3 h-3" />
-                        <span>{t("boxes.badge_best_value")}</span>
-                      </>
-                    ),
-                    tone: "bestValue" as const,
-                  }
-                : box.isFeatured
-                  ? { label: t("category.featured"), tone: "forest" as const }
-                  : null;
-
-          const badges = priorityBadge
-            ? [priorityBadge]
+          const badges = box.isFeatured
+            ? [{ label: t("category.featured"), tone: "forest" as const }]
             : [];
 
           return (
-            <ProductCard
+            <motion.div
               key={box.id}
-              type="box"
-              title={tData(box.name)}
-              description={box.description ? tData(box.description) : undefined}
-              detailsNode={
-                <div className="pt-1">
-                  <BoxVariantsDisplay
-                    baseContents={baseContents}
-                    boxRule={rule}
-                    productMap={productMap}
-                    boxVariants={box.variants}
-                    compact
-                    initialVariant={selectedVariants[box.id] ?? "mix"}
-                    onVariantSelect={(variant) => {
-                      setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }));
+              custom={index}
+              variants={{
+                hidden: (cardIndex: number) => ({ opacity: 0, x: cardIndex % 2 === 0 ? -92 : 92 }),
+                visible: { opacity: 1, x: 0, transition: { duration: 1, ease: "easeOut" } },
+              }}
+            >
+              <ProductCard
+                type="box"
+                title={tData(box.name)}
+                description={box.description ? tData(box.description) : undefined}
+                detailsNode={
+                  <div className="pt-1">
+                    <BoxVariantsDisplay
+                      baseContents={baseContents}
+                      boxRule={rule}
+                      productMap={productMap}
+                      boxVariants={box.variants}
+                      compact
+                      initialVariant={selectedVariants[box.id] ?? "mix"}
+                      onVariantSelect={(variant) => {
+                        setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }));
+                        setBoxFlipped(box.id, true);
+                      }}
+                    />
+                  </div>
+                }
+                backContent={
+                  <div className="w-full space-y-3 text-left">
+                    <p className="text-center text-sm text-[var(--gd-color-forest)]/85">
+                      {box.description ? tData(box.description) : t("discover.box_description")}
+                    </p>
+                    <BoxVariantsDisplay
+                      baseContents={baseContents}
+                      boxRule={rule}
+                      productMap={productMap}
+                      boxVariants={box.variants}
+                      initialVariant={selectedVariants[box.id] ?? "mix"}
+                      onVariantSelect={(variant) => {
+                        setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }));
+                        setBoxFlipped(box.id, true);
+                      }}
+                    />
+                  </div>
+                }
+                imageAction={
+                  <button
+                    type="button"
+                    onClick={() => {
+                      ensureDefaultVariant(box.id);
                       setBoxFlipped(box.id, true);
                     }}
-                  />
-                </div>
-              }
-              backContent={
-                <div className="w-full space-y-3 text-left">
-                  <p className="text-center text-sm text-[var(--gd-color-forest)]/85">
-                    {box.description ? tData(box.description) : t("discover.box_description")}
-                  </p>
-                  <BoxVariantsDisplay
-                    baseContents={baseContents}
-                    boxRule={rule}
-                    productMap={productMap}
-                    boxVariants={box.variants}
-                    initialVariant={selectedVariants[box.id] ?? "mix"}
-                    onVariantSelect={(variant) => {
-                      setSelectedVariants((prev) => ({ ...prev, [box.id]: variant }));
-                      setBoxFlipped(box.id, true);
-                    }}
-                  />
-                </div>
-              }
-              imageAction={
-                <button
-                  type="button"
-                  onClick={() => {
-                    ensureDefaultVariant(box.id);
-                    setBoxFlipped(box.id, true);
-                  }}
-                  aria-label={t("common.view_details")}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gd-color-orange)] bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[var(--gd-color-orange)] shadow-md ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--gd-color-orange)] hover:text-white active:translate-y-0 md:text-sm"
-                >
-                  <Info className="h-4 w-4" />
-                  <span>{t("common.view_details")}</span>
-                </button>
-              }
-              image={{ src: imageSrc, alt: tData(box.name), fit: "cover", priority: index < 3 }}
-              secondaryImage={{ src: secondaryImage, alt: `${tData(box.name)} topdown`, fit: "cover" }}
-              imageContainerClassName="bg-gradient-to-b from-[#f6f1e4] via-[#f2ead8] to-[#eaddc3]"
-              badges={badges}
-              priceLabel={`RD$${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}`}
-              unitLabel={unitLabel}
-              quantity={quantity}
-              onDecrease={() => updateQuantity(box.id, -1)}
-              onIncrease={() => updateQuantity(box.id, 1)}
-              onAdd={() => {
-                ensureDefaultVariant(box.id);
-                setAddChoiceBox({ box, quantity });
-              }}
-              addLabel={t("common.add_to_cart")}
-              detailsCtaLabel={t("common.view_details")}
-              isAdded={isAdded}
-              footerNote={t("boxes.disclaimer")}
-              controlsPlacement="both"
-              compactControls
-              isFlipped={isFlipped}
-              onFlipChange={(next) => {
-                if (next) ensureDefaultVariant(box.id);
-                setBoxFlipped(box.id, next);
-              }}
-            />
+                    aria-label={t("common.view_details")}
+                    className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gd-color-orange)] bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[var(--gd-color-orange)] shadow-md ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--gd-color-orange)] hover:text-white active:translate-y-0 md:text-sm"
+                  >
+                    <Info className="h-4 w-4" />
+                    <span>{t("common.view_details")}</span>
+                  </button>
+                }
+                image={{ src: imageSrc, alt: tData(box.name), fit: "cover", priority: index < 3 }}
+                secondaryImage={{ src: secondaryImage, alt: `${tData(box.name)} topdown`, fit: "cover" }}
+                imageContainerClassName="bg-gradient-to-b from-[#f6f1e4] via-[#f2ead8] to-[#eaddc3]"
+                badges={badges}
+                priceLabel={`RD$${box.price.amount.toLocaleString("es-DO", { minimumFractionDigits: 0 })}`}
+                unitLabel={unitLabel}
+                quantity={quantity}
+                onDecrease={() => updateQuantity(box.id, -1)}
+                onIncrease={() => updateQuantity(box.id, 1)}
+                onAdd={() => {
+                  ensureDefaultVariant(box.id);
+                  setAddChoiceBox({ box, quantity });
+                }}
+                addLabel={t("common.add_to_cart")}
+                detailsCtaLabel={t("common.view_details")}
+                isAdded={isAdded}
+                footerNote={approxWeight ? `${approxWeight}\n${t("boxes.disclaimer")}` : t("boxes.disclaimer")}
+                controlsPlacement="both"
+                compactControls
+                isFlipped={isFlipped}
+                onFlipChange={(next) => {
+                  if (next) ensureDefaultVariant(box.id);
+                  setBoxFlipped(box.id, next);
+                }}
+              />
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
       <p className="pt-3 text-center text-xs font-medium text-[var(--gd-color-text-muted)]">
         {t("common.currency_notice")}
       </p>

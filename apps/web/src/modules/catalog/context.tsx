@@ -59,9 +59,16 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
   const productMap = useMemo(() => {
     const map = new Map<string, Product>();
     products.forEach((product) => {
+      map.set(product.id, product);
+      map.set(product.id.toLowerCase(), product);
+      map.set(product.id.toUpperCase(), product);
       map.set(product.slug, product);
+      map.set(product.slug.toLowerCase(), product);
+      map.set(product.slug.toUpperCase(), product);
       if (product.sku) {
         map.set(product.sku, product);
+        map.set(product.sku.toLowerCase(), product);
+        map.set(product.sku.toUpperCase(), product);
       }
     });
     return map;

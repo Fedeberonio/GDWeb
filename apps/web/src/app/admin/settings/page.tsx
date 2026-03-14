@@ -48,10 +48,11 @@ function SettingsContent() {
 
   const handleToggleDay = (day: string) => {
     setSettings((prev) => {
-      const exists = prev.deliveryFeeDays.includes(day);
+      const currentDays = prev.deliveryFeeDays ?? [];
+      const exists = currentDays.includes(day);
       const deliveryFeeDays = exists
-        ? prev.deliveryFeeDays.filter((d) => d !== day)
-        : [...prev.deliveryFeeDays, day];
+        ? currentDays.filter((d) => d !== day)
+        : [...currentDays, day];
       return { ...prev, deliveryFeeDays };
     });
   };
@@ -221,7 +222,7 @@ function SettingsContent() {
                         <label key={day} className="inline-flex items-center gap-2 text-sm text-slate-600">
                           <input
                             type="checkbox"
-                            checked={settings.deliveryFeeDays.includes(day)}
+                            checked={(settings.deliveryFeeDays ?? []).includes(day)}
                             onChange={() => handleToggleDay(day)}
                             className="h-4 w-4 rounded border-slate-300 text-emerald-600"
                           />

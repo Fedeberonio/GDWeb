@@ -1,4 +1,3 @@
-import productMetadata from "@/data/productMetadata.json";
 import type { Order, OrderDelivery, OrderItem } from "./types";
 
 type LanguageCode = "es" | "en";
@@ -43,10 +42,6 @@ type ItemMetadata = {
   notes?: string;
   configuration?: BoxConfig;
 };
-
-const metadataNameMap = new Map(
-  (productMetadata as Array<{ slug: string; name: string }>).map((item) => [item.slug, item.name]),
-);
 
 const LABELS = {
   es: {
@@ -202,15 +197,18 @@ function resolvePreferenceLabel(
   language: LanguageCode,
   productLabelMap?: ProductLabelMap,
 ) {
-  if (productLabelMap?.has(value)) {
-    const entry = productLabelMap.get(value);
+  const entry =
+    productLabelMap?.get(value) ??
+    productLabelMap?.get(value.toLowerCase()) ??
+    productLabelMap?.get(value.toUpperCase());
+
+  if (entry) {
     if (typeof entry === "string") return entry;
     if (entry && typeof entry === "object") {
       return entry[language] || entry.es || entry.en || value;
     }
   }
-  const metadataName = metadataNameMap.get(value);
-  return metadataName || value;
+  return value;
 }
 
 function resolveBoxConfig(item: OrderItem): BoxConfig | null {

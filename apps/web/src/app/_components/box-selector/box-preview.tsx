@@ -81,12 +81,8 @@ export function BoxPreview({ box, variant, baseContents, boxRule, onBack, onChan
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  const boxImageMap: Record<string, string> = {
-    "GD-CAJA-001": "/assets/images/boxes/GD-CAJA-001.png",
-    "GD-CAJA-002": "/assets/images/boxes/GD-CAJA-002.png",
-    "GD-CAJA-003": "/assets/images/boxes/GD-CAJA-003.png",
-  };
-  const boxImage = boxImageMap[box.id] || box.heroImage || "/assets/images/boxes/placeholder.png";
+  const boxImage =
+    (typeof box.heroImage === "string" && box.heroImage.trim()) || `/assets/images/boxes/${box.id}.png`;
 
   // Calcular balance visual (simplificado)
   const getBalancePercentage = (current: number, min: number, max: number): number => {
@@ -137,7 +133,7 @@ export function BoxPreview({ box, variant, baseContents, boxRule, onBack, onChan
               <p className="text-sm text-[var(--color-muted)] mb-1">
                 <span className="inline-flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-600" />
-                  {box.durationDays} {t("boxes.duration_days")}
+                  {box.durationDays ? `${box.durationDays} ${t("boxes.duration_days")}` : t("boxes.flexible")}
                 </span>
                 <span className="mx-2 text-gray-300">•</span>
                 <span className="inline-flex items-center gap-2">
