@@ -1,0 +1,42 @@
+# Connectivity
+.DS_Store
+node_modules
+dist
+.next
+build
+out
+
+# Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+data/backups/
+
+# Editor
+.vscode
+.idea
+
+# Vercel
+.vercel
+.env*.local
+
+# Build artifacts
+*.log
+*.tsbuildinfo
+.cache
+
+# OS files
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace

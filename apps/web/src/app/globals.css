@@ -1,0 +1,371 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand Primary / Secondary */
+  --gd-color-forest: #2D5016;
+  --gd-color-leaf: #6B9E3C;
+  --gd-color-olive: #8B9A46;
+  --gd-color-sprout: #d4e5b8;
+  --gd-color-avocado: #6a994e;
+  --gd-color-sky: #7dd3c0;
+  --gd-color-beige: #F5F1E8;
+  --gd-color-orange: #FF8C42;
+  --gd-color-red: #E63946;
+  --gd-color-apple: #e63946;
+  --gd-color-strawberry: #c1121f;
+  --gd-color-citrus: #f77f00;
+  --gd-color-text: #1a1a1a;
+  --gd-color-text-muted: #6c6c6c;
+  --gd-color-border: #e5e5e5;
+  --gd-color-white: #ffffff;
+  --gd-surface: var(--gd-color-white);
+  --gd-surface-muted: var(--gd-color-beige);
+  --gd-body: var(--gd-color-text);
+  --gd-font-sans: "Inter", var(--font-open-sans), sans-serif;
+  --gd-font-display: "Fredoka", "Inter", sans-serif;
+  --gd-font-caveat: "Caveat Brush", "Inter", cursive;
+  /* Global stacking order */
+  --z-sticky: 30;
+  --z-float: 80;
+  --z-overlay: 90;
+  --z-nav: 100;
+  --z-dropdown: 110;
+  --z-drawer-overlay: 1000;
+  --z-drawer: 1010;
+  --z-modal: 1200;
+  --z-splash: 1400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--gd-color-beige);
+  color: var(--gd-body);
+  font-family: var(--gd-font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Recycled paper / organic noise texture overlay */
+.bg-organic-texture::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  mix-blend-mode: soft-light;
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+.font-display {
+  font-family: var(--gd-font-display);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Brand primary button (Mango Orange accent) */
+.btn-primary {
+  background: var(--gd-color-forest);
+  color: #ffffff;
+  border-radius: 0.75rem; /* rounded-xl */
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+.btn-primary:hover {
+  background: var(--gd-color-orange);
+}
+
+.shadow-soft {
+  box-shadow: 0 20px 45px -22px rgba(44, 82, 52, 0.35);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 30px 60px -15px rgba(45, 80, 22, 0.3);
+}
+
+/* Hero: en móvil, centrar la caja de la imagen de fondo */
+@media (max-width: 767px) {
+  .hero-bg-mobile {
+    background-position: 62% 50%;
+  }
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: saturate(180%) blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Hide Next.js dev tools button/portal */
+nextjs-portal {
+  display: none !important;
+}
+
+/* Animaciones personalizadas */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes splash-fade {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes splash-logo {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px) translateY(-1px) rotate(-1deg);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px) translateY(1px) rotate(1deg);
+  }
+}
+
+@keyframes shake-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-4px);
+  }
+  75% {
+    transform: translateY(4px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-shake-slow {
+  animation: shake-slow 2s ease-in-out infinite;
+}
+
+.animate-modal-in {
+  animation: modal-in 300ms ease-out;
+}
+
+/* Mejoras de tipografía */
+.font-display {
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+
+/* Efectos de hover mejorados */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(45, 80, 22, 0.2);
+}
+
+/* Gradientes de marca */
+.gradient-brand {
+  background: linear-gradient(135deg, var(--gd-color-forest) 0%, var(--gd-color-leaf) 50%, var(--gd-color-avocado) 100%);
+}
+
+.gradient-brand-text {
+  background: linear-gradient(135deg, var(--gd-color-forest) 0%, var(--gd-color-leaf) 50%, var(--gd-color-forest) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-splash {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-splash);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  animation: splash-fade 2s ease-out forwards;
+}
+
+.logo-splash__logo {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  animation: splash-logo 2s ease-out forwards;
+}
+
+.rounded-organic {
+  border-radius: 1.5rem;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
+}
+
+/* Visible, consistent scrollbars for key UX surfaces */
+.gd-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(45, 80, 22, 0.42) rgba(45, 80, 22, 0.1);
+  scrollbar-gutter: stable both-edges;
+}
+
+.gd-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.gd-scroll::-webkit-scrollbar-track {
+  background: rgba(45, 80, 22, 0.08);
+  border-radius: 999px;
+}
+
+.gd-scroll::-webkit-scrollbar-thumb {
+  background: rgba(45, 80, 22, 0.42);
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+}
+
+.gd-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(45, 80, 22, 0.58);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--gd-font-display);
+  color: var(--gd-color-forest);
+  text-transform: none !important;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  padding-bottom: 0.2rem;
+}
+
+h1 {
+  font-weight: 800;
+}
+
+h2 {
+  font-weight: 700;
+}
+
+h3 {
+  font-weight: 600;
+}
+
+.category-label {
+  font-family: var(--gd-font-display);
+  font-size: 1.5rem;
+  color: var(--gd-color-leaf);
+  text-transform: none !important;
+}

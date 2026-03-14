@@ -1,0 +1,56 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=200",
+    "seed:catalog": "ts-node-dev --transpile-only src/scripts/seedCatalog.ts",
+    "images:sync": "ts-node-dev --transpile-only src/scripts/updateProductImagesFromAssets.ts",
+    "boxes:sync": "ts-node-dev --transpile-only src/scripts/updateBoxImagesFromAssets.ts",
+    "import:catalog": "ts-node-dev --transpile-only src/scripts/importCatalogFromExcel.ts",
+    "import:combos": "ts-node-dev --transpile-only src/scripts/importCombosFromExcel.ts",
+    "import:new-csv": "ts-node-dev --transpile-only src/scripts/importFromNewCSV.ts",
+    "import:box-contents": "ts-node-dev --transpile-only src/scripts/importBoxContents.ts",
+    "import:box-rules": "ts-node-dev --transpile-only src/scripts/importBoxRulesFromJson.ts",
+    "import:product-metadata": "ts-node-dev --transpile-only src/scripts/importProductMetadataToCatalog.ts",
+    "update:catalog-content": "ts-node-dev --transpile-only src/scripts/updateCatalogContent.ts",
+    "update:box-details": "ts-node-dev --transpile-only src/scripts/updateBoxDisplayDetails.ts",
+    "update:vegetable-descriptions": "ts-node-dev --transpile-only src/scripts/updateVegetableDescriptions.ts",
+    "update:juice-images": "ts-node-dev --transpile-only src/scripts/updateJuiceImages.ts",
+    "export:metadata": "ts-node-dev --transpile-only src/scripts/exportProductMetadata.ts",
+    "export:catalog-backup": "ts-node-dev --transpile-only src/scripts/exportCatalogBackup.ts",
+    "backup:catalog": "ts-node-dev --transpile-only src/scripts/firestoreBackupAndValidate.ts",
+    "import:supplies": "ts-node-dev --transpile-only src/scripts/importSupplies.ts",
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.6.0",
+    "nanoid": "^5.0.7",
+    "slugify": "^1.6.6",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.0",
+    "@types/cors": "^2.8.17",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
+    "eslint": "^9.39.1",
+    "xlsx": "^0.18.5",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
+  }
+}

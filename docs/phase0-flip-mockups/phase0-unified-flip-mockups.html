@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GreenDolio - Phase 0 Unified Flip Mockups</title>
+  <style>
+    :root {
+      --forest: #1a472a;
+      --leaf: #2f6b3f;
+      --sprout: #d9f2df;
+      --cream: #f8f4ec;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --white: #ffffff;
+      --orange: #ec8a3a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Montserrat", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% -10%, #e8f8ec 0%, transparent 45%),
+        radial-gradient(circle at 90% 0%, #f7ecd9 0%, transparent 35%),
+        #f4f7f5;
+    }
+
+    .wrap {
+      width: min(1400px, 94vw);
+      margin: 22px auto 80px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .header {
+      border: 1px solid #d6e5db;
+      background: linear-gradient(145deg, #ffffff 0%, #f0fbf4 100%);
+      border-radius: 22px;
+      padding: 20px 24px;
+      box-shadow: 0 18px 40px rgba(26, 71, 42, .08);
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(24px, 2.4vw, 38px);
+      color: var(--forest);
+      letter-spacing: .01em;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      border: 1px solid #d5ddd8;
+      padding: 6px 10px;
+      font-size: 11px;
+      color: #334155;
+      background: #fff;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .section {
+      border: 1px solid #dfe7e3;
+      border-radius: 24px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 10px 36px rgba(0,0,0,.06);
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section h2 {
+      margin: 0;
+      color: var(--forest);
+      font-size: 20px;
+    }
+
+    .section p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #fff;
+      overflow: hidden;
+      min-height: 430px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, .08);
+      position: relative;
+    }
+
+    .face-label {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 10px;
+      letter-spacing: .12em;
+      font-weight: 800;
+      color: var(--forest);
+      background: rgba(255,255,255,.9);
+      border: 1px solid #cfe0d4;
+    }
+
+    .hero {
+      height: 210px;
+      background: #eef5f0;
+      position: relative;
+    }
+
+    .hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero.contain img {
+      object-fit: contain;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .body {
+      padding: 14px 14px 6px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .name {
+      margin: 0;
+      color: #10331f;
+      font-size: 20px;
+      line-height: 1.05;
+      font-weight: 800;
+    }
+
+    .price {
+      font-size: 14px;
+      color: #14532d;
+      font-weight: 700;
+    }
+
+    .mini {
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 4px 8px;
+      border: 1px solid transparent;
+      background: #ecfdf3;
+      color: #166534;
+    }
+
+    .badge.orange {
+      background: #fff7ed;
+      color: #9a3412;
+    }
+
+    .badge.cyan {
+      background: #ecfeff;
+      color: #0e7490;
+    }
+
+    .nutrition {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 8px;
+    }
+
+    .nbox {
+      border: 1px solid #dce5df;
+      border-radius: 12px;
+      padding: 8px;
+      text-align: center;
+      background: #f8fcf9;
+    }
+
+    .nbox strong {
+      display: block;
+      font-size: 16px;
+      color: #14532d;
+      margin-top: 3px;
+    }
+
+    .controls {
+      border-top: 1px solid #eef2f0;
+      padding: 12px 14px 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .counter {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid #d7dfdb;
+      border-radius: 999px;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      cursor: default;
+      color: #fff;
+      background: linear-gradient(120deg, var(--forest), var(--leaf));
+      text-align: center;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      border-radius: 999px;
+      padding: 7px 12px;
+      border: 1px solid #cdd8d1;
+      background: #f6faf7;
+      font-size: 11px;
+      font-weight: 800;
+      color: #1f4a2e;
+      letter-spacing: .08em;
+    }
+
+    .tab.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(120deg, #1d4f2f, #2f6b3f);
+    }
+
+    .grid {
+      border: 1px dashed #c7d8cd;
+      border-radius: 14px;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: #1f2937;
+      border-radius: 10px;
+      background: #f8faf9;
+      padding: 7px 9px;
+    }
+
+    .accordion {
+      border: 1px solid #d9e6dd;
+      border-radius: 12px;
+      padding: 9px;
+      background: #fff;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fbf9;
+      border: 1px solid #dce7e0;
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 12px;
+    }
+
+    .pill {
+      font-size: 10px;
+      border-radius: 999px;
+      padding: 2px 7px;
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 800;
+    }
+
+    .footer-note {
+      border: 1px dashed #d5e0da;
+      background: #f8fbf9;
+      padding: 8px 10px;
+      border-radius: 10px;
+      color: #475569;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 980px) {
+      .cards { grid-template-columns: 1fr; }
+      .card { min-height: 400px; }
+      .nutrition { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="header">
+      <h1 class="title">Phase 0 - Unified Flip Direction (Mockups Only)</h1>
+      <p class="subtitle">Static concept board for approval before production coding. One flip per product type.</p>
+      <div class="legend">
+        <span class="chip">Fresh + Fast + Fun</span>
+        <span class="chip">Quick Add Always Visible</span>
+        <span class="chip">One Flip Max</span>
+        <span class="chip">Mobile First</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Type 1 - Catalog Products (Frutas/Vegetales/Granja/Hierbas)</h2>
+      <p>Front: image + name + quick add. Back: short value summary + nutrition highlights + counter/add.</p>
+      <div class="cards">
+        <article class="card">
+          <span class="face-label">Front</span>
+          <div class="hero"><img src="../../apps/web/public/assets/images/products/GD-FRUT-024.png" alt="catalog product" /></div>
+          <div class="body">
+            <h3 class="name">Mango Banilejo</h3>
+            <div class="price">RD$190 / unidad</div>
+            <div class="row">
+              <span class="badge">Organic</span>
+              <span class="badge orange">Seasonal</span>
+            </div>
+            <div class="mini">Quick Add visible. Small info icon in top-right.</div>
+          </div>
+          <div class="controls">
+            <div class="counter">- <span>1</span> +</div>
+            <div class="btn">Quick Add</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <span class="face-label">Back</span>
+          <div class="hero" style="height: 94px; background:#f3faf5; display:flex; align-items:center; justify-content:center;">
+            <div class="tabs">
+              <span class="tab active">Nutrition highlights</span>
+            </div>
+          </div>
+          <div class="body">
+            <h3 class="name" style="font-size:18px">Sweet, fiber-rich fruit for energy and digestion.</h3>
+            <div class="nutrition">
+              <div class="nbox">Calories<strong>99</strong></div>
+              <div class="nbox">Vit C<strong>36%</strong></div>
+              <div class="nbox">Fiber<strong>2.6g</strong></div>
+            </div>
+            <div class="footer-note">Main benefit: immune support + natural energy.</div>
+          </div>
+          <div class="controls">
+            <div class="counter">- <span>2</span> +</div>
+            <div class="btn">Add to cart</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Type 2 - Freshly Prepared (Jugos / Dips)</h2>
+      <p>Front: appetizing image + “Made today/100% natural”. Back: ingredients + 2-3 values + “Perfect for”.</p>
+      <div class="cards">
+        <article class="card">
+          <span class="face-label">Front</span>
+          <div class="hero contain"><img src="../../apps/web/public/assets/images/products/GD-JUGO-010.png" alt="juice" /></div>
+          <div class="body">
+            <h3 class="name">Jugo Detox Verde</h3>
+            <div class="price">RD$180</div>
+            <div class="row">
+              <span class="badge">Made today</span>
+              <span class="badge cyan">100% natural</span>
+            </div>
+            <div class="mini">Quick Add + info icon. Color splash on add (green tone).</div>
+          </div>
+          <div class="controls">
+            <div class="counter">- <span>1</span> +</div>
+            <div class="btn">Quick Add</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <span class="face-label">Back</span>
+          <div class="hero" style="height: 98px; background:#f4fbf7; display:flex; align-items:center; justify-content:center;">
+            <div class="tabs"><span class="tab active">Ingredients + Use</span></div>
+          </div>
+          <div class="body">
+            <div class="grid">
+              <div class="line"><span>Kale + Spinach + Celery</span><strong>Base</strong></div>
+              <div class="line"><span>Pineapple + Ginger + Lemon</span><strong>Flavor</strong></div>
+            </div>
+            <div class="nutrition">
+              <div class="nbox">Calories<strong>120</strong></div>
+              <div class="nbox">Fiber<strong>4g</strong></div>
+              <div class="nbox">Vit C<strong>High</strong></div>
+            </div>
+            <div class="footer-note">Perfect for: post-workout recovery and morning reset.</div>
+          </div>
+          <div class="controls">
+            <div class="counter">- <span>1</span> +</div>
+            <div class="btn">Add DOP 180</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Type 3 - Subscription Boxes (single flip + in-back navigation)</h2>
+      <p>Front shows variant chips. Back keeps sticky chips, crossfade content, accordion customization, sticky footer.</p>
+      <div class="cards">
+        <article class="card" style="min-height:510px">
+          <span class="face-label">Front</span>
+          <div class="hero"><img src="../../apps/web/public/assets/images/boxes/GD-CAJA-002.png" alt="box" /></div>
+          <div class="body">
+            <h3 class="name">Caja Semanal Familiar</h3>
+            <div class="tabs">
+              <span class="tab active">Mix</span>
+              <span class="tab">Fruity</span>
+              <span class="tab">Veggie</span>
+            </div>
+            <div class="price">Desde RD$3,900</div>
+            <div class="mini">Large CTA to discover contents.</div>
+          </div>
+          <div class="controls">
+            <div class="btn">See contents</div>
+          </div>
+        </article>
+
+        <article class="card" style="min-height:510px">
+          <span class="face-label">Back</span>
+          <div class="hero" style="height:70px; background:#fff; border-bottom:1px solid #e5ece8; display:flex; align-items:center; justify-content:center; position:relative;">
+            <div class="tabs">
+              <span class="tab active">Mix</span>
+              <span class="tab">Fruity</span>
+              <span class="tab">Veggie</span>
+            </div>
+          </div>
+          <div class="body" style="padding-top:10px">
+            <div class="grid">
+              <div class="line"><span>Leafy Greens</span><strong>x6</strong></div>
+              <div class="line"><span>Roots</span><strong>x5</strong></div>
+              <div class="line"><span>Fruits</span><strong>x4</strong></div>
+              <div class="line"><span>Herbs</span><strong>x3</strong></div>
+            </div>
+            <div class="accordion">
+              <strong>✨ Customize your box</strong>
+              <div class="toggle"><span>More avocados</span><span class="pill">Liked</span></div>
+              <div class="toggle"><span>No cilantro</span><span class="pill">Saved</span></div>
+            </div>
+            <div class="footer-note">Variant switch on back = crossfade content (no re-flip).</div>
+          </div>
+          <div class="controls" style="position:relative">
+            <div class="counter">- <span>1</span> +</div>
+            <div class="btn">Add DOP 3,900</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Type 4 - Salads (single flip with playful customization)</h2>
+      <p>Back includes nutrition visual blocks + ingredient toggles + compact notes + sticky add footer.</p>
+      <div class="cards">
+        <article class="card">
+          <span class="face-label">Front</span>
+          <div class="hero"><img src="../../apps/web/public/assets/images/salads/GD-SALA-003.png" alt="salad" /></div>
+          <div class="body">
+            <h3 class="name">Ensalada Power Bowl</h3>
+            <div class="price">RD$420</div>
+            <div class="row">
+              <span class="badge">Customizable</span>
+              <span class="badge orange">420 kcal</span>
+            </div>
+            <div class="mini">Quick Add available, info icon to customize in back face.</div>
+          </div>
+          <div class="controls">
+            <div class="counter">- <span>1</span> +</div>
+            <div class="btn">Quick Add</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <span class="face-label">Back</span>
+          <div class="hero" style="height:70px; background:#f4faf7; display:flex; align-items:center; justify-content:center;">
+            <div class="tabs"><span class="tab active">Customize salad</span></div>
+          </div>
+          <div class="body">
+            <div class="nutrition">
+              <div class="nbox">Protein<strong>22g</strong></div>
+              <div class="nbox">Fiber<strong>8g</strong></div>
+              <div class="nbox">Carbs<strong>31g</strong></div>
+            </div>
+            <div class="grid">
+              <div class="toggle"><span>Cherry tomatoes</span><span class="pill">ON</span></div>
+              <div class="toggle"><span>Onion</span><span class="pill" style="background:#fee2e2;color:#991b1b">OFF</span></div>
+              <div class="toggle"><span>Feta cheese</span><span class="pill">ON</span></div>
+            </div>
+            <div class="footer-note">Ingredients selected: 12 of 15. Optional notes stay collapsed by default.</div>
+          </div>
+          <div class="controls">
+            <div class="counter">- <span>1</span> +</div>
+            <div class="btn">Add your salad</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="header" style="padding:14px 20px">
+      <p class="subtitle"><strong>Phase 0 scope:</strong> Visual direction only. No production logic changes. Next step after approval: prototype just one real type (Catalog) behind a feature flag.</p>
+    </section>
+  </div>
+</body>
+</html>

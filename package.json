@@ -1,0 +1,7 @@
+{
+  "name": "green-dolio-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ]
+}
