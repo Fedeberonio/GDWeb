@@ -1606,7 +1606,7 @@ function mostrarFormularioPedido() {
                 <option value="Miércoles">${lang === 'en' ? 'Wednesday (5:30 PM - 8:00 PM) - Free' : 'Miércoles (5:30 PM - 8:00 PM) - Gratis'}</option>
                 <option value="Jueves">${lang === 'en' ? 'Thursday (5:30 PM - 8:00 PM) - DOP 100' : 'Jueves (5:30 PM - 8:00 PM) - DOP 100'}</option>
                 <option value="Viernes">${lang === 'en' ? 'Friday (5:30 PM - 8:00 PM) - Free' : 'Viernes (5:30 PM - 8:00 PM) - Gratis'}</option>
-                <option value="Sábado">${lang === 'en' ? 'Saturday (5:30 PM - 8:00 PM) - DOP 100' : 'Sábado (5:30 PM - 8:00 PM) - DOP 100'}</option>
+                <option value="Sábado">${lang === 'en' ? 'Saturday (3:00 PM - 5:30 PM) - DOP 100' : 'Sábado (3:00 PM - 5:30 PM) - DOP 100'}</option>
               </select>
             </div>
 
