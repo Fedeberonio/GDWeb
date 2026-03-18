@@ -1057,7 +1057,9 @@ function clonarProductosSiHaceFalta() {
 
   document.querySelectorAll('#alacarta .producto-hover').forEach(card => {
     const clon = card.cloneNode(true);
-    const nombre = clon.querySelector('.font-bold').textContent.trim();
+    const nombre = clon.querySelector('.font-bold.text-lg.lang-es')?.textContent.trim()
+      || clon.querySelector('.font-bold.text-lg')?.textContent.trim()
+      || 'Producto';
     clon.dataset.nombre = nombre;
     
     // Remover todos los precios y el botón de agregar
@@ -1083,22 +1085,12 @@ function clonarProductosSiHaceFalta() {
     clon.appendChild(contBtn);
 
     // Agregar traducciones
-    const titulo = clon.querySelector('.font-bold');
+    const tituloEs = clon.querySelector('.font-bold.text-lg.lang-es');
+    const tituloEn = clon.querySelector('.font-bold.text-lg.lang-en');
     const nombreEn = PRODUCTOS_TRADUCCIONES[nombre] || nombre;
-    
-    // Crear elementos span para cada idioma
-    const spanEs = document.createElement('span');
-    spanEs.className = 'lang-es';
-    spanEs.textContent = nombre;
-    
-    const spanEn = document.createElement('span');
-    spanEn.className = 'lang-en';
-    spanEn.textContent = nombreEn;
-    
-    // Reemplazar el contenido del título
-    titulo.innerHTML = '';
-    titulo.appendChild(spanEs);
-    titulo.appendChild(spanEn);
+
+    if (tituloEs) tituloEs.textContent = nombre;
+    if (tituloEn) tituloEn.textContent = nombreEn;
 
     // Distribuir en la categoría correspondiente
     if (frutas.includes(nombre)) {
@@ -1147,8 +1139,13 @@ function agregarAlCarritoDesdeTarjeta(btn) {
   if (!card) return;
 
   // Esta función ahora solo maneja productos simples, no cajas.
-  const nombre = card.querySelector('.font-bold')?.textContent.trim() || 'Producto';
-  const precioText = card.querySelector('.text-green-800')?.textContent;
+  const lang = document.documentElement.lang === 'en' ? 'en' : 'es';
+  const nombre = card.querySelector(`.font-bold.text-lg.lang-${lang}`)?.textContent.trim()
+    || card.querySelector('.font-bold.text-lg.lang-es')?.textContent.trim()
+    || card.querySelector('.font-bold.text-lg')?.textContent.trim()
+    || 'Producto';
+  const precioText = card.querySelector(`.precio-producto.lang-${lang}, .text-green-800.lang-${lang}`)?.textContent
+    || card.querySelector('.precio-producto, .text-green-800')?.textContent;
   const precio = parsePrecio(precioText);
 
   const item = {
