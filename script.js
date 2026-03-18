@@ -1601,12 +1601,12 @@ function mostrarFormularioPedido() {
               <select name="dia" required
                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                 <option value="">${lang === 'en' ? 'Select day' : 'Seleccionar día'}</option>
-                <option value="Lunes">${lang === 'en' ? 'Monday (12:30-20:00) - Free' : 'Lunes (12:30-20:00) - Gratis'}</option>
-                <option value="Martes">${lang === 'en' ? 'Tuesday (12:30-20:00) - DOP 100' : 'Martes (12:30-20:00) - DOP 100'}</option>
-                <option value="Miércoles">${lang === 'en' ? 'Wednesday (12:30-20:00) - Free' : 'Miércoles (12:30-20:00) - Gratis'}</option>
-                <option value="Jueves">${lang === 'en' ? 'Thursday (12:30-20:00) - DOP 100' : 'Jueves (12:30-20:00) - DOP 100'}</option>
-                <option value="Viernes">${lang === 'en' ? 'Friday (12:30-20:00) - Free' : 'Viernes (12:30-20:00) - Gratis'}</option>
-                <option value="Sábado">${lang === 'en' ? 'Saturday (12:30-20:00) - DOP 100' : 'Sábado (12:30-20:00) - DOP 100'}</option>
+                <option value="Lunes">${lang === 'en' ? 'Monday (5:30 PM - 8:00 PM) - Free' : 'Lunes (5:30 PM - 8:00 PM) - Gratis'}</option>
+                <option value="Martes">${lang === 'en' ? 'Tuesday (5:30 PM - 8:00 PM) - DOP 100' : 'Martes (5:30 PM - 8:00 PM) - DOP 100'}</option>
+                <option value="Miércoles">${lang === 'en' ? 'Wednesday (5:30 PM - 8:00 PM) - Free' : 'Miércoles (5:30 PM - 8:00 PM) - Gratis'}</option>
+                <option value="Jueves">${lang === 'en' ? 'Thursday (5:30 PM - 8:00 PM) - DOP 100' : 'Jueves (5:30 PM - 8:00 PM) - DOP 100'}</option>
+                <option value="Viernes">${lang === 'en' ? 'Friday (5:30 PM - 8:00 PM) - Free' : 'Viernes (5:30 PM - 8:00 PM) - Gratis'}</option>
+                <option value="Sábado">${lang === 'en' ? 'Saturday (5:30 PM - 8:00 PM) - DOP 100' : 'Sábado (5:30 PM - 8:00 PM) - DOP 100'}</option>
               </select>
             </div>
 
