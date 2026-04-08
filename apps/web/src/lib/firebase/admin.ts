@@ -6,6 +6,21 @@ import { getFirestore } from "firebase-admin/firestore";
 
 let adminApp: App | undefined;
 
+const BLOCKED_FIREBASE_PROJECT_IDS = new Set(["greendolio-tienda"]);
+
+function assertFirebaseProjectAllowed(projectId: string | undefined) {
+  const normalized = String(projectId ?? "").trim();
+  if (!normalized) return;
+
+  // Prevent accidental writes to the legacy production project unless explicitly allowed.
+  const allowProd = String(process.env.ALLOW_PROD_FIREBASE ?? "").trim() === "1";
+  if (!allowProd && BLOCKED_FIREBASE_PROJECT_IDS.has(normalized)) {
+    throw new Error(
+      `Refusing to use Firebase project "${normalized}". Set ALLOW_PROD_FIREBASE=1 to override (dangerous).`,
+    );
+  }
+}
+
 function loadServiceAccount() {
   const inlineJson = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (inlineJson) {
@@ -43,6 +58,7 @@ function assertProjectAlignment(serviceAccount: Record<string, string>) {
     );
   }
 
+  assertFirebaseProjectAllowed(serviceProjectId ?? expectedProjectId);
   return serviceAccount;
 }
 
