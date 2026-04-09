@@ -202,6 +202,20 @@ const PRODUCTOS_CONFIG = {
       },
       imagen: 'assets/images/products/MoCkUpSandiamania.png',
       categoria: 'jugos'
+    },
+    cocoReal: {
+      id: 'cocoReal',
+      nombre: {
+        es: 'Coco Real',
+        en: 'Coco Real'
+      },
+      precio: 250,
+      descripcion: {
+        es: 'Agua de coco natural · 750 ml',
+        en: 'Pure coconut water · 750 ml'
+      },
+      imagen: 'assets/images/products/MockUpCocoRealAguaDeCoco750ml.png',
+      categoria: 'jugos'
     }
   },
 
@@ -1107,6 +1121,39 @@ const PRODUCTOS_METADATOS = JSON.parse(`{
         "activo": true,
         "fechaActualizacion": "2026-03-07",
         "ingredientes": "Sandía y manzana"
+      }
+    },
+    "cocoReal": {
+      "precio": 250,
+      "detalles": {
+        "sku": "GD-JUGO-014",
+        "unidadVenta": "botella",
+        "pesoAproximado": "750 ml",
+        "descripcionCorta": "Coco Real — agua de coco natural (750 ml).",
+        "valorNutricional": "Según etiqueta: 30 cal por porción, 0g azúcares añadidos (referencia producto).",
+        "vidaUtil": "Consultar etiqueta",
+        "almacenamiento": "Refrigerado",
+        "empaque": "Botella de vidrio 750 ml",
+        "origen": "Por confirmar",
+        "proveedorPrincipal": "Por confirmar",
+        "proveedorAlternativo": "Por definir",
+        "precioCompra": 0,
+        "margenGanancia": 0,
+        "frecuenciaCompra": "Semanal",
+        "contactoProveedor": "Por completar",
+        "organico": false,
+        "temporada": "Todo el año",
+        "stockDisponible": "Disponible",
+        "aptoVegano": true,
+        "libreGluten": true,
+        "urlImagen": "https://greendolio.shop/images/gd-jugo-014.png",
+        "destacadoWeb": true,
+        "ordenPrioridad": 14,
+        "tags": "jugos naturales, coco real, agua de coco, hidratación",
+        "notasInternas": "Producto nuevo; completar costo/origen si aplica",
+        "activo": true,
+        "fechaActualizacion": "2026-03-28",
+        "ingredientes": "Agua de coco"
       }
     }
   },
